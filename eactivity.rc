@@ -1,0 +1,433 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Russian resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_RUS)
+#ifdef _WIN32
+LANGUAGE LANG_RUSSIAN, SUBLANG_DEFAULT
+#pragma code_page(1251)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
+    "#define _AFX_NO_OLE_RESOURCES\r\n"
+    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)\r\n"
+    "#ifdef _WIN32\r\n"
+    "LANGUAGE 9, 1\r\n"
+    "#pragma code_page(1252)\r\n"
+    "#endif //_WIN32\r\n"
+    "#include ""res\\eactivity.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
+    "#include ""afxres.rc""         // Standard components\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_MAINFRAME           ICON                    "res\\eactivity.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_SetKoef DIALOGEX 0, 0, 262, 119
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Dialog"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,55,98,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,205,98,50,14
+    EDITTEXT        IDC_EDIT1,7,18,248,14,ES_AUTOHSCROLL | ES_READONLY
+    LTEXT           "Exe:",IDC_STATIC,7,7,15,8
+    EDITTEXT        IDC_EDIT3,7,47,248,14,ES_AUTOHSCROLL | WS_DISABLED
+    LTEXT           "Caption:",IDC_STATIC,7,36,27,8
+    EDITTEXT        IDC_EDIT5,7,77,68,14,ES_AUTOHSCROLL
+    LTEXT           "Коэффициент (for examp 1.50, -3.00, 0.33):",IDC_STATIC_coef,7,66,140,8
+    COMBOBOX        IDC_COMBO1,122,77,133,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Совпадение заголовка:",IDC_STATIC_sovp,163,66,92,8
+END
+
+IDD_Rules DIALOG  0, 0, 366, 123
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Dialog"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,9,102,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,309,102,50,14
+    CONTROL         "",IDC_LIST3,"SysListView32",LVS_REPORT | LVS_SHOWSELALWAYS | WS_BORDER | WS_GROUP | WS_TABSTOP,9,15,350,79
+    PUSHBUTTON      "Delete Rule",IDC_BUTTON1,100,102,81,14
+    PUSHBUTTON      "Редактировать",IDC_BUTTON2,217,102,64,14
+END
+
+IDD_EACTIVITY_DIALOG DIALOGEX 0, 0, 527, 285
+STYLE DS_SETFONT | DS_MODALFRAME | WS_MINIMIZEBOX | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_APPWINDOW
+CAPTION "eactivity"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,470,248,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,470,264,50,14
+    DEFPUSHBUTTON   "Refresh",IDOK2,19,207,50,14
+    CONTROL         "",IDC_LIST2,"SysListView32",LVS_REPORT | LVS_SHOWSELALWAYS | WS_BORDER | WS_GROUP | WS_TABSTOP,19,39,440,94
+    PUSHBUTTON      "Редактировать коэффициенты",IDC_BUTTON1,95,207,114,14
+    COMBOBOX        IDC_COMBO1,363,17,96,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "",IDC_LIST3,"SysListView32",LVS_REPORT | LVS_SHOWSELALWAYS | WS_BORDER | WS_GROUP | WS_TABSTOP,19,151,440,52
+    LTEXT           "Статистика для текущего месяца",IDC_STATIC_cur_mon,19,140,255,8
+    LTEXT           "Активность для текущего дня",IDC_STATIC_curday,19,25,296,8
+    EDITTEXT        IDC_EDITr17,325,17,18,14,ES_AUTOHSCROLL | ES_NUMBER,WS_EX_STATICEDGE
+    CONTROL         "Spin1",IDC_SPIN2,"msctls_updown32",UDS_SETBUDDYINT | UDS_ARROWKEYS,343,17,11,14
+    COMBOBOX        IDC_COMBO2,325,137,134,56,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_SetKoef, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 255
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 112
+    END
+
+    IDD_Rules, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 359
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 116
+    END
+
+    IDD_EACTIVITY_DIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 520
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 278
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog Info
+//
+
+IDD_SetKoef DLGINIT
+BEGIN
+    IDC_COMBO1, 0x403, 7, 0
+0xeed2, 0xedf7, 0xe5ee, "\000" 
+    IDC_COMBO1, 0x403, 10, 0
+0xe0d7, 0xf2f1, 0xf7e8, 0xeeed, 0x00e5, 
+    0
+END
+
+IDD_EACTIVITY_DIALOG DLGINIT
+BEGIN
+    IDC_COMBO1, 0x403, 19, 0
+0xeed1, 0xf2f0, 0xf0e8, 0xe2ee, 0xf2e0, 0x20fc, 0xeeef, 0x4520, 0x4558, 
+"\000" 
+    IDC_COMBO1, 0x403, 22, 0
+0xeed1, 0xf2f0, 0xf0e8, 0xe2ee, 0xf2e0, 0x20fc, 0xeeef, 0xe120, 0xebe0, 
+0xe0eb, 0x00ec, 
+    IDC_COMBO1, 0x403, 23, 0
+0xeed1, 0xf2f0, 0xf0e8, 0xe2ee, 0xf2e0, 0x20fc, 0xeeef, 0xe220, 0xe5f0, 
+0xe5ec, 0xe8ed, "\000" 
+    IDC_COMBO1, 0x403, 25, 0
+0xeed1, 0xf2f0, 0xf0e8, 0xe2ee, 0xf2e0, 0x20fc, 0xeeef, 0xe420, 0xe9e5, 
+0xf2f1, 0xe8e2, 0xecff, "\000" 
+    IDC_COMBO2, 0x403, 21, 0
+0xf0c3, 0xeff3, 0xe8ef, 0xeef0, 0xe0e2, 0xfcf2, 0xef20, 0x20ee, 0xede4, 
+0xecff, "\000" 
+    IDC_COMBO2, 0x403, 24, 0
+0xf0c3, 0xeff3, 0xe8ef, 0xeef0, 0xe0e2, 0xfcf2, 0xef20, 0x20ee, 0xe5ec, 
+0xfff1, 0xe0f6, 0x00ec, 
+    0
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_Activity_RU MENU 
+BEGIN
+    POPUP "IDR_Activity_RU"
+    BEGIN
+        MENUITEM "Установить коэффициент для выделенного EXE файла", ID_ACTIVITY_SETKOEFEXE
+        MENUITEM "Установить коэффициент для выделенного заголовка", ID_ACTIVITY_SETKOEF
+        MENUITEM "Показать все заголовки для выделенного EXE файла", ID_ACTIVITY_EXE
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDS_ABOUTBOX            "&About eactivity..."
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_STRING1569          "Активность"
+    IDS_STRING1570          "Activity"
+    IDS_STRING1571          "Активность для %s: полезного времени %s из %s, %d действий, %d балов"
+    IDS_STRING1572          "Activity for %s: useful time %s from %s, %d actions, %d points"
+    IDS_STRING1573          "Не найден соответствующий файл статистики"
+    IDS_STRING1574          "The respective statistics file was not found"
+    IDS_STRING1575          "Активность для текущего дня: полезного времени %s из %s, %d действий, %d балов"
+    IDS_STRING1576          "Activity for the current day: useful time %s from %s, %d actions, %d points"
+    IDS_STRING1577          "К заголовку и к EXE"
+    IDS_STRING1578          "To the header and to EXE"
+    IDS_STRING1579          "Ко всему EXE"
+    IDS_STRING1580          "To the whole EXE "
+    IDS_STRING1581          "Вы уверены что хотите удалить коэффициент?"
+    IDS_STRING1582          "Are you sure you want to delete the coefficient"
+    IDS_STRING1583          "Сколько показывать заголовков к каждому EXE"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_STRING1584          "How many headers should be displayed for each EXE"
+    IDS_STRING1585          "Показать все заголовки для выделенного EXE файла"
+    IDS_STRING1586          "Show all headers for selected EXE file"
+    IDS_STRING1587          "Вернуться к прежнему виду"
+    IDS_STRING1588          "Return to the previous view"
+    IDS_STRING1589          "        %d заголов%s"
+    IDS_STRING1590          "        %d headers"
+    IDS_STRING1591          "Активность для текущего месяца: полезное время %s из %s, %d действий, %d балов"
+    IDS_STRING1592          "Activity for the current month: useful time %s from %s, %d actions, %d points"
+    IDS_STRING1593          "Активность для текущего года: полезное время %s из %s, %d действий, %d балов"
+    IDS_STRING1594          "Activity for the current year: useful time %s from %s, %d actions, %d points"
+    IDS_STRING1595          "Активность для %s: полезное время %s из %s, %d действий, %d балов"
+    IDS_STRING1596          "Activity for %s: useful time %s from %s, %d actions, %d points"
+    IDS_STRING1597          "Частично к заголовку и к EXE"
+    IDS_STRING1598          "Partially to the header and to EXE"
+    IDS_STRING1599          "Сортировать по EXE"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_STRING1600          "Sort by EXE"
+    IDS_STRING1601          "Сортировать по баллам"
+    IDS_STRING1602          "Sort by points"
+    IDS_STRING1603          "Сортировать по времени"
+    IDS_STRING1604          "Sort by time"
+    IDS_STRING1605          "Сортировать по действиям"
+    IDS_STRING1606          "Sort by actions"
+    IDS_STRING1607          "Группировать по дням"
+    IDS_STRING1608          "Group by days"
+    IDS_STRING1609          "Группировать по месяцам"
+    IDS_STRING1610          "Group by months"
+    IDS_STRING1611          "Обновить"
+    IDS_STRING1612          "Refresh"
+    IDS_STRING1613          "Редактировать коэффициенты"
+    IDS_STRING1614          "Edit coefficients"
+    IDS_STRING1615          "Установить коэффициент"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_STRING1616          "Set the coefficient"
+    IDS_STRING1617          "Коэффициент (for examp 1.50, -3.00, 0.33):"
+    IDS_STRING1618          "Coefficient (for examp 1.50, -3.00, 0.33):"
+    IDS_STRING1619          "Совпадение заголовка:"
+    IDS_STRING1620          "Header matching"
+    IDS_STRING1621          "Точное"
+    IDS_STRING1622          "Full"
+    IDS_STRING1623          "Частичное"
+    IDS_STRING1624          "Partial"
+    IDS_STRING1625          "Привязка"
+    IDS_STRING1626          "Binding"
+    IDS_STRING1627          "Коэффициент"
+    IDS_STRING1628          "Coefficient"
+    IDS_STRING1629          "Редактирование коэффициентов"
+    IDS_STRING1630          "Editing of coefficients"
+    IDS_STRING1631          "Удалить коэффициент"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_STRING1632          "Delete coefficient"
+    IDS_STRING1633          "Редактировать"
+    IDS_STRING1634          "Edit"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_STRING1279          "Не устанавливается перехватчик клавиатуры и мыши!!! Отправьте это сообщение на admin@autoclickextreme.com"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_STRING1280          "Hook is not set!!! Send this message at admin@autoclickextreme.com"
+END
+
+#endif    // Russian resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_ABOUTBOX DIALOG  0, 0, 235, 55
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "About eactivity"
+FONT 8, "MS Sans Serif"
+BEGIN
+    ICON            IDR_MAINFRAME,IDC_STATIC,11,17,20,20
+    LTEXT           "eactivity Version 1.0",IDC_STATIC,40,10,119,8,SS_NOPREFIX
+    LTEXT           "Copyright (C) 2015",IDC_STATIC,40,25,119,8
+    DEFPUSHBUTTON   "OK",IDOK,178,7,50,14,WS_GROUP
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_ABOUTBOX, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 228
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 48
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,0,0,1
+ PRODUCTVERSION 1,0,0,1
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904B0"
+        BEGIN
+            VALUE "FileDescription", "eactivity MFC Application"
+            VALUE "FileVersion", "1, 0, 0, 1"
+            VALUE "InternalName", "eactivity"
+            VALUE "LegalCopyright", "Copyright (C) 2015"
+            VALUE "OriginalFilename", "eactivity.EXE"
+            VALUE "ProductName", "eactivity Application"
+            VALUE "ProductVersion", "1, 0, 0, 1"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#define _AFX_NO_SPLITTER_RESOURCES
+#define _AFX_NO_OLE_RESOURCES
+#define _AFX_NO_TRACKER_RESOURCES
+#define _AFX_NO_PROPERTY_RESOURCES
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE 9, 1
+#pragma code_page(1252)
+#endif //_WIN32
+#include "res\eactivity.rc2"  // non-Microsoft Visual C++ edited resources
+#include "afxres.rc"         // Standard components
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+
