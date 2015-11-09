@@ -12,6 +12,7 @@
 #define IDD_SetKoef                     130
 #define IDD_Rules                       131
 #define IDR_MENU1                       133
+#define IDC_MSCHART1                    1000
 #define IDC_BUTTON1                     1001
 #define IDC_BUTTON2                     1002
 #define IDC_EDIT1                       1006

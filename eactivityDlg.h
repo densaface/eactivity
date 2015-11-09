@@ -7,9 +7,12 @@
 #include <map>
 #include <iostream>
 #include <iomanip>
+#include <math.h>
 #include <fstream>
 #include <vector>
 #include <algorithm>
+#include "graph\mschart.h"
+#include "graph\vcdatagrid.h"
 #define WM_USER30 WM_USER + 30
 using namespace std;
 
@@ -182,6 +185,7 @@ public:
 	afx_msg void OnBnClickedOk();
 	afx_msg void OnBnClickedCancel();
 	afx_msg void OnSave();
+	CMSChart chart;
 };
 
 //{{AFX_INSERT_LOCATION}}
