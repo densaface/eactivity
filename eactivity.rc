@@ -843,6 +843,8 @@ BEGIN
     IDS_STRING1632          "Delete coefficient"
     IDS_STRING1633          "Редактировать"
     IDS_STRING1634          "Edit"
+    IDS_STRING1635          "Группировать по часам"
+    IDS_STRING1636          "Group by hours"
 END
 
 STRINGTABLE 

@@ -33,22 +33,24 @@ struct Activity
 	string capt;
 	int num_acts;
 	int points;
+	int hour;
 	float sumTime;
 	float usefulTime;
 };
 
 //структура для хранения активности только по EXE
-struct Activity2
+struct ActivityExe
 {
 	string exe;
 	int num_acts;
 	int points;
+	int hour;
 	float sumTime;
 	float usefulTime;
 };
 
 typedef map<string, Activity, less<string> > activ;
-typedef map<string, Activity2, less<string> > activ2;
+typedef map<string, ActivityExe, less<string> > activ_exe;
 typedef map<string, string, less<string> > forExe;
 typedef map<HWND, string, less<HWND> > exeSpis;
 typedef map<HWND, HWND, less<HWND> > GetParSpis;
@@ -94,17 +96,17 @@ public:
 	CCpuUsage cpu;
 	string path_actuser;//папка где хранятся файлы с активностью пользователя
 
-	//** понять почему используются 2 векторного массива вместо одного
+	//** понять почему используются 2 векторных массива вместо одного
 	//для текущего дня
 	activ ACTIV;	//группировка активности ПО EXE И ЗАГОЛОВКУ
-	activ2 Activ2;	//группировка активности по exe
+	activ_exe ActivExe;	//группировка активности по exe
 	//для выделенного дня (** проверить может ли для выбранного месяца)
-	activ aSelDayView;	//группировку активности ПО EXE И ЗАГОЛОВКУ
-	activ2 aSelDayView_exe;	//группировку активности по exe
+	activ aSelDayView;
+	activ_exe aSelDayViewExe;
 
 	void SaveCurDay(bool smena=false);
 	void LoadCurDay();
-	bool LoadFileDay(string fname, activ &forLoad1, activ2 &forLoad2);
+	bool LoadFileDay(string fname, activ &forLoad1, activ_exe &forLoad2);
 	void SumDayStatForCurDay(); //активность текущего дня обновляется в подневном представлении
 	string curDayFileName;//фактически текущий день
 	
@@ -130,7 +132,7 @@ public:
 	void SaveRules();
 	void LoadRules();
 	
-	void UpdateTopTable(activ &forLoad1, activ2 &forLoad2, 
+	void UpdateTopTable(activ &forLoad1, activ_exe &forLoad2, 
 		float &sumTime, float &sumUsefulTime, int &sumAct, int &sumPoints);
 	void UpdatePoints();
 	void OutPutDownTable(activ &CurView);
@@ -185,7 +187,7 @@ public:
 	afx_msg void OnBnClickedOk();
 	afx_msg void OnBnClickedCancel();
 	afx_msg void OnSave();
-	CMSChart chart;
+	CMSChart chart; //http://forums.codeguru.com/showthread.php?360451-C-MFC-MSChart - example
 };
 
 //{{AFX_INSERT_LOCATION}}
