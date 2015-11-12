@@ -80,7 +80,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="wininet.lib Version.lib bmpextmd.lib"
 				OutputFile=".\Debug/eactivity.exe"
-				LinkIncremental="1"
+				LinkIncremental="2"
 				SuppressStartupBanner="true"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile=".\Debug/eactivity.pdb"
@@ -175,7 +175,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="wininet.lib Version.lib htmlhelp.lib D:\Arch\Pro-mer\C++\PROBA\eactivity\bmpext\Lib\bmpextmd.lib"
+				AdditionalDependencies="wininet.lib Version.lib bmpextmd.lib"
 				OutputFile=".\Release/eactivity.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"

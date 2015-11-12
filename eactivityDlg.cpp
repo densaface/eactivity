@@ -15,6 +15,10 @@ static char THIS_FILE[] = __FILE__;
 
 bool inited_pPage5=false;
 
+#define BYHOURS 0
+#define BYDAYS 1
+#define BYMONTHS 2
+
 class CAboutDlg : public CDialog
 {
 public:
@@ -79,7 +83,7 @@ void CEactivityDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CEactivityDlg)
-	DDX_Control(pDX, IDC_COMBO2, combo_grup);
+	DDX_Control(pDX, IDC_COMBO2, combo_group);
 	DDX_Control(pDX, IDC_SPIN2, spin_edit);
 	DDX_Control(pDX, IDC_EDITr17, edit_capts);
 	DDX_Control(pDX, IDC_LIST3, list_days);
@@ -138,6 +142,11 @@ BOOL CEactivityDlg::OnInitDialog()
 	SetToTray(IDR_MAINFRAME);
 
 	SetHook=0;
+	char date[10];
+	SYSTEMTIME st;
+	GetLocalTime(&st);
+	GetDateFormat(LOCALE_USER_DEFAULT, LOCALE_USE_CP_ACP, &st, "hh", date, 2);
+	curHour=st.wHour;
 
 	// Add "About..." menu item to system menu.
 
@@ -208,14 +217,14 @@ BOOL CEactivityDlg::OnInitDialog()
 	combo_sort.AddString(str);
 	combo_sort.SetCurSel(AfxGetApp()->GetProfileInt("App", "type_sort_activ", 0));
 
-	combo_grup.ResetContent();
+	combo_group.ResetContent();
 	str.LoadString(trif.GetIds(IDS_STRING1635));
-	combo_grup.AddString(str);
+	combo_group.AddString(str);
 	str.LoadString(trif.GetIds(IDS_STRING1607));
-	combo_grup.AddString(str);
+	combo_group.AddString(str);
 	str.LoadString(trif.GetIds(IDS_STRING1609));
-	combo_grup.AddString(str);
-	combo_grup.SetCurSel(AfxGetApp()->GetProfileInt("App", "type_group_activ", 0));
+	combo_group.AddString(str);
+	combo_group.SetCurSel(AfxGetApp()->GetProfileInt("App", "type_group_activ", 0));
 
 	str.LoadString(trif.GetIds(IDS_STRING1613));
 	GetDlgItem(IDC_BUTTON1)->SetWindowText(str);
@@ -244,11 +253,22 @@ BOOL CEactivityDlg::OnInitDialog()
 	LoadCurDay();
 	SelDayOrCurDay=false;
 	UpdatePoints();
-	SumDayStatForCurDay();
+//	SumDayStatForCurDay();
 
 	LoadCurMonth();
 	LoadYear();
-	OutPutDownTable(combo_grup.GetCurSel() ? aCurYear : aCurMon);
+	switch (combo_group.GetCurSel())
+	{
+	case BYHOURS:
+		UpdateDownTableViewByHours(SelDayOrCurDay ? aSelDayViewExe : ActivExeToday);
+		break;
+	case BYDAYS:
+		UpdateDownTable(aCurMon);
+		break;
+	case BYMONTHS:
+		UpdateDownTable(aCurYear);
+		break;
+	}
 
 #ifndef _DEBUG
 	SetTimer(1500, 500, 0);
@@ -425,7 +445,7 @@ BOOL CEactivityDlg::__SetHook__(BOOL fSet)
 }
 
 DWORD oldtime=0;
-SendStruct* curAct=new SendStruct();
+SendStruct* curAct;//=new SendStruct();
 BOOL CEactivityDlg::OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCD) 
 {
 #ifdef LOG 
@@ -563,17 +583,60 @@ bool ComparePoints2(ActivityExe Activity_1, ActivityExe Activity_2)
 // UpdateTopTable - построение верхней таблицы
 // 	int &sumTime //суммарное время для всего дня/отображения
 //	еще подробности https://docs.google.com/document/d/1zG2kZiDdtXNvLGwjBw66F6RK8lBxK4HoGTgBFA48PGg/edit
+// int onlyOneHour - по умолчанию -1, если указано другое число, то выводится 
+//		активность только для указанного часа, иначе для всего диапазона часов
 void CEactivityDlg::UpdateTopTable(activ &forLoad1, activ_exe &forLoad2, 
-					float &sumTime, float &sumUsefulTime, int &sumAct, int &sumPoints) 
+					float &sumTime, float &sumUsefulTime, int &sumAct, 
+					int &sumPoints, int onlyOneHour) 
 {
+	//слияние активности в массив без разбияния по часам
+	activ activSumHours;
+	activ_exe activExeSumHours;
+	for (activ::iterator ia=forLoad1.begin(); ia!=forLoad1.end(); ia++)
+	{
+		string exeCapt = ia->first;
+		if (onlyOneHour>-1 && atoi(exeCapt.c_str())!=onlyOneHour)
+			continue; //отображение статистики только для выбранного часа, другие часы отсеиваем
+		exeCapt.erase(0, exeCapt.find('\t')+1); //удаляем час
+		activ::iterator iter=activSumHours.find(exeCapt);
+		if (iter==activSumHours.end())
+		{
+			activSumHours[exeCapt]=ia->second;
+		} else {
+			(*iter).second.points     +=ia->second.points;
+			(*iter).second.num_acts   +=ia->second.num_acts;
+			(*iter).second.sumTime    +=ia->second.sumTime;
+			(*iter).second.usefulTime +=ia->second.usefulTime;
+		}
+	}
+	for (activ_exe::iterator ia=forLoad2.begin(); ia!=forLoad2.end(); ia++)
+	{
+		string exe = ia->first;
+		if (onlyOneHour>-1 && atoi(exe.c_str())!=onlyOneHour)
+			continue; //отображение статистики только для выбранного часа, другие часы отсеиваем
+		(*ia).second.points     = GetPointsFromExe((*ia).second.exe, activSumHours);
+		(*ia).second.usefulTime = GetTimeFromExe ((*ia).second.exe, activSumHours);
+		exe.erase(0, exe.find('\t')+1); //удаляем час
+		activ_exe::iterator iter=activExeSumHours.find(exe);
+		if (iter==activExeSumHours.end())
+		{
+			activExeSumHours[exe]=ia->second;
+		} else {
+			(*iter).second.points     +=ia->second.points;
+			(*iter).second.num_acts   +=ia->second.num_acts;
+			(*iter).second.sumTime    +=ia->second.sumTime;
+			(*iter).second.usefulTime +=ia->second.usefulTime;
+		}
+	}
+
 	//формирование массива Экзешник - баллы (без заголовка)
 	vector <ActivityExe> vect_sort_points;
-	for (activ_exe::iterator ia=forLoad2.begin(); ia!=forLoad2.end(); ia++)
+	for (activ_exe::iterator ia=activExeSumHours.begin(); ia!=activExeSumHours.end(); ia++)
 	{
 		if (showAllCaptsForExe.length() && showAllCaptsForExe!=(*ia).second.exe)
 			continue;
-		(*ia).second.points      = GetPointsFromExe((*ia).second.exe, forLoad1);
-		(*ia).second.usefulTime = GetTimeFromExe ((*ia).second.exe, forLoad1);
+		(*ia).second.points     = GetPointsFromExe((*ia).second.exe, activSumHours);
+		(*ia).second.usefulTime = GetTimeFromExe ((*ia).second.exe, activSumHours);
 		sumUsefulTime += (*ia).second.usefulTime;
 		sumPoints+=(*ia).second.points;
 		vect_sort_points.push_back((*ia).second);
@@ -633,7 +696,7 @@ void CEactivityDlg::UpdateTopTable(activ &forLoad1, activ_exe &forLoad2,
 
 		//вслед за суммарной строкой экзешник балы строим строчки детализации к данному экзешнику
 		int sumCapts=0;
-		AddExeCaptToTable((*iv).exe, forLoad1, sumCapts);
+		AddExeCaptToTable((*iv).exe, activSumHours, sumCapts);
 		CString str;
 		str.LoadString(trif.GetIds(IDS_STRING1589));
 		if (trif.GetNumLan()==1)
@@ -708,6 +771,8 @@ int CEactivityDlg::GetPointsFromExe(string exe, activ &forLoad1)
 void CEactivityDlg::AddExeCaptToTable(string exe, activ &forLoad1, int &sumCapt) 
 {
 	vector <Activity> vect_sort_points;
+	//__SetHook__(FALSE);
+	//TRACE("AddExeCaptToTable %s \n", exe.c_str());
 	for (activ::iterator ia=forLoad1.begin(); ia!=forLoad1.end(); ia++)
 	{
 		if ((*ia).second.exe==exe)
@@ -763,9 +828,15 @@ __int64 oldtimeAnAct=0; CPoint oldPoint;
 void CEactivityDlg::AnalActivUser(SendStruct* curAct) 
 {
 	if (curAct->baTypeAct==8)
+	{
+		TRACE("AnalActivUser отжатие не считаем\n");
 		return; //отжатие не считаем
+	}
 	if (curAct->dw_time==oldtimeAnAct)
+	{
+		TRACE("AnalActivUser дублирующие эховые действия не считаем\n");
 		return;	//дублирующие эховые действия
+	}
 	oldtimeAnAct=curAct->dw_time;
 	if (curAct->baTypeAct==9)
 	{
@@ -774,12 +845,16 @@ void CEactivityDlg::AnalActivUser(SendStruct* curAct)
 		if (po==oldPoint)
 		{
 			oldPoint=po;	
+			TRACE("AnalActivUser отвергаем клик с одинаковыми координатами по отношению к предыдущему\n");
 			return;	
 		}
 		oldPoint=po;	
 	}
 	if (!IsWindow((HWND)curAct->HChil))
+	{
+		TRACE("AnalActivUser отвергаем действие с неизвестным дочерним окном\n");
 		return;
+	}
 	forTimeNoActiv=GetTickCount();//сброс времени неактивности
 
 	HWND hwMain;//Хэндл родителя берем из списка "Дочь-Родитель"
@@ -835,38 +910,44 @@ void CEactivityDlg::AnalActivUser(SendStruct* curAct)
 void CEactivityDlg::AddToExeCapt(char *capt, string &exe, HWND HChil, HWND hwMain, 
 								 int num_acts, float sumTime) 
 {
-	string exeCapt=exe+'\t'+capt;
-	activ::iterator it_activ=ACTIV.find(exeCapt);
-	if (it_activ==ACTIV.end())
+	char chi[512];
+	sprintf_s(chi, "%d\t", curHour);
+	string exeCapt = chi + exe + '\t' + capt;
+	activ::iterator it_activ = ActivToday.find(exeCapt);
+	if (it_activ==ActivToday.end())
 	{
 		Activity new_zap;
 		new_zap.num_acts=num_acts;
 		new_zap.points=0;
 		new_zap.sumTime=sumTime;
 		new_zap.usefulTime=0;
+		new_zap.hour=curHour;
 		new_zap.capt=capt;
 		new_zap.exe=exe;
 		new_zap.hwChil=HChil;
 		new_zap.hwMain=hwMain;
-		ACTIV[exeCapt]=new_zap;
+		ActivToday[exeCapt]=new_zap;
+		TRACE("AddToExeCapt ДОБАВИЛИ новую запись sumTime=%.2f для %s\n", sumTime, exeCapt.c_str());
 	} else {
-		(*it_activ).second.num_acts+=num_acts;
-		(*it_activ).second.sumTime+=sumTime;
+		(*it_activ).second.num_acts += num_acts;
+		(*it_activ).second.sumTime  += sumTime;
+		TRACE("AddToExeCapt обновили существующую запись sumTime=%.2f для %s\n", (*it_activ).second.sumTime, exeCapt.c_str());
 	}
 }
 
 void CEactivityDlg::AddToOnlyExe(string &exe, int num_acts, float sumTime) 
 {
-	activ_exe::iterator iter=ActivExe.find(exe);
-	if (iter==ActivExe.end())
+	activ_exe::iterator iter=ActivExeToday.find(exe);
+	if (iter==ActivExeToday.end())
 	{
 		ActivityExe new_zap;
 		new_zap.num_acts=num_acts;
 		new_zap.points=0;
 		new_zap.sumTime=sumTime;
 		new_zap.usefulTime=0;
+		new_zap.hour=curHour;
 		new_zap.exe=exe;
-		ActivExe[exe]=new_zap;
+		ActivExeToday[exe]=new_zap;
 	} else {
 		(*iter).second.num_acts+=num_acts;
 		(*iter).second.sumTime+=sumTime;
@@ -981,30 +1062,35 @@ void CEactivityDlg::OnTimer(UINT nIDEvent)
 				SaveCurMonth(true);//переходим на новый месяц
 				curMonFileName=date;
 			}
+			curHour=st.wHour;
 		}
 	    break;
 	}
 	CDialog::OnTimer(nIDEvent);
 }
 
-void CEactivityDlg::SumDayStatForCurDay() 
-{
-	string skey=curDayFileName.substr(curDayFileName.length()-12, 10);
-	activ::iterator iter=aCurMon.find(skey);
-	Activity tmpActiv;
-	tmpActiv.num_acts=0;
-	tmpActiv.sumTime=0;
-	tmpActiv.usefulTime=0;
-	tmpActiv.points=0;
-	for (activ_exe::iterator ia=ActivExe.begin(); ia!=ActivExe.end(); ia++)
-	{
-		tmpActiv.points      += ((*ia).second.points);
-		tmpActiv.num_acts   += ((*ia).second.num_acts);
-		tmpActiv.sumTime    += ((*ia).second.sumTime);
-		tmpActiv.usefulTime += ((*ia).second.usefulTime);
-	}
-	aCurMon[skey]=tmpActiv;
-}
+// дропнуто, если не на что не повлияет, то удалить в следующем коммите
+// SumDayStatForCurDay - функция суммирования статистики по всему текущему дню и запись результатов 
+//			в месячную в строчку текущего дня, вызывается при запуске приложения
+//		*** нужно ли такие же делать для обновления статистики за год ?
+// void CEactivityDlg::SumDayStatForCurDay() 
+// {
+// 	string skey=curDayFileName.substr(curDayFileName.length()-12, 10);
+// 	activ::iterator iter=aCurMon.find(skey);
+// 	Activity tmpActiv;
+// 	tmpActiv.num_acts=0;
+// 	tmpActiv.sumTime=0;
+// 	tmpActiv.usefulTime=0;
+// 	tmpActiv.points=0;
+// 	for (activ_exe::iterator ia=ActivExeToday.begin(); ia!=ActivExeToday.end(); ia++)
+// 	{
+// 		tmpActiv.points     += ((*ia).second.points);
+// 		tmpActiv.num_acts   += ((*ia).second.num_acts);
+// 		tmpActiv.sumTime    += ((*ia).second.sumTime);
+// 		tmpActiv.usefulTime += ((*ia).second.usefulTime);
+// 	}
+// 	aCurMon[skey]=tmpActiv;
+// }
 void CEactivityDlg::SumDayStat(activ &forLoad1, string fname, float &sumTime, int &sumAct, int &sumPoints) 
 {
 	activ::iterator iter=forLoad1.find(fname.substr(fname.length()-12, 10));
@@ -1126,8 +1212,123 @@ void CEactivityDlg::LoadCurMonth()
 	LoadFileMonth(strf, aCurMon, sumTime, sumActs, sumPoints);
 }
 
-// вывод активности в нижней таблице
-void CEactivityDlg::OutPutDownTable(activ &CurView) 
+// UpdateDownTableViewByHours - вывод почасовой статистики в нижней таблице и 
+//				суммарной статистики в нижнем статике
+//		как происходит обновление статистики для текущего aCurMon или прошлого aSelMon месяца:
+//				- при загрузке программы загружается статистика с помощью LoadFileMonth
+//					из файла, например, activ_user_2015_11.am
+//				- сохранение SaveCurMonth происходит в двух случаях, при выходе, 
+//					и при смене текущего месяца в полночь
+//				- поправка при загрузке программы в SumDayStatForCurDay (скорее всего будет дропнуто)
+//				- поправка в этой функции UpdateDownTableViewByHours происходит и для aCurMon и aSelMon
+//					потому что при изменении пользовательских коэффициентов может измениться 
+//					полезное время и полезные действия, поэтому пересчет будет не лишним
+//				- пересчет происходит в двух случаях (помимо загрузки): при двойном клике по нижней 
+//					таблице и при изменении нижнего комбо.
+void CEactivityDlg::UpdateDownTableViewByHours(activ_exe &CurView) 
+{
+	int ii=0;
+	char ch[100];
+	string date;
+	if (SelDayOrCurDay)
+	{
+		POSITION pos=list_days.GetFirstSelectedItemPosition();
+		int sel=(int)pos-1;
+		// перед стиранием дат определяем дату в которую дважды кликнули при выборе даты отображения
+		date = list_days.GetItemText(sel, 0);
+	} else {
+		// дата сегодняшнего дня
+		date=curDayFileName.substr(curDayFileName.length()-12, 10);
+	}
+	list_days.DeleteAllItems();
+	float sumUsefulSec=0, sumSec=0;
+	int sumActs=0, sumPoints=0;
+	for (int ii = 0; ii<24; ii++)
+	{
+		float sumTime=0;
+		float usefulTime=0;
+		int num_acts=0;
+		int points=0;
+		for (activ_exe::iterator iter=CurView.begin(); iter!=CurView.end(); iter++)
+		{
+			if ((*iter).second.hour!=ii)
+				continue;
+			usefulTime += (*iter).second.usefulTime;
+			sumTime    += (*iter).second.sumTime;
+			num_acts   += (*iter).second.num_acts;
+			points     += (*iter).second.points;
+		}
+		if (sumTime>0.0 || num_acts>0)
+		{
+			char ch[100];
+			int row = list_days.GetItemCount();
+			sprintf_s(ch, "%d", ii);
+			row = list_days.InsertItem(0, ch);
+
+			float sec = usefulTime/1000;
+			FormatSeconds(ch, sec);
+			list_days.SetItemText(row, 1, ch);
+
+			sec = sumTime/1000;
+			FormatSeconds(ch, sec);
+			list_days.SetItemText(row, 2, ch);
+
+			sprintf_s(ch, "%d", num_acts);
+			list_days.SetItemText(row, 3, ch);
+			sprintf_s(ch, "%d", points);
+			list_days.SetItemText(row, 4, ch);
+
+			sumUsefulSec += usefulTime;
+			sumSec       += sumTime;
+			sumActs      += num_acts;
+			sumPoints    += points;
+		}
+	}
+	if (combo_group.GetCurSel()<BYMONTHS)
+		list_days.InsertItem(0, "..");//для перехода на уровень выше
+	CString str;
+	char ch2[100];
+	char ch3[100];
+	switch (combo_group.GetCurSel())
+	{
+	case BYHOURS:
+		str.LoadString(trif.GetIds(SelDayOrCurDay ? IDS_STRING1595 : IDS_STRING1637));
+		ASSERT(date.length()==10);
+		//обновляем статистику для того дня, детализацию которого отображаем
+		if (date.length()==10)
+		{
+			if (SelMonOrCurMon)
+			{
+				aSelMon[date].usefulTime=sumUsefulSec;
+				aSelMon[date].sumTime=sumSec;
+				aSelMon[date].num_acts=sumActs;
+				aSelMon[date].points=sumPoints;
+			} else {
+				aCurMon[date].usefulTime=sumUsefulSec;
+				aCurMon[date].sumTime=sumSec;
+				aCurMon[date].num_acts=sumActs;
+				aCurMon[date].points=sumPoints;
+			}
+		}
+		break;
+	default:
+		//должно быть только почасовое представление для этой функции
+		AfxMessageBox("Wrong view period");
+	}
+	FormatSeconds(ch2, sumSec/1000);
+	FormatSeconds(ch3, sumUsefulSec/1000);
+	if (SelMonOrCurMon || SelDayOrCurDay)
+	{
+		sprintf_s(ch, str, date.c_str(),
+			ch3, ch2, sumActs, sumPoints);
+	} else {
+		sprintf_s(ch, str, ch3, ch2, sumActs, sumPoints);
+	}
+	GetDlgItem(IDC_STATIC_cur_mon)->SetWindowText(ch);
+}
+
+// вывод активности в нижней таблице и суммарной статистики в нижнем статике
+void CEactivityDlg::UpdateDownTable(activ &CurView) 
 {
 	int ii=0;
 	char ch[100];
@@ -1136,39 +1337,52 @@ void CEactivityDlg::OutPutDownTable(activ &CurView)
 	int sumActs=0, sumPoints=0;
 	for (activ::iterator iter=CurView.begin(); iter!=CurView.end(); iter++)
 	{
-		list_days.InsertItem(ii, (*iter).first.c_str());
+		int row = list_days.GetItemCount();
+		row = list_days.InsertItem(0, (*iter).first.c_str());
 		float sec=(*iter).second.usefulTime/1000;
 		sumUsefulSec+=sec;
 		FormatSeconds(ch, sec);
-		list_days.SetItemText(ii, 1, ch);
+		list_days.SetItemText(row, 1, ch);
 		sec=(*iter).second.sumTime/1000;
+		sumSec+=sec;
 		FormatSeconds(ch, sec);
-		list_days.SetItemText(ii, 2, ch);
+		list_days.SetItemText(row, 2, ch);
 		sprintf_s(ch, "%d", (*iter).second.num_acts);
 		sumActs+=(*iter).second.num_acts;
-		list_days.SetItemText(ii, 3, ch);
+		list_days.SetItemText(row, 3, ch);
 		sprintf_s(ch, "%d", (*iter).second.points);
 		sumPoints+=(*iter).second.points;
-		list_days.SetItemText(ii, 4, ch);
+		list_days.SetItemText(row, 4, ch);
 	}
+	if (combo_group.GetCurSel()<BYMONTHS)
+		list_days.InsertItem(0, "..");//для перехода на уровень выше
 	CString str;
 	char ch2[100];
 	char ch3[100];
-	if (combo_grup.GetCurSel())
+	string date;
+	if (SelMonOrCurMon)
+		date=list_days.GetItemCount() ? list_days.GetItemText(1, 0).Left(7) : "";
+	else date=curMonFileName.substr(11, 7);
+	switch (combo_group.GetCurSel())
 	{
+	case BYDAYS:
+		str.LoadString(trif.GetIds(SelMonOrCurMon ? IDS_STRING1595 : IDS_STRING1591));
+		ASSERT(date.length()==7);
+		//обновляем статистику для того месяца, детализацию которого отображаем
+		aCurYear[date].usefulTime=sumUsefulSec*1000;
+		aCurYear[date].sumTime=sumSec*1000;
+		aCurYear[date].num_acts=sumActs;
+		aCurYear[date].points=sumPoints;
+		break;
+	case BYMONTHS:
 		str.LoadString(trif.GetIds(IDS_STRING1593));
-	} else {
-		if (SelMonOrCurMon)
-			 str.LoadString(trif.GetIds(IDS_STRING1595));
-		else str.LoadString(trif.GetIds(IDS_STRING1591));
-			
+		break;
+	default:
+		//почасового представления не должно быть
+		AfxMessageBox("Wrong view period");
 	}
 	FormatSeconds(ch2, sumSec);
 	FormatSeconds(ch3, sumUsefulSec);
-	string date;
-	if (SelMonOrCurMon)
-		 date=list_days.GetItemCount() ? list_days.GetItemText(0, 0).Left(7) : "";
-	else date=curMonFileName.substr(11, 7);
 	if (SelMonOrCurMon)
 	{
 		sprintf_s(ch, str, date.c_str(),
@@ -1177,14 +1391,6 @@ void CEactivityDlg::OutPutDownTable(activ &CurView)
 		sprintf_s(ch, str, ch3, ch2, sumActs, sumPoints);
 	}
 	GetDlgItem(IDC_STATIC_cur_mon)->SetWindowText(ch);
-
-	//обновляем статистику для того мес. который показали
-	if (!combo_grup.GetCurSel())
-	{
-		aCurYear[date].sumTime=sumSec*1000;
-		aCurYear[date].num_acts=sumActs;
-		aCurYear[date].points=sumPoints;
-	}
 }
 
 
@@ -1334,7 +1540,7 @@ void CEactivityDlg::Exit()
 	edit_capts.GetWindowText(ch, 100);
 	AfxGetApp()->WriteProfileInt("App", "CounShowCapt", atoi(ch));
 	AfxGetApp()->WriteProfileInt("App", "type_sort_activ", combo_sort.GetCurSel());
-	AfxGetApp()->WriteProfileInt("App", "type_group_activ", combo_grup.GetCurSel());
+	AfxGetApp()->WriteProfileInt("App", "type_group_activ", combo_group.GetCurSel());
 	__SetHook__(FALSE);
 	DelIconTray();
 }
@@ -1349,12 +1555,16 @@ bool CEactivityDlg::LoadFileDay(string fname, activ &forLoad1, activ_exe &forLoa
 	forLoad2.clear();
 	char ch[1024];
 	ifstr.getline(ch, 100);
+	float ver;
+	sscanf_s(ch, "ver=%f", &ver);
 	for (;;)
 	{
 		Activity tmpForSave;
 		ActivityExe tmpForSave2;
 		tmpForSave.usefulTime=0;
+		tmpForSave.hour=0;
 		tmpForSave2.usefulTime=0;
+		tmpForSave2.hour=0;
 		void* tmpint;
 		ifstr>>tmpint;
 		tmpForSave.hwMain=(HWND)tmpint;
@@ -1374,15 +1584,23 @@ bool CEactivityDlg::LoadFileDay(string fname, activ &forLoad1, activ_exe &forLoa
 		tmpForSave2.sumTime=tmpForSave.sumTime;
 		ifstr.get();
 		int tmpint2;
-		ifstr>>tmpint2;
+		if (ver<0.2)
+		{
+			ifstr>>tmpint2;
+		} else {
+			ifstr.getline(ch, 1024, '\t');
+			tmpForSave2.hour=tmpForSave.hour=atoi(ch);
+		}
 		ifstr.getline(ch, 1024, '\t');
 		tmpForSave2.exe=tmpForSave.exe=ch;
 		ifstr.getline(ch, 1024);
 		tmpForSave.capt=ch;
-		forLoad1[tmpForSave.exe+'\t'+tmpForSave.capt]=tmpForSave;
-		activ_exe::iterator iter= forLoad2.find(tmpForSave.exe);
+		sprintf_s(ch, "%d\t", tmpForSave.hour);
+		//_itoa_s(, ch, 10);
+		forLoad1[ch + tmpForSave.exe + '\t' + tmpForSave.capt] = tmpForSave;
+		activ_exe::iterator iter = forLoad2.find(ch  + tmpForSave.exe);
 		if (iter==forLoad2.end())
-			forLoad2[tmpForSave.exe]=tmpForSave2;
+			forLoad2[ch + tmpForSave.exe]=tmpForSave2;
 		else {
 			(*iter).second.points+=tmpForSave.points;
 			(*iter).second.num_acts+=tmpForSave.num_acts;
@@ -1405,8 +1623,7 @@ void CEactivityDlg::LoadCurDay()
 
 	string strf=path_actuser+curDayFileName;
 	WriteJournal("LoadCurDay from %s", strf);
-	LoadFileDay(strf, ACTIV, ActivExe);
-
+	LoadFileDay(strf, ActivToday, ActivExeToday);
 }
 
 void CEactivityDlg::SaveRules()
@@ -1517,7 +1734,7 @@ void CEactivityDlg::SaveYear()
 	ofstream ofstr(strf.c_str());
 	if (ofstr==NULL)
 		return;
-	char ch[]="ver=0.1\n";
+	char ch[]="ver=0.2\n";
 	ofstr<<ch;
 	for (activ::iterator it_activ=aCurYear.begin(); it_activ!=aCurYear.end(); it_activ++)
 	{
@@ -1529,6 +1746,8 @@ void CEactivityDlg::SaveYear()
 		ofstr<<tmpForSave.points;
 		ofstr<<'\t';
 		ofstr<<tmpForSave.sumTime;
+		ofstr<<'\t';
+		ofstr<<tmpForSave.usefulTime;
 		ofstr<<'\n';
 	}
 	ofstr.close();
@@ -1551,6 +1770,9 @@ void CEactivityDlg::LoadYear()
 		char ch[1024];
 		ifstr.getline(ch, 100);
 		
+		float ver;
+		sscanf_s(ch, "ver=%f", &ver);
+
 		Activity tmpForLoad;
 		tmpForLoad.capt="";
 		tmpForLoad.exe="";
@@ -1571,6 +1793,11 @@ void CEactivityDlg::LoadYear()
 			ifstr>>tmpForLoad.sumTime;
 			sumTime+=tmpForLoad.sumTime;
 			aCurYear[sdate]=tmpForLoad;
+			if (ver>=0.2)
+			{
+				ifstr>>tmpForLoad.usefulTime;
+			}
+			aCurYear[sdate]=tmpForLoad;
 			if (!ifstr)
 				break;
 		}
@@ -1582,6 +1809,7 @@ void CEactivityDlg::LoadYear()
 void CEactivityDlg::SaveCurDay(bool smena) 
 {
 	char date[27];
+	//__SetHook__(FALSE);
 
 	if (smena)
 	{
@@ -1599,9 +1827,9 @@ void CEactivityDlg::SaveCurDay(bool smena)
 		WriteJournal("!!! Save is failed !!! file = %s", strf.c_str());
 		return;
 	}
-	char ch[]="ver=0.1\n";
+	char ch[]="ver=0.2\n";
 	ofstr<<ch;
-	for (activ::iterator it_activ=ACTIV.begin(); it_activ!=ACTIV.end(); it_activ++)
+	for (activ::iterator it_activ=ActivToday.begin(); it_activ!=ActivToday.end(); it_activ++)
  	{
 		Activity tmpForSave=(*it_activ).second;
 		ofstr<<tmpForSave.hwMain;
@@ -1614,15 +1842,14 @@ void CEactivityDlg::SaveCurDay(bool smena)
 		ofstr<<'\t';
 		ofstr<<tmpForSave.sumTime;
 		ofstr<<'\t';
-		ofstr<<0;
 		ofstr<<(*it_activ).first;
 		ofstr<<'\n';
 	}
 	ofstr.close();
 	if (smena)
 	{
-		ACTIV.clear();
-		ActivExe.clear();
+		ActivToday.clear();
+		ActivExeToday.clear();
 	}
 
 }
@@ -1641,7 +1868,7 @@ void CEactivityDlg::OnSelchangeCombo_sort()
 	UpdatePoints();
 }
 
-
+// в UpdatePoints произодится обновление верхней таблицы, верхнего статика и отдельных строк статистик
 void CEactivityDlg::UpdatePoints() 
 {
 	char ch[300];
@@ -1655,19 +1882,27 @@ void CEactivityDlg::UpdatePoints()
 
 		float sumTime=0, sumUsefulTime=0; 
 		int sumActs=0, sumPoints=0;
-		UpdateTopTable(aSelDayView, aSelDayViewExe, sumTime, sumUsefulTime, sumActs, sumPoints);
-		if (SelMonOrCurMon)
+		if (sel>-1 && combo_group.GetCurSel()==BYHOURS)
 		{
-			aSelMonView[date].usefulTime=sumUsefulTime;
-			aSelMonView[date].sumTime=sumTime;
-			aSelMonView[date].num_acts=sumActs;
-			aSelMonView[date].points=sumPoints;
-		} else {
-			aCurMon[date].usefulTime=sumUsefulTime;
-			aCurMon[date].sumTime=sumTime;
-			aCurMon[date].num_acts=sumActs;
-			aCurMon[date].points=sumPoints;
-		}
+			int hour = atoi(list_days.GetItemText(sel, 0));
+			UpdateTopTable(aSelDayView, aSelDayViewExe, sumTime, sumUsefulTime, sumActs, sumPoints, hour);
+		} else 
+			UpdateTopTable(aSelDayView, aSelDayViewExe, sumTime, sumUsefulTime, sumActs, sumPoints);
+// 		if (combo_group.GetCurSel()==BYDAYS)
+// 		{
+// 			if (SelMonOrCurMon)
+// 			{
+// 				aSelMon[date].usefulTime=sumUsefulTime;
+// 				aSelMon[date].sumTime=sumTime;
+// 				aSelMon[date].num_acts=sumActs;
+// 				aSelMon[date].points=sumPoints;
+// 			} else {
+// 				aCurMon[date].usefulTime=sumUsefulTime;
+// 				aCurMon[date].sumTime=sumTime;
+// 				aCurMon[date].num_acts=sumActs;
+// 				aCurMon[date].points=sumPoints;
+// 			}
+// 		}
 		
 		//обновляем в нижней таблице данные
 		float sec=sumTime/1000;
@@ -1696,22 +1931,33 @@ void CEactivityDlg::UpdatePoints()
 		}
 		GetDlgItem(IDC_STATIC_curday)->SetWindowText(ch);
 	} else {
+		// для сегодня
 		float sumTime=0, sumUsefulTime=0;
 		int sumActs=0, sumPoints=0;
-		UpdateTopTable(ACTIV, ActivExe, sumTime, sumUsefulTime, sumActs, sumPoints);
-		string skey=curDayFileName.substr(curDayFileName.length()-12, 10);
-		if (SelMonOrCurMon)
+		POSITION pos=list_days.GetFirstSelectedItemPosition();
+		int sel=(int)pos-1;
+		if (sel>-1 && combo_group.GetCurSel()==BYHOURS)
 		{
-			aSelMonView[skey].usefulTime=sumUsefulTime;
-			aSelMonView[skey].sumTime=sumTime;
-			aSelMonView[skey].num_acts=sumActs;
-			aSelMonView[skey].points=sumPoints;
-		} else {
-			aCurMon[skey].usefulTime=sumUsefulTime;
-			aCurMon[skey].sumTime=sumTime;
-			aCurMon[skey].num_acts=sumActs;
-			aCurMon[skey].points=sumPoints;
-		}
+			int hour = atoi(list_days.GetItemText(sel, 0));
+			UpdateTopTable(ActivToday, ActivExeToday, sumTime, sumUsefulTime, sumActs, sumPoints, hour);
+		} else 
+			UpdateTopTable(ActivToday, ActivExeToday, sumTime, sumUsefulTime, sumActs, sumPoints);
+		string skey=curDayFileName.substr(curDayFileName.length()-12, 10);
+// 		if (combo_group.GetCurSel()==BYDAYS)
+// 		{
+// 			if (SelMonOrCurMon)
+// 			{
+// 				aSelMon[skey].usefulTime=sumUsefulTime;
+// 				aSelMon[skey].sumTime=sumTime;
+// 				aSelMon[skey].num_acts=sumActs;
+// 				aSelMon[skey].points=sumPoints;
+// 			} else {
+// 				aCurMon[skey].usefulTime=sumUsefulTime;
+// 				aCurMon[skey].sumTime=sumTime;
+// 				aCurMon[skey].num_acts=sumActs;
+// 				aCurMon[skey].points=sumPoints;
+// 			}
+// 		}
 		
 		//обновляем в нижней таблице данные
 		char ch2[100];
@@ -1720,6 +1966,8 @@ void CEactivityDlg::UpdatePoints()
 		char ch3[100];
 		sec=sumUsefulTime/1000;
 		FormatSeconds(ch3, sec);
+//		if (sel>-1 && combo_group.GetCurSel()==BYHOURS)
+//		{
 		if (list_days.GetItemCount() && list_days.GetItemText(0, 0)==skey.c_str())
 		{
 			list_days.SetItemText(0, 1, ch3);
@@ -1733,8 +1981,14 @@ void CEactivityDlg::UpdatePoints()
 		CString str;
 		if (!showAllCaptsForExe.length())
 		{
-			str.LoadString(trif.GetIds(IDS_STRING1575));
-			sprintf_s(ch, str, ch3, ch2, sumActs, sumPoints);
+			if (sel>0 && combo_group.GetCurSel()==BYHOURS)
+			{
+				str.LoadString(trif.GetIds(IDS_STRING1571));
+				sprintf_s(ch, str, "selected hour", ch3, ch2, sumActs, sumPoints);
+			} else {
+				str.LoadString(trif.GetIds(IDS_STRING1575));
+				sprintf_s(ch, str, ch3, ch2, sumActs, sumPoints);
+			}
 		} else {
 			str.LoadString(trif.GetIds(IDS_STRING1571));
 			string exekav="\""+exes[showAllCaptsForExe]+"\"";
@@ -1744,6 +1998,7 @@ void CEactivityDlg::UpdatePoints()
 	}
 }
 
+// двойной клик в нижней таблице загружает статистику для выбранного часа, дня, месяца
 void CEactivityDlg::OnDblclkListDays(NMHDR* pNMHDR, LRESULT* pResult) 
 {
 	POSITION pos=list_days.GetFirstSelectedItemPosition();
@@ -1751,31 +2006,27 @@ void CEactivityDlg::OnDblclkListDays(NMHDR* pNMHDR, LRESULT* pResult)
 	if (sel<0)
 		return;
 	string date=list_days.GetItemText(sel, 0);
-	if (combo_grup.GetCurSel()>0)
+	if (date=="..")
 	{
-		string fname=path_actuser+"activ_user_"+date+".am";
-		combo_grup.SetCurSel(0);
-		if  ("activ_user_"+date+".am"==curMonFileName)
-		{
-			SelMonOrCurMon=false;
-			OnSelchangeComboDownTable();
-			return;
-		}
-		float sumTime=0;
-		int sumActs=0, sumPoints=0;
-		if (!LoadFileMonth(fname, aSelMonView, sumTime, sumActs, sumPoints))
-		{
-			AfxMessageBox(trif.GetIds(IDS_STRING1573));
-			return;
-		}
-		SelMonOrCurMon=true;
-		OutPutDownTable(aSelMonView);
-	} else {
-		string fname=path_actuser+"activ_user_"+date+".a";
+		combo_group.SetCurSel(combo_group.GetCurSel()+1);
+		OnSelchangeComboDownTable();
+		return;
+	}
+	string fname;
+	switch (combo_group.GetCurSel())
+	{
+	case BYHOURS:
+		UpdatePoints();
+		//UpdateDownTableViewByHours(SelDayOrCurDay ? aSelDayView : ActivToday);
+		break;
+	case BYDAYS:
+		fname=path_actuser+"activ_user_"+date+".a";
 		if  ("activ_user_"+date+".a"==curDayFileName)
 		{
 			SelDayOrCurDay=false;
 			UpdatePoints();
+			combo_group.SetCurSel(0);
+			UpdateDownTableViewByHours(ActivExeToday);
 			return;
 		}
 		if (!LoadFileDay(fname, aSelDayView, aSelDayViewExe))
@@ -1785,6 +2036,32 @@ void CEactivityDlg::OnDblclkListDays(NMHDR* pNMHDR, LRESULT* pResult)
 		}
 		SelDayOrCurDay=true;
 		UpdatePoints();
+		combo_group.SetCurSel(0);
+		UpdateDownTableViewByHours(aSelDayViewExe);
+		break;
+	case BYMONTHS:
+		fname=path_actuser+"activ_user_"+date+".am";
+		combo_group.SetCurSel(1);
+		if  ("activ_user_"+date+".am"==curMonFileName)
+		{
+			SelMonOrCurMon=false;
+			//UpdatePoints();
+			UpdateDownTable(aCurMon);
+//			OnSelchangeComboDownTable();
+			return;
+		}
+		float sumTime=0;
+		int sumActs=0, sumPoints=0;
+		if (!LoadFileMonth(fname, aSelMon, sumTime, sumActs, sumPoints))
+		{
+			AfxMessageBox(trif.GetIds(IDS_STRING1573));
+			return;
+		}
+		SelMonOrCurMon=true;
+		//UpdatePoints();
+		UpdateDownTable(aSelMon);
+//		UpdateDownTable(aCurYear);
+		break;
 	}
 	*pResult = 0;
 }
@@ -1896,18 +2173,16 @@ void CEactivityDlg::OnRclickListCurDay(NMHDR* pNMHDR, LRESULT* pResult)
 	*pResult = 0;
 }
 
-//список правил отдельно от списков активностей, а на этапе появления нового элемента из списков активности,
-//будет искаться подходящее правило и привязываться к статистике только ссылка на правило,
+//** проверить и отформатировать ниженаписанное
+//список правил отдельно от списков активностей
 //при изменении какого-нибудь правила будет перетряхиваться вся статистика и для тех элементов, 
-//для которых подходит правило пересчитываться points
+//для которых подходит правило пересчитываться points (полезные действия)
 
-//правило будет состоять из заголовка (можно "*" в качестве замены любой группы символов)
+//правило будет состоять из заголовка (ввести потом "*" в качестве замены любой группы символов)
 	//из обязательного экзешника
 
 //приоритет правил: если есть правило с экзешником и конкретным заголовком, то оно наверху, после не считается
 	//либо применяется правило с конкретным экзешником, если таковое есть
-
-//как лучше: правило в массиве вектора или в виде справочника, если справочника, то что будет выступать ключом
 
 void CEactivityDlg::OnActivitySetkoefeExe() 
 {	//меню: установка коэффициента для всего exe
@@ -1978,11 +2253,24 @@ void CEactivityDlg::OnDblclkListCurDay(NMHDR* pNMHDR, LRESULT* pResult)
 	*pResult = 0;
 }
 
+// OnSelchangeComboDownTable вызывается при каждом новом выборе в нижнем комбо способа 
+//			группировки данных в нижней таблице
 void CEactivityDlg::OnSelchangeComboDownTable() 
 {
-	if (combo_grup.GetCurSel()>0)
+	if (combo_group.GetCurSel()>0)
 		SelMonOrCurMon=false;
-	OutPutDownTable(combo_grup.GetCurSel() ? aCurYear : aCurMon);
+	switch (combo_group.GetCurSel())
+	{
+	case BYHOURS:
+		UpdateDownTableViewByHours(SelDayOrCurDay ? aSelDayViewExe : ActivExeToday);
+		break;
+	case BYDAYS:
+		UpdateDownTable(aCurMon);
+		break;
+	case BYMONTHS:
+		UpdateDownTable(aCurYear);
+		break;
+	}
 }
 
 void CEactivityDlg::OnBnClickedOk()

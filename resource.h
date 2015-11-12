@@ -98,6 +98,8 @@
 #define IDS_STRING1634                  1634
 #define IDS_STRING1635                  1635
 #define IDS_STRING1636                  1636
+#define IDS_STRING1637                  1637
+#define IDS_STRING1638                  1638
 #define ID_IDR_SDSD                     32771
 #define ID_ACTIVITY_SETKOEFEXE          32772
 #define ID_IDR_SDSD32773                32773

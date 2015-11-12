@@ -524,7 +524,7 @@ BOOL CPPToolTip::RelayEvent(MSG* pMsg)
 		rect.left = 0;
 		break;
 	case WM_LBUTTONDOWN:
-		TRACE(_T("CPPToolTip::WM_LBUTTONDOWN\n"));
+		//TRACE(_T("CPPToolTip::WM_LBUTTONDOWN\n"));
 		if (IsCursorOverTooltip())
 		{
 			//Left Button was pressed over the tooltip
@@ -878,7 +878,7 @@ void CPPToolTip::SetAutoPopTimer()
 
 void CPPToolTip::KillTimers(DWORD dwIdTimer /* = NULL */)
 {
-	TRACE (_T("CPPToolTip::KillTimers()\n"));
+//	TRACE (_T("CPPToolTip::KillTimers()\n"));
 	if (dwIdTimer == NULL)
 	{
 		KillTimer(TIMER_SHOW);
@@ -894,7 +894,7 @@ void CPPToolTip::KillTimers(DWORD dwIdTimer /* = NULL */)
 
 void CPPToolTip::Pop()
 {
-	TRACE (_T("CPPToolTip::Pop()\n"));
+//	TRACE (_T("CPPToolTip::Pop()\n"));
 	m_nTooltipState = PPTOOLTIP_STATE_HIDEN;
 	m_nTooltipType = PPTOOLTIP_NORMAL;
 	m_nNextTooltipType = PPTOOLTIP_NORMAL;

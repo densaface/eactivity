@@ -34,8 +34,8 @@ struct Activity
 	int num_acts;
 	int points;
 	int hour;
-	float sumTime;
-	float usefulTime;
+	float sumTime; //время, уделенное какой-либо программе, в мс 
+	float usefulTime; //время, засчитанное как полезное с учетом пользовательских коэффициентов
 };
 
 //структура для хранения активности только по EXE
@@ -45,7 +45,7 @@ struct ActivityExe
 	int num_acts;
 	int points;
 	int hour;
-	float sumTime;
+	float sumTime; //время, уделенное программе, в мс
 	float usefulTime;
 };
 
@@ -98,17 +98,24 @@ public:
 
 	//** понять почему используются 2 векторных массива вместо одного
 	//для текущего дня
-	activ ACTIV;	//группировка активности ПО EXE И ЗАГОЛОВКУ
-	activ_exe ActivExe;	//группировка активности по exe
-	//для выделенного дня (** проверить может ли для выбранного месяца)
+	activ ActivToday;	//группировка активности ПО EXE И ЗАГОЛОВКУ
+	activ_exe ActivExeToday;	//группировка активности по exe
+	//для выделенного дня (не сегодняшнего)
+	bool SelDayOrCurDay; // выбран не текущий день
 	activ aSelDayView;
 	activ_exe aSelDayViewExe;
+	string curYear;
+	activ aCurYear;	//статистика по МЕСЯЦАМ для текущего показа в нижней таблице
+	activ aCurMon;	//статистика по дням для текущего показа в нижней таблице, 
+		//подробности про aCurMon в описании UpdateDownTableViewByHours
+	activ aSelMon;	//для выбранного показа по двойному клику
 
 	void SaveCurDay(bool smena=false);
 	void LoadCurDay();
 	bool LoadFileDay(string fname, activ &forLoad1, activ_exe &forLoad2);
-	void SumDayStatForCurDay(); //активность текущего дня обновляется в подневном представлении
+//	void SumDayStatForCurDay(); //активность текущего дня обновляется в подневном представлении
 	string curDayFileName;//фактически текущий день
+	int curHour; //текущий час, смена проверяется каждые 5 сек
 	
 	void SaveCurMonth(bool smena=false);
 	void LoadCurMonth();
@@ -116,26 +123,23 @@ public:
 	void LoadMonthFromStatDays(activ &forLoad1, string mon, float &sumTime, int &sumActs, int &sumPoints);
 	void SumDayStat(activ &forLoad1, string fname, float &sumTime, int &sumActs, int &sumPoints);
 	string curMonFileName;
-	activ aCurMon;	//статистика по дням для текущего показа в нижней таблице
-	activ aSelMonView;	//для выбранного показа по двойному клику
-	bool SelDayOrCurDay;
 	
 	void SaveYear();
 	void LoadYear();
 	void LoadYearFromStatMons(string mon, float &sumTime, int &sumAct, int &sumPoints);
 	void SumMonStat(string fname, float &sumTime, int &sumAct, int &sumPoints);
-	string curYear;
-	activ aCurYear;	//статистика по МЕСЯЦАМ для текущего показа в нижней таблице
-	bool SelMonOrCurMon;
+	bool SelMonOrCurMon; //выбран не текущий месяц (какой-то прошедший)
 	
 	rulSpis RULES;
 	void SaveRules();
 	void LoadRules();
 	
 	void UpdateTopTable(activ &forLoad1, activ_exe &forLoad2, 
-		float &sumTime, float &sumUsefulTime, int &sumAct, int &sumPoints);
+		float &sumTime, float &sumUsefulTime, int &sumAct, 
+		int &sumPoints, int onlyOneHour = -1);
 	void UpdatePoints();
-	void OutPutDownTable(activ &CurView);
+	void UpdateDownTableViewByHours(activ_exe &CurView);
+	void UpdateDownTable(activ &CurView);
 	rulSpis::iterator ownFind(string capt);
 	string GetExeFromTable(int sel);
 	string showAllCaptsForExe;//показывать все заголовки для определенного EXE
@@ -144,7 +148,7 @@ public:
 // Dialog Data
 	//{{AFX_DATA(CEactivityDlg)
 	enum { IDD = IDD_EACTIVITY_DIALOG };
-	CComboBox	combo_grup;
+	CComboBox	combo_group;
 	CSpinButtonCtrl	spin_edit;
 	CEdit	edit_capts;
 	CListCtrl	list_days;
