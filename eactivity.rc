@@ -111,15 +111,15 @@ BEGIN
     DEFPUSHBUTTON   "OK",IDOK,558,332,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,558,352,50,14
     DEFPUSHBUTTON   "Refresh",IDOK2,474,145,50,14
-    CONTROL         "",IDC_LIST2,"SysListView32",LVS_REPORT | LVS_SHOWSELALWAYS | WS_BORDER | WS_GROUP | WS_TABSTOP,19,22,440,122
+    CONTROL         "",IDC_LIST2,"SysListView32",LVS_REPORT | LVS_SHOWSELALWAYS | WS_BORDER | WS_GROUP | WS_TABSTOP,7,173,452,122
     PUSHBUTTON      "Редактировать коэффициенты",IDC_BUTTON1,475,161,114,14
-    COMBOBOX        IDC_COMBO1,362,7,96,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "",IDC_LIST3,"SysListView32",LVS_REPORT | LVS_SHOWSELALWAYS | WS_BORDER | WS_GROUP | WS_TABSTOP,19,163,440,130
-    LTEXT           "Статистика для текущего месяца",IDC_STATIC_cur_mon,19,152,255,8
-    LTEXT           "Активность для текущего дня",IDC_STATIC_curday,17,7,296,8
-    EDITTEXT        IDC_EDITr17,324,7,18,14,ES_AUTOHSCROLL | ES_NUMBER,WS_EX_STATICEDGE
-    CONTROL         "Spin1",IDC_SPIN2,"msctls_updown32",UDS_SETBUDDYINT | UDS_ARROWKEYS,342,7,11,14
-    COMBOBOX        IDC_COMBO2,325,149,134,56,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_COMBO1,362,158,96,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "",IDC_LIST3,"SysListView32",LVS_REPORT | LVS_SHOWSELALWAYS | WS_BORDER | WS_GROUP | WS_TABSTOP,7,21,452,130
+    LTEXT           "Статистика для текущего месяца",IDC_STATIC_cur_mon,19,7,255,8
+    LTEXT           "Активность для текущего дня",IDC_STATIC_curday,17,158,296,8
+    EDITTEXT        IDC_EDITr17,324,158,18,14,ES_AUTOHSCROLL | ES_NUMBER,WS_EX_STATICEDGE
+    CONTROL         "Spin1",IDC_SPIN2,"msctls_updown32",UDS_SETBUDDYINT | UDS_ARROWKEYS,342,158,11,14
+    COMBOBOX        IDC_COMBO2,325,4,134,56,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "",IDC_MSCHART1,"{3A2B370C-BA0A-11D1-B137-0000F8753F5D}",WS_TABSTOP,7,300,458,66
 END
 
@@ -763,12 +763,12 @@ STRINGTABLE
 BEGIN
     IDS_STRING1569          "Активность"
     IDS_STRING1570          "Activity"
-    IDS_STRING1571          "Активность для %s: полезного времени %s из %s, %d действий, %d балов"
-    IDS_STRING1572          "Activity for %s: useful time %s from %s, %d actions, %d points"
+    IDS_STRING1571          "Активность для %s: полезного времени %s из %s, полезных действий %d из %d"
+    IDS_STRING1572          "Activity for %s: useful time %s from %s, useful actions %d from %d"
     IDS_STRING1573          "Не найден соответствующий файл статистики"
     IDS_STRING1574          "The respective statistics file was not found"
-    IDS_STRING1575          "Активность для текущего дня: полезного времени %s из %s, %d действий, %d балов"
-    IDS_STRING1576          "Activity for the current day: useful time %s from %s, %d actions, %d points"
+    IDS_STRING1575          "Активность для текущего дня: полезного времени %s из %s, полезных действий %d из %d"
+    IDS_STRING1576          "Activity for the current day: useful time %s from %s, useful actions %d from %d"
     IDS_STRING1577          "К заголовку и к EXE"
     IDS_STRING1578          "To the header and to EXE"
     IDS_STRING1579          "Ко всему EXE"
@@ -787,12 +787,12 @@ BEGIN
     IDS_STRING1588          "Return to the previous view"
     IDS_STRING1589          "        %d заголов%s"
     IDS_STRING1590          "        %d headers"
-    IDS_STRING1591          "Активность для текущего месяца: полезное время %s из %s, %d действий, %d балов"
-    IDS_STRING1592          "Activity for the current month: useful time %s from %s, %d actions, %d points"
-    IDS_STRING1593          "Активность для текущего года: полезное время %s из %s, %d действий, %d балов"
-    IDS_STRING1594          "Activity for the current year: useful time %s from %s, %d actions, %d points"
-    IDS_STRING1595          "Активность для %s: полезное время %s из %s, %d действий, %d балов"
-    IDS_STRING1596          "Activity for %s: useful time %s from %s, %d actions, %d points"
+    IDS_STRING1591          "Активность для текущего месяца: полезное время %s из %s, полезных действий %d из %d"
+    IDS_STRING1592          "Activity for the current month: useful time %s from %s, useful actions %d from %d"
+    IDS_STRING1593          "Активность для текущего года: полезное время %s из %s, полезных действий %d из %d"
+    IDS_STRING1594          "Activity for the current year: useful time %s from %s, useful actions %d from %d"
+    IDS_STRING1595          "Активность для %s: полезное время %s из %s, полезных действий %d из %d"
+    IDS_STRING1596          "Activity for %s: useful time %s from %s, useful actions %d from %d"
     IDS_STRING1597          "Частично к заголовку и к EXE"
     IDS_STRING1598          "Partially to the header and to EXE"
     IDS_STRING1599          "Сортировать по EXE"
@@ -802,7 +802,7 @@ STRINGTABLE
 BEGIN
     IDS_STRING1600          "Sort by EXE"
     IDS_STRING1601          "Сортировать по баллам"
-    IDS_STRING1602          "Sort by points"
+    IDS_STRING1602          "Sort by useful actions"
     IDS_STRING1603          "Сортировать по времени"
     IDS_STRING1604          "Sort by time"
     IDS_STRING1605          "Сортировать по действиям"
@@ -845,8 +845,14 @@ BEGIN
     IDS_STRING1634          "Edit"
     IDS_STRING1635          "Группировать по часам"
     IDS_STRING1636          "Group by hours"
-    IDS_STRING1637          "Активность для сегодняшнего дня: полезное время %s из %s, %d действий, %d балов"
-    IDS_STRING1638          "Activity for today: useful time %s from %s, %d actions, %d points"
+    IDS_STRING1637          "Активность для сегодняшнего дня: полезное время %s из %s, полезных действий %d из %d"
+    IDS_STRING1638          "Activity for today: useful time %s from %s, useful actions %d from %d"
+    IDS_STRING1639          "Час"
+    IDS_STRING1640          "Hour"
+    IDS_STRING1641          "День"
+    IDS_STRING1642          "Day"
+    IDS_STRING1643          "Месяц"
+    IDS_STRING1644          "Month"
 END
 
 STRINGTABLE 

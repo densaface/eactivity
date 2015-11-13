@@ -31,19 +31,20 @@ struct Activity
 	HWND hwChil;
 	string exe;
 	string capt;
-	int num_acts;
-	int points;
+	int sumActs;		// суммарное количество кликов/нажатий клавиатуры
+	int usefulActs;		// клики/нажатия клавиатуры засчитанные как полезные
 	int hour;
 	float sumTime; //время, уделенное какой-либо программе, в мс 
 	float usefulTime; //время, засчитанное как полезное с учетом пользовательских коэффициентов
 };
 
-//структура для хранения активности только по EXE
+//структура для хранения активности только по EXE (сокращенная форма Activity)
 struct ActivityExe
 {
-	string exe;
-	int num_acts;
-	int points;
+	string exe;//поле дублирующее ключ справочника, 
+				// нужно для сортировки при перегоне справочника в векторный массив
+	int sumActs;
+	int usefulActs;
 	int hour;
 	float sumTime; //время, уделенное программе, в мс
 	float usefulTime;
@@ -51,6 +52,7 @@ struct ActivityExe
 
 typedef map<string, Activity, less<string> > activ;
 typedef map<string, ActivityExe, less<string> > activ_exe;
+typedef map<int, ActivityExe, less<int> > activ_hours;
 typedef map<string, string, less<string> > forExe;
 typedef map<HWND, string, less<HWND> > exeSpis;
 typedef map<HWND, HWND, less<HWND> > GetParSpis;
@@ -85,60 +87,57 @@ public:
 	GetParSpis getParSpis; //справочник HWND дочерних окон и HWND родительских
 	CEactivityDlg(CString path, CWnd* pParent = NULL);   // standard constructor
 	void AddExeCaptToTable(string exe, activ &forLoad1, int &sumCapt);
-	int GetPointsFromExe(string exe, activ &forLoad1);
+	void CalculateUsefulTimeAndActs(activ &allActiv, activ_exe &exeActiv, activ_hours &activHours);
+	int GetUsefulActsFromExe(string exe, activ &forLoad1);
 	float GetTimeFromExe (string exe, activ &forLoad1);
 	
-	void AddToExeCapt(char *capt, string &exe, HWND HChil, HWND hwMain, int num_acts, float sumTime);
-	void AddToOnlyExe(string &exe, int num_acts, float sumTime);
+	void AddToExeCapt(char *capt, string &exe, HWND HChil, HWND hwMain, int sumActs, float sumTime);
+//	void AddToOnlyExe(string &exe, int sumActs, float sumTime);
 	void AnalActivUser(SendStruct* curAct);
 	UINT forTimeNoActiv;
 	CPoint cpNoActiv;//позиция мыши при неактивности пользователя
 	CCpuUsage cpu;
 	string path_actuser;//папка где хранятся файлы с активностью пользователя
 
-	//** понять почему используются 2 векторных массива вместо одного
 	//для текущего дня
 	activ ActivToday;	//группировка активности ПО EXE И ЗАГОЛОВКУ
-	activ_exe ActivExeToday;	//группировка активности по exe
 	//для выделенного дня (не сегодняшнего)
 	bool SelDayOrCurDay; // выбран не текущий день
 	activ aSelDayView;
-	activ_exe aSelDayViewExe;
 	string curYear;
-	activ aCurYear;	//статистика по МЕСЯЦАМ для текущего показа в нижней таблице
-	activ aCurMon;	//статистика по дням для текущего показа в нижней таблице, 
+	activ aCurYear;	//статистика по МЕСЯЦАМ для текущего показа в ТЗПВ
+	activ aCurMon;	//статистика по дням для текущего показа в ТЗПВ, 
 		//подробности про aCurMon в описании UpdateDownTableViewByHours
 	activ aSelMon;	//для выбранного показа по двойному клику
 
 	void SaveCurDay(bool smena=false);
 	void LoadCurDay();
-	bool LoadFileDay(string fname, activ &forLoad1, activ_exe &forLoad2);
-//	void SumDayStatForCurDay(); //активность текущего дня обновляется в подневном представлении
+	bool LoadFileDay(string fname, activ &forLoad1);
 	string curDayFileName;//фактически текущий день
 	int curHour; //текущий час, смена проверяется каждые 5 сек
 	
 	void SaveCurMonth(bool smena=false);
 	void LoadCurMonth();
-	bool LoadFileMonth(string fname, activ &forLoad1, float &sumTime, int &sumActs, int &sumPoints);
-	void LoadMonthFromStatDays(activ &forLoad1, string mon, float &sumTime, int &sumActs, int &sumPoints);
-	void SumDayStat(activ &forLoad1, string fname, float &sumTime, int &sumActs, int &sumPoints);
+	bool LoadFileMonth(string fname, activ &forLoad1, float &sumTime, int &sumActs, int &usefulActs);
+	void LoadMonthFromStatDays(activ &forLoad1, string mon, float &sumTime, int &sumActs, int &usefulActs);
+	void SumDayStat(activ &forLoad1, string fname, float &sumTime, int &sumActs, int &usefulActs);
 	string curMonFileName;
 	
 	void SaveYear();
 	void LoadYear();
-	void LoadYearFromStatMons(string mon, float &sumTime, int &sumAct, int &sumPoints);
-	void SumMonStat(string fname, float &sumTime, int &sumAct, int &sumPoints);
+	void LoadYearFromStatMons(string mon, float &sumTime, int &sumAct, int &usefulActs);
+	void SumMonStat(string fname, float &sumTime, int &sumAct, int &usefulActs);
 	bool SelMonOrCurMon; //выбран не текущий месяц (какой-то прошедший)
 	
 	rulSpis RULES;
 	void SaveRules();
 	void LoadRules();
 	
-	void UpdateTopTable(activ &forLoad1, activ_exe &forLoad2, 
+	void UpdateTableDetails(activ &allActiv, activ_hours &activHours, 
 		float &sumTime, float &sumUsefulTime, int &sumAct, 
-		int &sumPoints, int onlyOneHour = -1);
-	void UpdatePoints();
-	void UpdateDownTableViewByHours(activ_exe &CurView);
+		int &usefulActs, int onlyOneHour = -1);
+	void UpdateDetails(activ_hours &activHours);
+	void UpdateDownTableViewByHours(activ_hours &activHours);
 	void UpdateDownTable(activ &CurView);
 	rulSpis::iterator ownFind(string capt);
 	string GetExeFromTable(int sel);
@@ -151,9 +150,9 @@ public:
 	CComboBox	combo_group;
 	CSpinButtonCtrl	spin_edit;
 	CEdit	edit_capts;
-	CListCtrl	list_days;
+	CListCtrl	table_period;//таблица задания периода времени ТЗПВ
+	CListCtrl	table_details;//таблица детализации
 	CComboBox	combo_sort;
-	CListCtrl	top_table;
 	//}}AFX_DATA
 
 	// ClassWizard generated virtual function overrides
