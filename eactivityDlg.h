@@ -102,13 +102,14 @@ public:
 	//дл€ текущего дн€
 	activ ActivToday;	//группировка активности ѕќ EXE » «ј√ќЋќ¬ ”
 	//дл€ выделенного дн€ (не сегодн€шнего)
-	bool SelDayOrCurDay; // выбран не текущий день
+	string SelectedDay; // содержит дату не текущего дн€ в формате 2015_11_23
 	activ aSelDayView;
 	string curYear;
 	activ aCurYear;	//статистика по ћ≈—я÷јћ дл€ текущего показа в “«ѕ¬
 	activ aCurMon;	//статистика по дн€м дл€ текущего показа в “«ѕ¬, 
-		//подробности про aCurMon в описании UpdateDownTableViewByHours
+		//подробности про aCurMon в описании UpdatePeriodTableViewByHours
 	activ aSelMon;	//дл€ выбранного показа по двойному клику
+	string SelectedMon; //выбран не текущий мес€ц (какой-то прошедший)
 
 	void SaveCurDay(bool smena=false);
 	void LoadCurDay();
@@ -127,18 +128,17 @@ public:
 	void LoadYear();
 	void LoadYearFromStatMons(string mon, float &sumTime, int &sumAct, int &usefulActs);
 	void SumMonStat(string fname, float &sumTime, int &sumAct, int &usefulActs);
-	bool SelMonOrCurMon; //выбран не текущий мес€ц (какой-то прошедший)
 	
 	rulSpis RULES;
 	void SaveRules();
 	void LoadRules();
 	
-	void UpdateTableDetails(activ &allActiv, activ_hours &activHours, 
+	void UpdateTableExeCapt(activ &allActiv, activ_hours &activHours, 
 		float &sumTime, float &sumUsefulTime, int &sumAct, 
 		int &usefulActs, int onlyOneHour = -1);
-	void UpdateDetails(activ_hours &activHours);
-	void UpdateDownTableViewByHours(activ_hours &activHours);
-	void UpdateDownTable(activ &CurView);
+	void UpdateExeCapt(activ_hours &activHours);
+	void UpdatePeriodTableViewByHours(activ_hours &activHours);
+	void UpdatePeriodTable(activ &CurView);
 	rulSpis::iterator ownFind(string capt);
 	string GetExeFromTable(int sel);
 	string showAllCaptsForExe;//показывать все заголовки дл€ определенного EXE
@@ -151,7 +151,7 @@ public:
 	CSpinButtonCtrl	spin_edit;
 	CEdit	edit_capts;
 	CListCtrl	table_period;//таблица задани€ периода времени “«ѕ¬
-	CListCtrl	table_details;//таблица детализации
+	CListCtrl	table_exe_capt;//таблица детализации
 	CComboBox	combo_sort;
 	//}}AFX_DATA
 
