@@ -12,6 +12,7 @@
 #define IDD_SetKoef                     130
 #define IDD_Rules                       131
 #define IDR_MENU1                       133
+#define IDR_MENU2                       134
 #define IDC_MSCHART1                    1000
 #define IDC_BUTTON1                     1001
 #define IDC_BUTTON2                     1002
@@ -27,7 +28,11 @@
 #define IDC_STATIC_curday               1185
 #define IDC_STATIC_cur_mon              1186
 #define IDC_STATIC_coef                 1187
+#define IDC_STATIC_percent_day          1187
 #define IDC_STATIC_sovp                 1188
+#define IDC_STATIC_percent_day2         1188
+#define IDC_STATIC_percent_hour         1189
+#define IDC_STATIC_percent_hour2        1190
 #define IDS_STRING1279                  1279
 #define IDS_STRING1280                  1280
 #define IDS_STRING1569                  1569
@@ -106,19 +111,32 @@
 #define IDS_STRING1642                  1642
 #define IDS_STRING1643                  1643
 #define IDS_STRING1644                  1644
+#define IDS_STRING1645                  1645
+#define IDS_STRING1646                  1646
+#define IDS_STRING1647                  1647
+#define IDS_STRING1648                  1648
+#define IDS_STRING1649                  1649
+#define IDS_STRING1650                  1650
+#define IDS_STRING1651                  1651
+#define IDS_STRING1652                  1652
+#define IDS_STRING1653                  1653
+#define IDS_STRING1654                  1654
 #define ID_IDR_SDSD                     32771
 #define ID_ACTIVITY_SETKOEFEXE          32772
 #define ID_IDR_SDSD32773                32773
 #define ID_ACTIVITY_SETKOEF             32774
 #define ID_IDR_SDSD32775                32775
 #define ID_ACTIVITY_EXE                 32776
+#define ID_Menu                         32777
+#define ID_GETREPORT_FROMLAST10WORKINGDAYS 32778
+#define ID_GETREPORT_FROMLAST20WORKINGDAYS 32779
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        134
-#define _APS_NEXT_COMMAND_VALUE         32777
+#define _APS_NEXT_RESOURCE_VALUE        135
+#define _APS_NEXT_COMMAND_VALUE         32780
 #define _APS_NEXT_CONTROL_VALUE         1000
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

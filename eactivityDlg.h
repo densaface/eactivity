@@ -12,7 +12,11 @@
 #include <vector>
 #include <algorithm>
 #include "graph\mschart.h"
+#include "graph\vcaxis.h"
+#include "graph\vcvaluescale.h"
+#include "graph\vcplot.h"
 #include "graph\vcdatagrid.h"
+#include "graph\vcaxistitle.h"
 #define WM_USER30 WM_USER + 30
 using namespace std;
 
@@ -60,6 +64,7 @@ typedef map<HWND, HWND, less<HWND> > GetParSpis;
 class CEactivityDlg : public CDialog
 {
 // Construction
+	CNewMenu MainMenu;
 	CNewMenu menu_cur_day;
 //	CPPToolTip tool_tip;
 	BOOL __SetHook__(BOOL fSet);
@@ -90,6 +95,7 @@ public:
 	void CalculateUsefulTimeAndActs(activ &allActiv, activ_exe &exeActiv, activ_hours &activHours);
 	int GetUsefulActsFromExe(string exe, activ &forLoad1);
 	float GetTimeFromExe (string exe, activ &forLoad1);
+	void CalculateAverageUsefulTime(int lastDays);
 	
 	void AddToExeCapt(char *capt, string &exe, HWND HChil, HWND hwMain, int sumActs, float sumTime);
 //	void AddToOnlyExe(string &exe, int sumActs, float sumTime);
@@ -110,6 +116,8 @@ public:
 		//подробности про aCurMon в описании UpdatePeriodTableViewByHours
 	activ aSelMon;	//для выбранного показа по двойному клику
 	string SelectedMon; //выбран не текущий месяц (какой-то прошедший)
+	activ_hours lastAverageHoursGraph; //средняя почасовая статистика за последнюю неделю
+		//в 25ом часе содержит суммарное усредненное значение за сутки
 
 	void SaveCurDay(bool smena=false);
 	void LoadCurDay();
@@ -184,13 +192,16 @@ protected:
 	afx_msg void OnActivitySetkoefeExe();
 	afx_msg void OnChangeEDITcapts();
 	afx_msg void OnActivityShowAllCapts();
+	afx_msg void OnMenu();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 public:
 	afx_msg void OnBnClickedOk();
 	afx_msg void OnBnClickedCancel();
 	afx_msg void OnSave();
-	CMSChart chart; //http://forums.codeguru.com/showthread.php?360451-C-MFC-MSChart - example
+	CMSChart chart; //http://wenku.baidu.com/view/9b199f0490c69ec3d5bb75a0.html - example
+	afx_msg void OnGetreportFromlast10workingdays();
+	afx_msg void OnGetreportFromlast20workingdays();
 };
 
 //{{AFX_INSERT_LOCATION}}
