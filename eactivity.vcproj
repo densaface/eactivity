@@ -648,6 +648,22 @@
 					RelativePath="WinWork.h"
 					>
 				</File>
+				<File
+					RelativePath=".\XHTMLStatic.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\XHTMLStatic.h"
+					>
+				</File>
+				<File
+					RelativePath=".\XNamedColors.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\XNamedColors.h"
+					>
+				</File>
 				<Filter
 					Name="graph"
 					>
@@ -1017,6 +1033,122 @@
 					</File>
 					<File
 						RelativePath=".\graph\vcweighting.h"
+						>
+					</File>
+				</Filter>
+				<Filter
+					Name="ListCtrl"
+					>
+					<File
+						RelativePath=".\ListCtrl\CGridListCtrlEx\CGridColumnTrait.h"
+						>
+					</File>
+					<File
+						RelativePath=".\ListCtrl\CGridListCtrlEx\CGridColumnTraitCombo.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\ListCtrl\CGridListCtrlEx\CGridColumnTraitCombo.h"
+						>
+					</File>
+					<File
+						RelativePath=".\ListCtrl\CGridListCtrlEx\CGridColumnTraitDateTime.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\ListCtrl\CGridListCtrlEx\CGridColumnTraitDateTime.h"
+						>
+					</File>
+					<File
+						RelativePath=".\ListCtrl\CGridListCtrlEx\CGridColumnTraitEdit.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\ListCtrl\CGridListCtrlEx\CGridColumnTraitEdit.h"
+						>
+					</File>
+					<File
+						RelativePath=".\ListCtrl\CGridListCtrlEx\CGridColumnTraitHyperLink.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\ListCtrl\CGridListCtrlEx\CGridColumnTraitHyperLink.h"
+						>
+					</File>
+					<File
+						RelativePath=".\ListCtrl\CGridListCtrlEx\CGridColumnTraitImage.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\ListCtrl\CGridListCtrlEx\CGridColumnTraitImage.h"
+						>
+					</File>
+					<File
+						RelativePath=".\ListCtrl\CGridListCtrlEx\CGridColumnTraitMultilineEdit.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\ListCtrl\CGridListCtrlEx\CGridColumnTraitMultilineEdit.h"
+						>
+					</File>
+					<File
+						RelativePath=".\ListCtrl\CGridListCtrlEx\CGridColumnTraitText.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\ListCtrl\CGridListCtrlEx\CGridColumnTraitText.h"
+						>
+					</File>
+					<File
+						RelativePath=".\ListCtrl\CGridListCtrlEx\CGridColumnTraitVisitor.h"
+						>
+					</File>
+					<File
+						RelativePath=".\ListCtrl\CGridListCtrlEx\CGridListCtrlEx.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\ListCtrl\CGridListCtrlEx\CGridListCtrlEx.h"
+						>
+					</File>
+					<File
+						RelativePath=".\ListCtrl\CGridListCtrlEx\CGridListCtrlGroups.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\ListCtrl\CGridListCtrlEx\CGridListCtrlGroups.h"
+						>
+					</File>
+					<File
+						RelativePath=".\ListCtrl\CGridListCtrlEx\CGridRowTrait.h"
+						>
+					</File>
+					<File
+						RelativePath=".\ListCtrl\CGridListCtrlEx\CGridRowTraitText.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\ListCtrl\CGridListCtrlEx\CGridRowTraitText.h"
+						>
+					</File>
+					<File
+						RelativePath=".\ListCtrl\CGridListCtrlEx\CGridRowTraitVisitor.h"
+						>
+					</File>
+					<File
+						RelativePath=".\ListCtrl\CGridListCtrlEx\CGridRowTraitXP.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\ListCtrl\CGridListCtrlEx\CGridRowTraitXP.h"
+						>
+					</File>
+					<File
+						RelativePath=".\ListCtrl\CGridListCtrlEx\ViewConfigSection.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\ListCtrl\CGridListCtrlEx\ViewConfigSection.h"
 						>
 					</File>
 				</Filter>

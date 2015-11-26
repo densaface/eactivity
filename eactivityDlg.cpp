@@ -90,6 +90,10 @@ void CEactivityDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_LIST2, table_exe_capt);
 	//}}AFX_DATA_MAP
 	DDX_Control(pDX, IDC_MSCHART1, chart);
+	DDX_Control(pDX, IDC_STATIC_percent_day, stat_day_adv);
+	DDX_Control(pDX, IDC_STATIC_percent_hour2, stat_hour_adv);
+	DDX_Control(pDX, IDC_STATIC_curday, stat_ExeCapt);
+	DDX_Control(pDX, IDC_STATIC_cur_mon, stat_periodTable);
 }
 
 BEGIN_MESSAGE_MAP(CEactivityDlg, CDialog)
@@ -141,12 +145,15 @@ BOOL CEactivityDlg::OnInitDialog()
 {
 	TRACE(_T("__SetHook__(%d)\n"), 0);
 	CDialog::OnInitDialog();
+	RR=GG=0;
 	SetToTray(IDR_MAINFRAME);
 	MainMenu.LoadMenu(IDR_MENU2);
 	SetMenu(&MainMenu);
 	VARIANT var;
 	chart.GetPlot().GetAxis(2,var).GetAxisTitle().SetVisible(FALSE);
-
+	chart.SetColumnCount(2);
+//	chart.GetPlot().GetSeriesCollection().GetItem(1).GetPen().GetVtColor().Set(0, 0, 255); 
+//	chart.GetPlot().GetSeriesCollection().GetItem(2).GetPen().GetVtColor().Set(0, 255, 0); 
 	SetHook=0;
 	SYSTEMTIME st;
 	GetLocalTime(&st);
@@ -226,7 +233,8 @@ BOOL CEactivityDlg::OnInitDialog()
 	combo_group.AddString(str);
 	str.LoadString(trif.GetIds(IDS_STRING1609));
 	combo_group.AddString(str);
-	combo_group.SetCurSel(AfxGetApp()->GetProfileInt("App", "type_group_activ", 0));
+	//по умолчанию ставим по часовую разбивку, чтобы сразу считались статики отставани€
+	combo_group.SetCurSel(0);//AfxGetApp()->GetProfileInt("App", "type_group_activ", 0)
 
 	str.LoadString(trif.GetIds(IDS_STRING1613));
 	GetDlgItem(IDC_BUTTON1)->SetWindowText(str);
@@ -1009,11 +1017,11 @@ void CEactivityDlg::AddToExeCapt(char *capt, string &exe, HWND HChil, HWND hwMai
 		new_zap.hwChil=HChil;
 		new_zap.hwMain=hwMain;
 		ActivToday[exeCapt]=new_zap;
-		TRACE("AddToExeCapt ƒќЅј¬»Ћ» новую запись sumTime=%.2f дл€ %s\n", sumTime, exeCapt.c_str());
+//		TRACE("AddToExeCapt ƒќЅј¬»Ћ» новую запись sumTime=%.2f дл€ %s\n", sumTime, exeCapt.c_str());
 	} else {
 		(*it_activ).second.sumActs += sumActs;
 		(*it_activ).second.sumTime  += sumTime;
-		TRACE("AddToExeCapt обновили существующую запись sumTime=%.2f дл€ %s\n", (*it_activ).second.sumTime, exeCapt.c_str());
+//		TRACE("AddToExeCapt обновили существующую запись sumTime=%.2f дл€ %s\n", (*it_activ).second.sumTime, exeCapt.c_str());
 	}
 }
 
@@ -1274,7 +1282,7 @@ void CEactivityDlg::LoadCurMonth()
 void CEactivityDlg::UpdatePeriodTableViewByHours(activ_hours &activHours) 
 {
 	int ii=0;
-	char ch[100];
+	char fmtSecs[100];
 	string date;
 	if (SelectedDay!="")
 	{
@@ -1298,10 +1306,6 @@ void CEactivityDlg::UpdatePeriodTableViewByHours(activ_hours &activHours)
 	chart.SetRowCount(24);
 	double iChartMin=0;
 	double iChartMax=10;
-	if (lastAverageHoursGraph.size()>2)
-	{
-		chart.SetColumnCount(2);
-	}
 
 	for (int ii = 0; ii<24; ii++)
 	{
@@ -1327,6 +1331,23 @@ void CEactivityDlg::UpdatePeriodTableViewByHours(activ_hours &activHours)
 			row = table_period.InsertItem(0, ch_ii);
 
 			float sec = usefulTime/1000;
+			if (table_period.max1==-1 || (table_period.max1!=-1 && sec > table_period.max1v))
+			{ //определ€ем первый рекорд в таблице дл€ дальнейшего подсвечивани€ фона
+				if (table_period.max1!=-1)
+				{
+					table_period.max2 = table_period.max1; 
+					table_period.max2v= table_period.max1v;
+				}
+				table_period.max1 = row; 
+				table_period.max1v= sec;
+			} else {
+				//второй рекорд
+				if (table_period.max2==-1 || (table_period.max2!=-1 && sec > table_period.max2v))
+				{
+					table_period.max2 = row; 
+					table_period.max2v= sec;
+				}
+			}
 			FormatSeconds(ch, sec);
 			table_period.SetItemText(row, 1, ch);
 			double chartValue = sec/60;
@@ -1413,14 +1434,15 @@ void CEactivityDlg::UpdatePeriodTableViewByHours(activ_hours &activHours)
 	chart.GetPlot().GetAxis(1,var).GetValueScale().SetMinimum(iChartMin);
 	FormatSeconds(ch2, sumSec/1000);
 	FormatSeconds(ch3, sumUsefulSec/1000);
+	char statText[300];
 	if (SelectedMon!="" || SelectedDay!="")
 	{
-		sprintf_s(ch, str, date.c_str(),
+		sprintf_s(statText, str, date.c_str(),
 			ch3, ch2, sumUsefulActs, sumActs);
 	} else {
-		sprintf_s(ch, str, ch3, ch2, sumUsefulActs, sumActs);
+		sprintf_s(statText, str, ch3, ch2, sumUsefulActs, sumActs);
 	}
-	GetDlgItem(IDC_STATIC_cur_mon)->SetWindowText(ch);
+	stat_periodTable.SetWindowText(statText);
 
 	
 	if (lastAverageHoursGraph.size()>2 && SelectedDay=="")
@@ -1437,11 +1459,28 @@ void CEactivityDlg::UpdatePeriodTableViewByHours(activ_hours &activHours)
 				60/(st.wMinute+1)*100-100;
 			if (perc_coef>500) perc_coef=500;
 		}
-		char res[100];
-		FormatSeconds(ch, usefulTimeForCurrentHour/1000-
+		double lag=(lastAverageHoursGraph[st.wHour].usefulTime/
+			60*(st.wMinute+1) - usefulTimeForCurrentHour)/(lastAverageHoursGraph[st.wHour].usefulTime/
+			60*(st.wMinute+1));
+		int rr=0, gg=0;
+		if (perc_coef < 0)
+		{
+			rr=50+(int)(600*lag);
+			if (rr>255)
+				rr=255;
+		} else {
+			gg=50-(int)(200*lag);//lag отрицательный и может быть больше 1
+			if (gg>255)
+				gg=255;
+			if (st.wMinute<20)
+				gg=50;
+		}
+		char res[300];
+		FormatSeconds(fmtSecs, usefulTimeForCurrentHour/1000-
 			lastAverageHoursGraph[st.wHour].usefulTime/1000/60*(st.wMinute+1));
-		sprintf_s(res, "%s%s", perc_coef>=0 ? "+" : "", ch);
-		GetDlgItem(IDC_STATIC_percent_hour2)->SetWindowText(res);
+		sprintf_s(res, "<b><CENTER><font COLOR=\"%d,%d,0\" size=\"+18\">%s%s</font></CENTER></b>", 
+			rr, gg, perc_coef>=0 ? "+" : "", fmtSecs);
+		stat_hour_adv.SetWindowText(res);
 		str.LoadString(trif.GetIds(IDS_STRING1647+(perc_coef>=0 ? 0 : 2)));
 		GetDlgItem(IDC_STATIC_percent_hour)->SetWindowText(str);
 
@@ -1453,10 +1492,25 @@ void CEactivityDlg::UpdatePeriodTableViewByHours(activ_hours &activHours)
 				sumUsefulTimeBeforeCurrentHour+=lastAverageHoursGraph[ii].usefulTime;
 		}
 		sumUsefulTimeBeforeCurrentHour += lastAverageHoursGraph[st.wHour].usefulTime/60*(st.wMinute+1);
+		//если достигли четверти нормы в отставании, то присваиваем самый красный цвет и дальше делаем его темнее
+		lag=(sumUsefulTimeBeforeCurrentHour-sumUsefulSec)/
+				   (sumUsefulTimeBeforeCurrentHour + 1000); //1000 чтобы избежать деление на ноль
 		perc_coef=(sumUsefulSec-sumUsefulTimeBeforeCurrentHour)/1000;
-		FormatSeconds(ch, (float)perc_coef);
-		sprintf_s(res, "%s%s", perc_coef>=0 ? "+" : "", ch);
-		GetDlgItem(IDC_STATIC_percent_day)->SetWindowText(res);
+		RR=GG=0;
+		if (perc_coef < 0)
+		{
+			RR=50+(int)(600*lag);
+			if (RR>255)
+				RR=255;
+		} else {
+			GG=50-(int)(200*lag);//lag отрицательный и может быть больше 1
+			if (GG>255)
+				GG=255;
+		}
+		FormatSeconds(fmtSecs, (float)perc_coef);
+		sprintf_s(res, "<b><CENTER><font COLOR=\"%d,%d,0\" size=\"+18\">%s%s</font></CENTER></b>", 
+			RR, GG, perc_coef>=0 ? "+" : "", fmtSecs);
+		stat_day_adv.SetWindowText(res);
 		str.LoadString(trif.GetIds(IDS_STRING1651+(perc_coef>=0 ? 0 : 2)));
 		GetDlgItem(IDC_STATIC_percent_day2)->SetWindowText(str);
 	}
@@ -1478,6 +1532,7 @@ void CEactivityDlg::UpdatePeriodTable(activ &CurView)
 	chart.GetPlot().GetAxis(1,var).GetValueScale().SetMinimum(-100);
 	chart.SetRowCount(0);//чистка предыдущиков кривых
 	chart.SetRowCount(31);
+	string sToday = curDayFileName.substr(curDayFileName.length()-12, 10);
 	double iChartMin=0;
 	double iChartMax=10;
 	for (activ::iterator iter=CurView.begin(); iter!=CurView.end(); iter++)
@@ -1485,6 +1540,45 @@ void CEactivityDlg::UpdatePeriodTable(activ &CurView)
 		int row = table_period.GetItemCount();
 		row = table_period.InsertItem(0, (*iter).first.c_str());
 		float sec=(*iter).second.usefulTime/1000;
+		if ((*iter).first == sToday)
+		{	//подсвечиваем сегодн€шний день тем же цветом что и в статике
+			table_period.SetTextColor(row, RGB(RR,GG,0));
+			TRACE("UpdatePeriodTable SetTextColor row=%d color=%d\n", row, RGB(RR,GG,0));
+		}
+		if (table_period.max1==-1 || (table_period.max1!=-1 && sec > table_period.max1v))
+		{ //определ€ем первый рекорд в таблице дл€ дальнейшего подсвечивани€ фона
+			if (table_period.max1!=-1)
+			{
+				table_period.max2 = table_period.max1; 
+				table_period.max2v= table_period.max1v;
+			}
+			table_period.max1 = row; 
+			table_period.max1v= sec;
+		} else {
+			//второй рекорд
+			if (table_period.max2==-1 || (table_period.max2!=-1 && sec > table_period.max2v))
+			{
+				table_period.max2 = row; 
+				table_period.max2v= sec;
+			}
+		}
+		if (table_period.min1==-1 || (table_period.min1!=-1 && sec < table_period.min1v))
+		{ //определ€ем первый минимум в таблице дл€ дальнейшего подсвечивани€ фона
+			if (table_period.min1!=-1)
+			{
+				table_period.min2 = table_period.min1; 
+				table_period.min2v= table_period.min1v;
+			}
+			table_period.min1 = row; 
+			table_period.min1v= sec;
+		} else {
+			//второй минимум
+			if (table_period.min2==-1 || (table_period.min2!=-1 && sec < table_period.min2v))
+			{
+				table_period.min2 = row; 
+				table_period.min2v= sec;
+			}
+		}
 		sumUsefulSec+=sec;
 		FormatSeconds(ch_secs, sec);
 		table_period.SetItemText(row, 1, ch_secs);
@@ -1552,7 +1646,7 @@ void CEactivityDlg::UpdatePeriodTable(activ &CurView)
 	} else {
 		sprintf_s(ch, str, ch3, ch2, sumUsefulActs, sumActs);
 	}
-	GetDlgItem(IDC_STATIC_cur_mon)->SetWindowText(ch);
+	stat_periodTable.SetWindowText(ch);
 }
 
 
@@ -1673,10 +1767,10 @@ void CEactivityDlg::SizingWins()
 	GetDlgItem(IDC_LIST3)->MoveWindow(rect);
  
 	main=rect;//€коримс€ за нижнее окно вывода активности
-	GetDlgItem(IDC_STATIC_cur_mon)->GetWindowRect(&rect);
+	stat_periodTable.GetWindowRect(&rect);
 	ScreenToClient(rect);
 	rect+=CPoint(0, main.top-rect.bottom-6);
-	GetDlgItem(IDC_STATIC_cur_mon)->MoveWindow(rect);
+	stat_periodTable.MoveWindow(rect);
 
 	GetDlgItem(IDC_COMBO2)->GetWindowRect(&rect);
 	ScreenToClient(rect);
@@ -2090,7 +2184,7 @@ void CEactivityDlg::UpdateExeCapt(activ_hours &activHours)
 			}
 		}
 	}
-	GetDlgItem(IDC_STATIC_curday)->SetWindowText(ch);
+	stat_ExeCapt.SetWindowText(ch);
 }
 
 // двойной клик в “«ѕ¬ загружает статистику дл€ выбранного часа, дн€, мес€ца
@@ -2382,19 +2476,8 @@ void CEactivityDlg::OnSelchangeComboDownTable()
 
 void CEactivityDlg::OnBnClickedOk()
 {
-	CalculateAverageUsefulTime(7);
-//	chart.SetTitleText ("mschart example by ");
-// 	double deb = rand () * 100 / RAND_MAX;
-// 	chart.GetDataGrid().SetData(1, 1, rand () * 100 / RAND_MAX, 0); 
-// 	chart.GetDataGrid().SetData(1, 2, rand () * 100 / RAND_MAX, 0); 
-// 	chart.GetDataGrid().SetData(1, 3, rand () * 100 / RAND_MAX, 0); 
-// 	chart.GetDataGrid().SetData(2, 1, rand () * 100 / RAND_MAX, 0); 
-// 	chart.GetDataGrid().SetData(2, 2, rand () * 100 / RAND_MAX, 0); 
-// 	chart.GetDataGrid().SetData(2, 3, rand () * 100 / RAND_MAX, 0); 
-//	chart.GetDataGrid().SetData(1, 1, rand () * 100 / RAND_MAX, 0); 
-//	chart.GetDataGrid().SetData(1, 1, rand () * 100 / RAND_MAX, 0); 
-//	Exit();
-//	OnOK();
+	COLORREF text = RGB(0,255,0);
+	table_period.OnDisplayCellColor(2,2, text, text);
 }
 
 bool CEactivityDlg::WriteJournal(LPCTSTR lpszFormat, ...)

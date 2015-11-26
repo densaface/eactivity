@@ -11,12 +11,19 @@
 #include <fstream>
 #include <vector>
 #include <algorithm>
+#include "XHTMLStatic.h"
 #include "graph\mschart.h"
 #include "graph\vcaxis.h"
 #include "graph\vcvaluescale.h"
 #include "graph\vcplot.h"
 #include "graph\vcdatagrid.h"
 #include "graph\vcaxistitle.h"
+#include "graph\vcSeriesCollection.h"
+#include "graph\vcSeries.h"
+#include "graph\vcpen.h"
+#include "graph\vccolor.h"
+#include "ListCtrl\CGridListCtrlEx\CGridListCtrlEx.h"
+#include "afxwin.h"
 #define WM_USER30 WM_USER + 30
 using namespace std;
 
@@ -79,6 +86,7 @@ class CEactivityDlg : public CDialog
 	void DelIconTray();
 	LRESULT OnIcon(WPARAM wp, LPARAM lp);
 	HHOOK SetHook;
+	UINT RR, GG;//цвет статика отставания в текущем дне
 public:
 	CEactivityDlg(CWnd* pParent = NULL);	// standard constructor
 	void Exit();
@@ -122,7 +130,7 @@ public:
 	void SaveCurDay(bool smena=false);
 	void LoadCurDay();
 	bool LoadFileDay(string fname, activ &forLoad1);
-	string curDayFileName;//фактически текущий день
+	string curDayFileName;//содержит дату текущего дня "activ_user_2015_11_26.a"
 	int curHour; //текущий час, смена проверяется каждые 5 сек
 	
 	void SaveCurMonth(bool smena=false);
@@ -158,7 +166,7 @@ public:
 	CComboBox	combo_group;
 	CSpinButtonCtrl	spin_edit;
 	CEdit	edit_capts;
-	CListCtrl	table_period;//таблица задания периода времени ТЗПВ
+	CGridListCtrlEx	table_period;//таблица задания периода времени ТЗПВ
 	CListCtrl	table_exe_capt;//таблица детализации
 	CComboBox	combo_sort;
 	//}}AFX_DATA
@@ -202,6 +210,10 @@ public:
 	CMSChart chart; //http://wenku.baidu.com/view/9b199f0490c69ec3d5bb75a0.html - example
 	afx_msg void OnGetreportFromlast10workingdays();
 	afx_msg void OnGetreportFromlast20workingdays();
+	CXHTMLStatic stat_day_adv;
+	CXHTMLStatic stat_hour_adv;
+	CXHTMLStatic stat_ExeCapt;
+	CXHTMLStatic stat_periodTable;
 };
 
 //{{AFX_INSERT_LOCATION}}

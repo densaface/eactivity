@@ -121,10 +121,10 @@ BEGIN
     CONTROL         "Spin1",IDC_SPIN2,"msctls_updown32",UDS_SETBUDDYINT | UDS_ARROWKEYS,342,158,11,14
     COMBOBOX        IDC_COMBO2,325,4,134,56,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "",IDC_MSCHART1,"{3A2B370C-BA0A-11D1-B137-0000F8753F5D}",WS_TABSTOP,7,300,601,124
-    LTEXT           "Активность для текущего дня",IDC_STATIC_percent_day,479,31,129,8
-    LTEXT           "Активность для текущего дня",IDC_STATIC_percent_day2,479,20,129,8
-    LTEXT           "Активность для текущего дня",IDC_STATIC_percent_hour,479,54,129,8
-    LTEXT           "Активность для текущего дня",IDC_STATIC_percent_hour2,479,65,129,8
+    CTEXT           "Активность для текущего дня",IDC_STATIC_percent_day,479,31,129,21
+    CTEXT           "Активность для текущего дня",IDC_STATIC_percent_day2,479,20,129,8
+    CTEXT           "Активность для текущего дня",IDC_STATIC_percent_hour,479,54,129,8
+    CTEXT           "Активность для текущего дня",IDC_STATIC_percent_hour2,479,65,129,25
 END
 
 
@@ -767,12 +767,12 @@ STRINGTABLE
 BEGIN
     IDS_STRING1569          "Активность"
     IDS_STRING1570          "Activity"
-    IDS_STRING1571          "Активность для %s: полезного времени %s из %s, полезных действий %d из %d"
-    IDS_STRING1572          "Activity for %s: useful time %s from %s, useful actions %d from %d"
+    IDS_STRING1571          "Активность для <b>%s</b>: полезного времени <b>%s</b> из %s, полезных действий <b>%d</b> из %d"
+    IDS_STRING1572          "Activity for <b>%s</b>: useful time <b>%s</b> from %s, useful actions <b>%d</b> from %d"
     IDS_STRING1573          "Не найден соответствующий файл статистики"
     IDS_STRING1574          "The respective statistics file was not found"
-    IDS_STRING1575          "Активность для текущего дня: полезного времени %s из %s, полезных действий %d из %d"
-    IDS_STRING1576          "Activity for the current day: useful time %s from %s, useful actions %d from %d"
+    IDS_STRING1575          "Активность <b>СЕГОДНЯ</b>: полезного времени <b>%s</b> из %s, полезных действий <b>%d</b> из %d"
+    IDS_STRING1576          "Activity for <b>TODAY</b>: useful time <b>%s</b> from %s, useful actions <b>%d</b> from %d"
     IDS_STRING1577          "К заголовку и к EXE"
     IDS_STRING1578          "To the header and to EXE"
     IDS_STRING1579          "Ко всему EXE"
@@ -791,12 +791,12 @@ BEGIN
     IDS_STRING1588          "Return to the previous view"
     IDS_STRING1589          "        %d заголов%s"
     IDS_STRING1590          "        %d headers"
-    IDS_STRING1591          "Активность для текущего месяца: полезное время %s из %s, полезных действий %d из %d"
-    IDS_STRING1592          "Activity for the current month: useful time %s from %s, useful actions %d from %d"
-    IDS_STRING1593          "Активность для текущего года: полезное время %s из %s, полезных действий %d из %d"
-    IDS_STRING1594          "Activity for the current year: useful time %s from %s, useful actions %d from %d"
-    IDS_STRING1595          "Активность для %s: полезное время %s из %s, полезных действий %d из %d"
-    IDS_STRING1596          "Activity for %s: useful time %s from %s, useful actions %d from %d"
+    IDS_STRING1591          "Активность для <b>ТЕКУЩЕГО МЕСЯЦА</b>: полезное время <b>%s</b> из %s, полезных действий <b>%d</b> из %d"
+    IDS_STRING1592          "Activity for the <b>CURRENT MONTH</b>: useful time <b>%s</b> from %s, useful actions <b>%d</b> from %d"
+    IDS_STRING1593          "Активность для <b>ТЕКУЩЕГО ГОДА</b>: полезное время <b>%s</b> из %s, полезных действий <b>%d</b> из %d"
+    IDS_STRING1594          "Activity for the <b>CURRENT YEAR</b>: useful time <b>%s</b> from %s, useful actions <b>%d</b> from %d"
+    IDS_STRING1595          "Активность для <b>%s</b>: полезное время <b>%s</b> из %s, полезных действий <b>%d</b> из %d"
+    IDS_STRING1596          "Activity for <b>%s</b>: useful time <b>%s</b> from %s, useful actions <b>%d</b> from %d"
     IDS_STRING1597          "Частично к заголовку и к EXE"
     IDS_STRING1598          "Partially to the header and to EXE"
     IDS_STRING1599          "Сортировать по EXE"
@@ -849,8 +849,8 @@ BEGIN
     IDS_STRING1634          "Edit"
     IDS_STRING1635          "Группировать по часам"
     IDS_STRING1636          "Group by hours"
-    IDS_STRING1637          "Активность для сегодняшнего дня: полезное время %s из %s, полезных действий %d из %d"
-    IDS_STRING1638          "Activity for today: useful time %s from %s, useful actions %d from %d"
+    IDS_STRING1637          "Активность <b>СЕГОДНЯ</b>: полезное время %s из %s, полезных действий %d из %d"
+    IDS_STRING1638          "Activity for <b>TODAY</b>: useful time <b>%s</b> from %s, useful actions <b>%d</b> from %d"
     IDS_STRING1639          "Час"
     IDS_STRING1640          "Hour"
     IDS_STRING1641          "День"
