@@ -25,6 +25,8 @@
 #include "ListCtrl\CGridListCtrlEx\CGridListCtrlEx.h"
 #include "afxwin.h"
 #define WM_USER30 WM_USER + 30
+#define USEFULTIME 1
+#define USEFULACTS 2
 using namespace std;
 
 #if !defined(AFX_EACTIVITYDLG_H__5590C786_91A0_410F_93C3_2740B59FA6EF__INCLUDED_)
@@ -103,7 +105,7 @@ public:
 	void CalculateUsefulTimeAndActs(activ &allActiv, activ_exe &exeActiv, activ_hours &activHours);
 	int GetUsefulActsFromExe(string exe, activ &forLoad1);
 	float GetTimeFromExe (string exe, activ &forLoad1);
-	void CalculateAverageUsefulTime(int lastDays);
+	void CalculateAverageUsefulParameter(int lastDays, int accentParameter = USEFULTIME);
 	
 	void AddToExeCapt(char *capt, string &exe, HWND HChil, HWND hwMain, int sumActs, float sumTime);
 //	void AddToOnlyExe(string &exe, int sumActs, float sumTime);
@@ -167,7 +169,7 @@ public:
 	CSpinButtonCtrl	spin_edit;
 	CEdit	edit_capts;
 	CGridListCtrlEx	table_period;//таблица задания периода времени ТЗПВ
-	CListCtrl	table_exe_capt;//таблица детализации
+	CGridListCtrlEx	table_exe_capt;//таблица детализации
 	CComboBox	combo_sort;
 	//}}AFX_DATA
 
@@ -214,6 +216,10 @@ public:
 	CXHTMLStatic stat_hour_adv;
 	CXHTMLStatic stat_ExeCapt;
 	CXHTMLStatic stat_periodTable;
+	afx_msg void OnReportsUsefulActionsFromLast5WorkingDays();
+	CButton radioTime;
+	CButton radioActs;
+	afx_msg void OnBnClickedRadio1();
 };
 
 //{{AFX_INSERT_LOCATION}}

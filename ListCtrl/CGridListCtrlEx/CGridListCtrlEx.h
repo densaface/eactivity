@@ -117,6 +117,8 @@ public:
 	void SetTextColor(int row, COLORREF textColor);
 	int max1, max2; double max1v, max2v;
 	int min1, min2; double min1v, min2v;
+	bool exeCapt;//в таблице Экзешник-Заголовок по другому расцвечиваются элементы, 
+	//эта переменная будет сигнализировать, что надо использовать именно другой способ расцвечивания
 
 	// Row
 	int GetFocusRow() const;

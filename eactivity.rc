@@ -109,7 +109,7 @@ CAPTION "eactivity"
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,558,204,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,558,280,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,558,223,50,14
     DEFPUSHBUTTON   "Refresh",IDOK2,474,145,50,14
     CONTROL         "",IDC_LIST2,"SysListView32",LVS_REPORT | LVS_SHOWSELALWAYS | WS_BORDER | WS_GROUP | WS_TABSTOP,7,173,452,122
     PUSHBUTTON      "Редактировать коэффициенты",IDC_BUTTON1,475,161,114,14
@@ -121,10 +121,13 @@ BEGIN
     CONTROL         "Spin1",IDC_SPIN2,"msctls_updown32",UDS_SETBUDDYINT | UDS_ARROWKEYS,342,158,11,14
     COMBOBOX        IDC_COMBO2,325,4,134,56,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "",IDC_MSCHART1,"{3A2B370C-BA0A-11D1-B137-0000F8753F5D}",WS_TABSTOP,7,300,601,124
-    CTEXT           "Активность для текущего дня",IDC_STATIC_percent_day,479,31,129,21
-    CTEXT           "Активность для текущего дня",IDC_STATIC_percent_day2,479,20,129,8
-    CTEXT           "Активность для текущего дня",IDC_STATIC_percent_hour,479,54,129,8
-    CTEXT           "Активность для текущего дня",IDC_STATIC_percent_hour2,479,65,129,25
+    CTEXT           "",IDC_STATIC_percent_day,479,31,129,21
+    CTEXT           "",IDC_STATIC_percent_day2,479,20,129,8
+    CTEXT           "",IDC_STATIC_percent_hour,479,54,129,8
+    CTEXT           "",IDC_STATIC_percent_hour2,479,65,129,25
+    CONTROL         "Полезное время",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP,468,284,73,10
+    CONTROL         "Пол. действия",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,545,284,65,10
+    CTEXT           "Делать акцент на:",IDC_STATIC_percent_hour3,471,273,129,8
 END
 
 
@@ -746,9 +749,10 @@ IDR_MENU2 MENU
 BEGIN
     POPUP "Reports"
     BEGIN
-        MENUITEM "From last 5 working days",    ID_Menu
-        MENUITEM "From last 10 working days",   ID_GETREPORT_FROMLAST10WORKINGDAYS
-        MENUITEM "From last 20 working days",   ID_GETREPORT_FROMLAST20WORKINGDAYS
+        MENUITEM "Useful time from last 5 working days", ID_Menu
+        MENUITEM "Useful time from last 10 working days", ID_GETREPORT_FROMLAST10WORKINGDAYS
+        MENUITEM "Useful time from last 20 working days", ID_GETREPORT_FROMLAST20WORKINGDAYS
+        MENUITEM "Useful actions from last 5 working days", ID_REPORTS_USEFULACTIONSFROMLAST5WORKINGDAYS
     END
 END
 

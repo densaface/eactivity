@@ -16,6 +16,8 @@
 #define IDC_MSCHART1                    1000
 #define IDC_BUTTON1                     1001
 #define IDC_BUTTON2                     1002
+#define IDC_RADIO1                      1002
+#define IDC_RADIO2                      1003
 #define IDC_EDIT1                       1006
 #define IDC_EDIT3                       1007
 #define IDC_EDIT5                       1008
@@ -33,6 +35,7 @@
 #define IDC_STATIC_percent_day2         1188
 #define IDC_STATIC_percent_hour         1189
 #define IDC_STATIC_percent_hour2        1190
+#define IDC_STATIC_percent_hour3        1191
 #define IDS_STRING1279                  1279
 #define IDS_STRING1280                  1280
 #define IDS_STRING1569                  1569
@@ -130,14 +133,15 @@
 #define ID_Menu                         32777
 #define ID_GETREPORT_FROMLAST10WORKINGDAYS 32778
 #define ID_GETREPORT_FROMLAST20WORKINGDAYS 32779
+#define ID_REPORTS_USEFULACTIONSFROMLAST5WORKINGDAYS 32780
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        135
-#define _APS_NEXT_COMMAND_VALUE         32780
-#define _APS_NEXT_CONTROL_VALUE         1000
+#define _APS_NEXT_COMMAND_VALUE         32781
+#define _APS_NEXT_CONTROL_VALUE         1003
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

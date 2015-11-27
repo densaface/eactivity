@@ -221,7 +221,9 @@ CGridListCtrlEx::CGridListCtrlEx()
 	,m_bConfigOwner(false)
 	,m_InvalidateMarkupText(true)
 	,m_TooltipMaxWidth(SHRT_MAX)
-{}
+{
+	exeCapt=false;
+}
 
 //------------------------------------------------------------------------
 //! Destructor
@@ -638,6 +640,20 @@ bool CGridListCtrlEx::OnDisplayCellColor(int nRow, int nCol, COLORREF& textColor
 		textColor = clrsText[nRow];
 		TRACE("OnDisplayCellColor nRow=%d nCol=%d color=%d\n", nRow, nCol, clrsText[nRow]);
 		return true;
+	}
+	if (exeCapt && GetColumnCount()>2)
+	{
+		if (atoi(GetItemText(nRow, 2))<0)
+		{
+			backColor = RGB(255,215,215);
+			return true;
+		} else {
+			if (atoi(GetItemText(nRow, 2))>0)
+			{
+				backColor = RGB(225,255,225);
+				return true;
+			}
+		}
 	}
 	if (nRow==max1)
 	{
