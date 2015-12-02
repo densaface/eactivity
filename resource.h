@@ -2,7 +2,7 @@
 // Microsoft Visual C++ generated include file.
 // Used by eactivity.rc
 //
-#define IDR_Activity_RU                 4
+#define IDR_CONTEXT_EXECAPT_RU          4
 #define IDOK2                           5
 #define IDM_ABOUTBOX                    0x0010
 #define IDD_ABOUTBOX                    100
@@ -12,12 +12,18 @@
 #define IDD_SetKoef                     130
 #define IDD_Rules                       131
 #define IDR_MENU1                       133
-#define IDR_MENU2                       134
+#define IDR_MAIN_MENU                   134
+#define IDD_Report                      135
+#define IDR_CONTEXT_TABLEPERIOD_RU      135
 #define IDC_MSCHART1                    1000
 #define IDC_BUTTON1                     1001
 #define IDC_BUTTON2                     1002
 #define IDC_RADIO1                      1002
 #define IDC_RADIO2                      1003
+#define IDC_LIST1                       1003
+#define IDC_LIST4                       1004
+#define IDC_CHECK1                      1004
+#define IDC_LIST5                       1005
 #define IDC_EDIT1                       1006
 #define IDC_EDIT3                       1007
 #define IDC_EDIT5                       1008
@@ -124,6 +130,22 @@
 #define IDS_STRING1652                  1652
 #define IDS_STRING1653                  1653
 #define IDS_STRING1654                  1654
+#define IDS_STRING1655                  1655
+#define IDS_STRING1656                  1656
+#define IDS_STRING1657                  1657
+#define IDS_STRING1658                  1658
+#define IDS_STRING1659                  1659
+#define IDS_STRING1660                  1660
+#define IDS_STRING1661                  1661
+#define IDS_STRING1662                  1662
+#define IDS_STRING1663                  1663
+#define IDS_STRING1664                  1664
+#define IDS_STRING1665                  1665
+#define IDS_STRING1666                  1666
+#define IDS_STRING1667                  1667
+#define IDS_STRING1668                  1668
+#define IDS_STRING1669                  1669
+#define IDS_STRING1670                  1670
 #define ID_IDR_SDSD                     32771
 #define ID_ACTIVITY_SETKOEFEXE          32772
 #define ID_IDR_SDSD32773                32773
@@ -134,14 +156,17 @@
 #define ID_GETREPORT_FROMLAST10WORKINGDAYS 32778
 #define ID_GETREPORT_FROMLAST20WORKINGDAYS 32779
 #define ID_REPORTS_USEFULACTIONSFROMLAST5WORKINGDAYS 32780
+#define ID_REPORTS_USEFULPARAMETERFROMSELECTEDPERIOD 32781
+#define ID_Compare2Periods              32782
+#define ID_IDR_32783                    32783
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        135
-#define _APS_NEXT_COMMAND_VALUE         32781
-#define _APS_NEXT_CONTROL_VALUE         1003
+#define _APS_NEXT_RESOURCE_VALUE        136
+#define _APS_NEXT_COMMAND_VALUE         32784
+#define _APS_NEXT_CONTROL_VALUE         1005
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

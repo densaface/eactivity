@@ -96,6 +96,7 @@ void CEactivityDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_STATIC_cur_mon, stat_periodTable);
 	DDX_Control(pDX, IDC_RADIO1, radioTime);
 	DDX_Control(pDX, IDC_RADIO2, radioActs);
+	DDX_Control(pDX, IDC_CHECK1, checkAutoUpdate);
 }
 
 BEGIN_MESSAGE_MAP(CEactivityDlg, CDialog)
@@ -112,7 +113,8 @@ BEGIN_MESSAGE_MAP(CEactivityDlg, CDialog)
 	ON_WM_COPYDATA()
 	ON_NOTIFY(NM_DBLCLK, IDC_LIST2, OnDblclkListCurDay)
 	ON_COMMAND(ID_ACTIVITY_SETKOEF, OnActivitySetKoef)
-	ON_NOTIFY(NM_RCLICK, IDC_LIST2, OnRclickListCurDay)
+	ON_NOTIFY(NM_RCLICK, IDC_LIST2, OnRclickTableExeCapt)
+	ON_NOTIFY(NM_RCLICK, IDC_LIST3, OnRclickPeriodTable)
 	ON_COMMAND(ID_ACTIVITY_SETKOEFEXE, OnActivitySetkoefeExe)
 	ON_EN_CHANGE(IDC_EDITr17, OnChangeEDITcapts)
 	ON_COMMAND(ID_ACTIVITY_EXE, OnActivityShowAllCapts)
@@ -126,6 +128,9 @@ BEGIN_MESSAGE_MAP(CEactivityDlg, CDialog)
 	ON_COMMAND(ID_REPORTS_USEFULACTIONSFROMLAST5WORKINGDAYS, &CEactivityDlg::OnReportsUsefulActionsFromLast5WorkingDays)
 	ON_BN_CLICKED(IDC_RADIO1, &CEactivityDlg::OnBnClickedRadio1)
 	ON_BN_CLICKED(IDC_RADIO2, &CEactivityDlg::OnBnClickedRadio1)
+	ON_COMMAND(ID_REPORTS_USEFULPARAMETERFROMSELECTEDPERIOD, &CEactivityDlg::OnReportsUsefulParameterFromSelectedPeriod)
+	ON_COMMAND(ID_Compare2Periods, &CEactivityDlg::OnCompare2periods)
+	ON_COMMAND(ID_IDR_32783, &CEactivityDlg::OnCompareWithBest5Days)
 END_MESSAGE_MAP()
 
 //кликание по иконке в трее
@@ -152,11 +157,14 @@ BOOL CEactivityDlg::OnInitDialog()
 	CDialog::OnInitDialog();
 	RR=GG=0;
 	SetToTray(IDR_MAINFRAME);
-	MainMenu.LoadMenu(IDR_MENU2);
+	MainMenu.LoadMenu(IDR_MAIN_MENU);
 	SetMenu(&MainMenu);
 	VARIANT var;
 	chart.GetPlot().GetAxis(2,var).GetAxisTitle().SetVisible(FALSE);
 	chart.SetColumnCount(2);
+//	chart.GetPlot().GetSeriesCollection().GetItem(1).GetProperty(0, var, );// GetTypeByChartType();// .GetSeriesMarker();// GetSeriesType();// SetSeriesType() GetDataPoints().GetItem(-1). GetDataPointLabel().SetLocationType(1);
+//	chart.GetPlot().GetSeriesCollection().GetItem(2).GetDataPoints().GetItem(-1).GetMarker();// GetDataPointLabel().SetLocationType(1);
+	//m_Chart.GetPlot().GetSeriesCollection().GetItem(2).GetDataPoints().GetItem(-1).GetDataPointLabel().SetLocationType(1);
 //	chart.GetPlot().GetSeriesCollection().GetItem(1).GetPen().GetVtColor().Set(0, 0, 255); 
 //	chart.GetPlot().GetSeriesCollection().GetItem(2).GetPen().GetVtColor().Set(0, 255, 0); 
 	SetHook=0;
@@ -187,10 +195,11 @@ BOOL CEactivityDlg::OnInitDialog()
 
 	if (trif.GetNumLan()==1)
 	{
-		menu_cur_day.LoadMenu(IDR_Activity_RU);
+		menuExeCapt.LoadMenu(IDR_CONTEXT_EXECAPT_RU);
+		menuTablePeriod.LoadMenu(IDR_CONTEXT_TABLEPERIOD_RU);
 	} else {
-//		menu_cur_day.LoadMenu(IDR_Activity_EN);
-		menu_cur_day.LoadMenu(IDR_Activity_RU);
+		menuExeCapt.LoadMenu(IDR_CONTEXT_EXECAPT_RU);
+		menuTablePeriod.LoadMenu(IDR_CONTEXT_TABLEPERIOD_RU);
 	}
 	if (AfxGetApp()->GetProfileInt("App", "AccentParameter", 1))
 		radioTime.SetCheck(1);
@@ -281,15 +290,17 @@ BOOL CEactivityDlg::OnInitDialog()
 	{
 		CreateDirectory(path_actuser.c_str(), NULL);
 	}
+	statsF.path_actuser=path_actuser;
 
 	LoadRules();
+	WriteJournal("On Init Dialog 1");
 	LoadCurDay();
 	SelectedDay="";
 	activ_hours activHours;
 	UpdateExeCapt(activHours);
 
 	LoadCurMonth();
-	LoadYear();
+	statsF.LoadYear(aCurYear);
 	switch (combo_group.GetCurSel())
 	{
 	case BYHOURS:
@@ -306,7 +317,8 @@ BOOL CEactivityDlg::OnInitDialog()
 	SetTimer(1500, 500, 0);
 	SetTimer(2500, 5000, 0);
 	SetTimer(3564, 5*60*1000, 0); //автосохранение каждые 5 минут
-	CalculateAverageUsefulParameter(5, radioTime.GetCheck() ? USEFULTIME : USEFULACTS);//сразу строим график средних активностей за час
+	checkAutoUpdate.SetCheck(true);
+	CalculateAverageUsefulParameter(5);//сразу строим график средних активностей за час
 #ifndef _DEBUG
 #endif
 	hMyDll=NULL;
@@ -1115,12 +1127,14 @@ void CEactivityDlg::OnTimer(UINT nIDEvent)
 			AddToExeCapt(capt, str_exe, hw, hwMain, 0, (float)(GetTickCount()-curTime));
 			curTime=GetTickCount();
 			static bool perekl=1;//переключились к eactivity - обновляем статистику, потом нет
-			if (hwMain==AfxGetMainWnd()->m_hWnd)
+			if (hwMain == AfxGetMainWnd()->m_hWnd || 
+				::GetWindow(hwMain, GW_OWNER) == AfxGetMainWnd()->m_hWnd)
 			{
 				if (perekl)
 				{
 					perekl=false;
-					OnOk2();
+					if (checkAutoUpdate.GetCheck())
+						OnOk2(); //автообновление таблиц
 				}
 			} else perekl=true;
 		}
@@ -1158,112 +1172,6 @@ void CEactivityDlg::OnTimer(UINT nIDEvent)
 	CDialog::OnTimer(nIDEvent);
 }
 
-void CEactivityDlg::SumDayStat(activ &forLoad1, string fname, float &sumTime, int &sumAct, int &sumUsefulActs) 
-{
-	activ::iterator iter=forLoad1.find(fname.substr(fname.length()-12, 10));
-	if (iter!=forLoad1.end())
-		return; //уже имеющуюся статистику не обновляем
-
-	ifstream ifstr(fname.c_str());
-	if (ifstr==NULL)
-		return;
-	Activity tmpActiv;
-	tmpActiv.sumActs=0;
-	tmpActiv.sumTime=0;
-	tmpActiv.usefulTime=0;
-	tmpActiv.usefulActs=0;
-	tmpActiv.capt="";
-	tmpActiv.exe="";
-	tmpActiv.hwChil=0;
-	tmpActiv.hwMain=0;
-
-	char ch[1024];
-	ifstr.getline(ch, 1024);
-	while (ifstr)
-	{
-		void* tmpint;
-		ifstr>>tmpint;
-		ifstr.get();
-		ifstr>>tmpint;
-		ifstr.get();
-		if (!ifstr)
-			break;
-		int tmpint2;
-		ifstr>>tmpint2;
-		tmpActiv.sumActs+=tmpint2;
-		ifstr.get();
-		ifstr>>tmpint2;
-		tmpActiv.usefulActs+=tmpint2;
-		ifstr.get();
-		ifstr>>tmpint2;
-		tmpActiv.sumTime+=tmpint2;
-		ifstr.get();
-		ifstr.getline(ch, 1024);
-		if (!ifstr)
-			break;
-	}
-	ifstr.close();
-	sumTime+=tmpActiv.sumTime;
-	sumAct+=tmpActiv.sumActs;
-	sumUsefulActs+=tmpActiv.usefulActs;
-	forLoad1[fname.substr(fname.length()-12, 10)]=tmpActiv;
-}
-
-//подгружаем дневные статистики, если они не были в общем сохранении за месяц
-void CEactivityDlg::LoadMonthFromStatDays(activ &forLoad1, string mon, float &sumTime, int &sumAct, int &sumUsefulActs) 
-{
-	WIN32_FIND_DATA FFData;
-	string for_find=path_actuser+mon+"*.a";
-	HANDLE hFind = FindFirstFile(for_find.c_str(), &FFData);
-	if (hFind != INVALID_HANDLE_VALUE)
-	{
-		do 
-		{
-			SumDayStat(forLoad1, path_actuser+FFData.cFileName, sumTime, sumAct, sumUsefulActs);
-		} while(FindNextFile(hFind, &FFData));
-	}
-}
-
-bool CEactivityDlg::LoadFileMonth(string fname, activ &forLoad1, float &sumTime, int &sumActs, int &sumUsefulActs)
-{
-	ifstream ifstr(fname.c_str());
-	if (ifstr)
-	{
-		char ch[1024];
-		ifstr.getline(ch, 100);
-		
-		Activity tmpForLoad;
-		tmpForLoad.capt="";
-		tmpForLoad.exe="";
-		tmpForLoad.hwChil=0;
-		tmpForLoad.hwMain=0;
-		while (ifstr)
-		{
-			string sdate;
-			ifstr>>sdate;
-			ifstr.get();
-			ifstr>>tmpForLoad.sumActs;
-			sumActs+=tmpForLoad.sumActs;
-			ifstr.get();
-			if (!ifstr)
-				break;
-			ifstr>>tmpForLoad.usefulActs;
-			sumUsefulActs+=tmpForLoad.usefulActs;
-			ifstr>>tmpForLoad.sumTime;
-			sumTime+=tmpForLoad.sumTime;
-			if (strcmp(ch, "ver=0.1")!=0) {
-				//только в первой версии не сохранялось полезное время
-				ifstr>>tmpForLoad.usefulTime;
-			}
-			forLoad1[sdate]=tmpForLoad;
-			if (!ifstr)
-				break;
-		}
-		ifstr.close();
-	}
-	LoadMonthFromStatDays(forLoad1, fname.substr(fname.length()-21, 18), sumTime, sumActs, sumUsefulActs);
-	return true;
-}
 void CEactivityDlg::LoadCurMonth() 
 {
 	char date[27];
@@ -1272,11 +1180,11 @@ void CEactivityDlg::LoadCurMonth()
 	GetDateFormat(LOCALE_USER_DEFAULT, LOCALE_USE_CP_ACP, &st, "activ_user_yyyy_MM.am", date, 25);
 	curMonFileName=date;
 
-	float sumTime=0;
+	float sumTime=0, sumUsefulTime=0;
 	int sumActs=0, sumUsefulActs=0;
 	string strf=path_actuser+curMonFileName;
 	WriteJournal("LoadCurMonth from %s", strf);
-	LoadFileMonth(strf, aCurMon, sumTime, sumActs, sumUsefulActs);
+	statsF.LoadFileMonth(strf, aCurMon, sumTime, sumUsefulTime, sumActs, sumUsefulActs);
 }
 
 // UpdatePeriodTableViewByHours - вывод почасовой статистики в ТЗПВ и 
@@ -1695,70 +1603,6 @@ void CEactivityDlg::FormatSeconds(char (&ch)[100], float secs)
 		}
 }
 
-
-//////////    ГОДОВАЯ АКТИВНОСТЬ \\\\\\\\\\\\\\\\
-//подгружаем месячные статистики, если они не были в общем сохранении за год
-void CEactivityDlg::LoadYearFromStatMons(string mon, float &sumTime, int &sumAct, int &sumUsefulActs) 
-{
-	WIN32_FIND_DATA FFData;
-	string for_find=path_actuser+mon+"*.am";
-	HANDLE hFind = FindFirstFile(for_find.c_str(), &FFData);
-	if (hFind != INVALID_HANDLE_VALUE)
-	{
-		do 
-		{
-			SumMonStat(path_actuser+FFData.cFileName, sumTime, sumAct, sumUsefulActs);
-		} while(FindNextFile(hFind, &FFData));
-	}
-}
-void CEactivityDlg::SumMonStat(string fname, float &sumTime, int &sumAct, int &sumUsefulActs) 
-{
-	activ::iterator iter=aCurYear.find(fname.substr(fname.length()-10, 7));
-	if (iter!=aCurYear.end())
-		return; //уже имеющуюся статистику не обновляем
-	
-	ifstream ifstr(fname.c_str());
-	if (ifstr==NULL)
-		return;
-	Activity tmpActiv;
-	tmpActiv.sumActs=0;
-	tmpActiv.sumTime=0;
-	tmpActiv.usefulTime=0;
-	tmpActiv.usefulActs=0;
-	tmpActiv.capt="";
-	tmpActiv.exe="";
-	tmpActiv.hwChil=0;
-	tmpActiv.hwMain=0;
-	
-	char ch[1024];
-	ifstr.getline(ch, 1024);
-	while (ifstr)
-	{
-		int tmpint;
-		string sdate;
-		ifstr>>sdate;
-		ifstr.get();
-		if (!ifstr)
-			break;
-		ifstr>>tmpint;
-		tmpActiv.sumActs+=tmpint;
-		ifstr.get();
-		if (!ifstr)
-			break;
-		ifstr>>tmpint;
-		tmpActiv.usefulActs+=tmpint;
-		ifstr>>tmpint;
-		tmpActiv.sumTime+=tmpint;
-		if (!ifstr)
-			break;
-	}
-	ifstr.close();
-	sumTime+=tmpActiv.sumTime;
-	sumAct+=tmpActiv.sumActs;
-	sumUsefulActs+=tmpActiv.usefulActs;
-	aCurYear[fname.substr(fname.length()-10, 7)]=tmpActiv;
-}
-
 void CEactivityDlg::SizingWins()
 {
 	CRect rect, main;
@@ -1889,7 +1733,7 @@ void CEactivityDlg::LoadCurDay()
 	curDayFileName=date;
 
 	string strf=path_actuser+curDayFileName;
-	WriteJournal("LoadCurDay from %s", strf);
+	//WriteJournal("LoadCurDay from %s", strf.c_str());
 	LoadFileDay(strf, ActivToday);
 }
 
@@ -2019,60 +1863,6 @@ void CEactivityDlg::SaveYear()
 	}
 	ofstr.close();
 }
-void CEactivityDlg::LoadYear() 
-{
-	char date[28];
-	SYSTEMTIME st;
-	GetLocalTime(&st);
-	GetDateFormat(LOCALE_USER_DEFAULT, LOCALE_USE_CP_ACP, &st, "activ_user_yyyy", date, 26);
-	strcat_s(date, ".ayr");
-	curYear=date;
-	
-	float sumTime=0;
-	int sumActs=0, sumUsefulActs=0;
-	string strf=path_actuser+curYear;
-	ifstream ifstr(strf.c_str());
-	if (ifstr)
-	{
-		char ch[1024];
-		ifstr.getline(ch, 100);
-		
-		float ver;
-		sscanf_s(ch, "ver=%f", &ver);
-
-		Activity tmpForLoad;
-		tmpForLoad.capt="";
-		tmpForLoad.exe="";
-		tmpForLoad.hwChil=0;
-		tmpForLoad.hwMain=0;
-		while (ifstr)
-		{
-			string sdate;
-			ifstr>>sdate;
-			ifstr.get();
-			ifstr>>tmpForLoad.sumActs;
-			sumActs+=tmpForLoad.sumActs;
-			ifstr.get();
-			if (!ifstr)
-				break;
-			ifstr>>tmpForLoad.usefulActs;
-			sumUsefulActs+=tmpForLoad.usefulActs;
-			ifstr>>tmpForLoad.sumTime;
-			sumTime+=tmpForLoad.sumTime;
-			aCurYear[sdate]=tmpForLoad;
-			if (ver>=0.2)
-			{
-				ifstr>>tmpForLoad.usefulTime;
-			}
-			aCurYear[sdate]=tmpForLoad;
-			if (!ifstr)
-				break;
-		}
-		ifstr.close();
-	}
-	LoadYearFromStatMons(curYear.substr(0, 15), sumTime, sumActs, sumUsefulActs);
-}
-
 void CEactivityDlg::SaveCurDay(bool smena) 
 {
 	char date[27];
@@ -2112,9 +1902,122 @@ void CEactivityDlg::SaveCurDay(bool smena)
 	}
 	ofstr.close();
 	if (smena)
+	{
+		SendReportOfDayOnMail(curDayFileName.substr(curDayFileName.length()-12, 10));
 		ActivToday.clear();
+	}
 
 }
+
+void CEactivityDlg::SendReportOfDayOnMail(string dateToday) 
+{
+	CStringArray saDates;
+	saDates.Add(dateToday.c_str());
+	CStringArray saDates2;
+	CTime ct=CTime::GetCurrentTime();
+	ct-=60*60*24*7;
+	while (ct.GetDayOfWeek()!=2)
+	{
+		ct-=60*60*24;
+	}
+	CString date;
+	for (int ii=1; ii<=7; ii++)
+	{
+		date.Format("%d_%d_%d", ct.GetYear(), ct.GetMonth(), ct.GetDay());
+		saDates2.Add(date);
+		ct+=60*60*24;
+	}
+	CString res = CompareTwoPeriodsOfDays(saDates, saDates2, 2);
+	if (res!="")
+		SendMailMessage("smtp.gmail.com", 587, "silencenotif@gmail.com", 
+		"densaf.ace@gmail.com", "densaf.ace@gmail.com", "GhjcajhyZ88", res, "TablePeriod");
+}
+
+BOOL CEactivityDlg::SendMailMessage(LPCTSTR szServer,
+								   UINT port, 
+								   LPCTSTR szFrom, 
+								   LPCTSTR szTo, 
+								   LPCTSTR szUser, 
+								   LPCTSTR szPas, 
+								   LPCTSTR szSubject, 
+								   LPCTSTR szMessage)
+{
+
+	CSmtp mail;
+
+//#define test_gmail_tls
+
+	bool bError = false;
+
+	try
+	{
+#define test_gmail_ssl
+
+#if defined(test_gmail_tls)
+		mail.SetSMTPServer("smtp.gmail.com",587);
+		mail.SetSecurityType(USE_TLS);
+		mail.SetLogin(szUser);//"silencenotif@gmail.com"
+		mail.SetPassword(szPas);//"yhfveus347tw272d%$"
+		mail.SetSenderName("Silence Notif");
+		mail.SetSenderMail(szUser);
+		mail.SetReplyTo(szUser);
+#elif defined(test_gmail_ssl)
+		mail.SetSMTPServer("smtp.mail.ru",465);
+		mail.SetSecurityType(USE_SSL);
+		mail.SetLogin("denis_safonov_81@mail.ru");
+		mail.SetPassword("djfGNurnvusmv63^");
+		mail.SetSenderName("denis_safonov");
+		mail.SetSenderMail("denis_safonov_81@mail.ru");
+		mail.SetReplyTo("denis_safonov_81@mail.ru");
+#elif defined(test_hotmail_TLS)
+		mail.SetSMTPServer("smtp.live.com",25);
+		mail.SetSecurityType(USE_TLS);
+#elif defined(test_aol_tls)
+		mail.SetSMTPServer("smtp.aol.com",587);
+		mail.SetSecurityType(USE_TLS);
+#elif defined(test_yahoo_ssl)
+		mail.SetSMTPServer("plus.smtp.mail.yahoo.com",465);
+		mail.SetSecurityType(USE_SSL);
+#endif
+		CString str;
+		//edit_theme.GetWindowText(str);
+		mail.SetSubject(szSubject);
+		//edit_to.GetWindowText(str);
+		mail.AddRecipient("densaf.ace@gmail.com");
+		//	mail.AddRecipient("densaf.ace@gmail.com");
+		//	mail.AddRecipient("dsafonov@parallels.com");
+		mail.SetXPriority(XPRIORITY_NORMAL);
+		mail.SetXMailer("The Bat! (v3.02) Professional");
+// 		mail.AddMsgLine("Hello,");
+// 		mail.AddMsgLine("");
+// 		mail.AddMsgLine("...");
+// 		mail.AddMsgLine("How are you today?");
+// 		mail.AddMsgLine("");
+// 		mail.AddMsgLine("Regards");
+//		mail.ModMsgLine(5,"regards");
+//		mail.DelMsgLine(2);
+		for (int ii=1; ii<table_period.GetItemCount(); ii++)
+		{
+			mail.AddMsgLine(table_period.GetItemText(ii, 0));
+		}
+
+		//mail.AddAttachment("../test1.jpg");
+		//mail.AddAttachment("c:\\test2.exe");
+		//mail.AddAttachment("c:\\test3.txt");
+		return mail.Send();
+	}
+	catch(ECSmtp e)
+	{
+		//	std::cout << "Error: " << e.GetErrorText().c_str() << ".\n";
+		AfxMessageBox(e.GetErrorText().c_str());
+		//OnReport(e.GetErrorText().c_str());
+		bError = true;
+	}
+	//if(!bError)
+	//std::cout << "Mail was send successfully.\n";
+	return !bError;
+}
+
 void CEactivityDlg::OnSave() 
 {
 	CViewRules ruls;
@@ -2258,9 +2161,9 @@ void CEactivityDlg::OnDblclkListDays(NMHDR* pNMHDR, LRESULT* pResult)
 			UpdatePeriodTable(aCurMon);
 			return;
 		}
-		float sumTime=0;
+		float sumTime=0, sumUsefulTime=0;
 		int sumActs=0, sumUsefulActs=0;
-		if (!LoadFileMonth(fname, aSelMon, sumTime, sumActs, sumUsefulActs))
+		if (!statsF.LoadFileMonth(fname, aSelMon, sumTime, sumUsefulTime, sumActs, sumUsefulActs))
 		{
 			AfxMessageBox(trif.GetIds(IDS_STRING1573));
 			return;
@@ -2359,7 +2262,7 @@ string CEactivityDlg::GetExeFromTable(int sel)
 	return "";
 }
 
-void CEactivityDlg::OnRclickListCurDay(NMHDR* pNMHDR, LRESULT* pResult) 
+void CEactivityDlg::OnRclickTableExeCapt(NMHDR* pNMHDR, LRESULT* pResult) 
 {
 	POSITION pos=table_exe_capt.GetFirstSelectedItemPosition();
 	int sel=(int)pos-1;
@@ -2367,16 +2270,42 @@ void CEactivityDlg::OnRclickListCurDay(NMHDR* pNMHDR, LRESULT* pResult)
 		return;
 	if (table_exe_capt.GetItemText(sel, 0).GetLength())
 	{
-		menu_cur_day.EnableMenuItem(ID_ACTIVITY_SETKOEF, MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
-		menu_cur_day.EnableMenuItem(ID_ACTIVITY_SETKOEFEXE, MF_BYCOMMAND | MF_ENABLED );
+		menuExeCapt.EnableMenuItem(ID_ACTIVITY_SETKOEF, MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
+		menuExeCapt.EnableMenuItem(ID_ACTIVITY_SETKOEFEXE, MF_BYCOMMAND | MF_ENABLED );
 	} else {
-		menu_cur_day.EnableMenuItem(ID_ACTIVITY_SETKOEFEXE, MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
-		menu_cur_day.EnableMenuItem(ID_ACTIVITY_SETKOEF, MF_BYCOMMAND | MF_ENABLED );
+		menuExeCapt.EnableMenuItem(ID_ACTIVITY_SETKOEFEXE, MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
+		menuExeCapt.EnableMenuItem(ID_ACTIVITY_SETKOEF, MF_BYCOMMAND | MF_ENABLED );
 	}
 
 	CPoint po;
 	GetCursorPos(&po);
-	menu_cur_day.GetSubMenu(0)->TrackPopupMenu(TPM_LEFTALIGN|TPM_LEFTBUTTON, po.x, po.y, this);
+	menuExeCapt.GetSubMenu(0)->TrackPopupMenu(TPM_LEFTALIGN|TPM_LEFTBUTTON, po.x, po.y, this);
+	*pResult = 0;
+}
+
+void CEactivityDlg::OnRclickPeriodTable(NMHDR* pNMHDR, LRESULT* pResult) 
+{
+	POSITION pos=table_period.GetFirstSelectedItemPosition();
+	int sel=(int)pos;
+	if (!sel)
+	{
+		menuTablePeriod.EnableMenuItem(ID_Compare2Periods, MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
+		menuTablePeriod.EnableMenuItem(ID_IDR_32783, MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
+	} else {
+		CString str;
+		str=table_period.GetItemText(sel-1, 0);
+		if (str.GetLength() < 7)
+			menuTablePeriod.EnableMenuItem(ID_Compare2Periods, MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
+		else {
+			if (str.GetLength() == 7)
+				menuTablePeriod.EnableMenuItem(ID_IDR_32783, MF_BYCOMMAND | MF_ENABLED );
+			menuTablePeriod.EnableMenuItem(ID_Compare2Periods, MF_BYCOMMAND | MF_ENABLED );
+		}
+	}
+
+	CPoint po;
+	GetCursorPos(&po);
+	menuTablePeriod.GetSubMenu(0)->TrackPopupMenu(TPM_LEFTALIGN|TPM_LEFTBUTTON, po.x, po.y, this);
 	*pResult = 0;
 }
 
@@ -2450,7 +2379,7 @@ void CEactivityDlg::OnActivityShowAllCapts()
 		showAllCaptsForExe="";
 		str.LoadString(trif.GetIds(IDS_STRING1585));
 	}
-	menu_cur_day.ModifyODMenu(str, ID_ACTIVITY_EXE);
+	menuExeCapt.ModifyODMenu(str, ID_ACTIVITY_EXE);
 	activ_hours activHours;
 	UpdateExeCapt(activHours);
 }
@@ -2497,8 +2426,9 @@ void CEactivityDlg::OnSelchangeComboDownTable()
 
 void CEactivityDlg::OnBnClickedOk()
 {
-	COLORREF text = RGB(0,255,0);
-	table_period.OnDisplayCellColor(2,2, text, text);
+	OnOk2();
+//	COLORREF text = RGB(0,255,0);
+//	table_period.OnDisplayCellColor(2,2, text, text);
 }
 
 bool CEactivityDlg::WriteJournal(LPCTSTR lpszFormat, ...)
@@ -2536,26 +2466,33 @@ void CEactivityDlg::OnBnClickedCancel()
 
 //подсчет среднего полезного времени/действий за последние 7 дней или больше 
 //		(сколько указано в lastDays) c разбивкой по часам
-// int accentParameter - акцентируемый параметр
-void CEactivityDlg::CalculateAverageUsefulParameter(int lastDays, int accentParameter)
+void CEactivityDlg::CalculateAverageUsefulParameter(int lastDays)
 {
 	// дата сегодняшнего дня
 	string date=curDayFileName.substr(curDayFileName.length()-12, 10);
 	int day = atoi(date.substr(date.length()-2, 2).c_str())-1;
 	int skippedDays=0;//сколько дней не удалось загрузить
 	string yearMon = date.substr(0, 7);
-	activ aSumActiv;
 	int sumHandledDays=0;//количество обработанных рабочих дней
 	ActivityExe alldays; //суммарная статистика по всем дням, чтобы потом показать усредненную по дням
 	alldays.sumActs=0; alldays.sumTime=0; alldays.usefulActs=0; alldays.usefulTime=0;
 	table_period.DeleteAllItems();
+	CString str;
+	str.LoadString(trif.GetIds(IDS_STRING1669));
+	stat_periodTable.SetWindowText(str);
 	char ch[100];
+	if (!day)
+	{	//для первого числа сразу переходим в предыщущий месяц
+		int mon = atoi(yearMon.substr(yearMon.length()-2, 2).c_str());
+		mon--;
+		sprintf_s(ch, "%s_%d", yearMon.substr(0, 4).c_str(), mon);
+		yearMon = ch;
+		day=31;
+	}
 	while (day>0)
 	{
 		char fname[2048];
-//		date.Format("%s_%d", yearMon.c_str(), day);
 		sprintf_s(fname, "%sactiv_user_%s_%02d.a", path_actuser.c_str(), yearMon.c_str(), day);
-		//string fname=path_actuser+"activ_user_"+date+".a";
 		activ aDayActiv;
 		if (!LoadFileDay(fname, aDayActiv))
 		{
@@ -2578,9 +2515,11 @@ void CEactivityDlg::CalculateAverageUsefulParameter(int lastDays, int accentPara
 		}
 		activ_exe activExe; 
 		activ_hours activHours;
+		activ_hours activHours2;
 		sprintf_s(ch, "%s_%d", yearMon.c_str(), day);
 		int row=table_period.InsertItem(0, ch);
 		CalculateUsefulTimeAndActs(aDayActiv, activExe, activHours);
+		activHours2=activHours;
 		if (activHours[25].usefulTime>1.5*3600*1000)
 		{ //если полезного времени больше 2ух часов, то считаем этот день рабочим и берем статистику по нему
 			sumHandledDays++;
@@ -2677,6 +2616,447 @@ void CEactivityDlg::CalculateAverageUsefulParameter(int lastDays, int accentPara
 	chart.GetPlot().GetAxis(1,var).GetValueScale().SetMinimum(iChartMin);
 }
 
+//подсчет и сравнение среднего полезного времени/действий двух промежутков времени 
+//		на графике строятся 2 линии с посуточной разверткой
+// int MinusDays - сколько худших дней не учитывать во втором списке дат (исключаем выходные)
+CString CEactivityDlg::CompareTwoPeriodsOfDays(CStringArray& saDates1, CStringArray& saDates2, int MinusDays)
+{
+	checkAutoUpdate.SetCheck(false);//отключаем автоматическое обновление
+	ActivityExe firstPeriod; //суммарная статистика по первому периоду, чтобы потом показать усредненную по дням
+	firstPeriod.sumActs=0; firstPeriod.sumTime=0; firstPeriod.usefulActs=0; firstPeriod.usefulTime=0;
+	ActivityExe secondPeriod; //суммарная статистика по первому периоду, чтобы потом показать усредненную по дням
+	secondPeriod.sumActs=0; secondPeriod.sumTime=0; secondPeriod.usefulActs=0; secondPeriod.usefulTime=0;
+
+	VARIANT var;//приводим график в исходное состояние
+	if (saDates2.GetSize()>1 || saDates1.GetSize()>1)
+	{
+		chart.SetRowCount(0);
+		if (saDates2.GetSize()>1)
+		{
+			chart.SetColumnCount(2);
+		}
+		chart.GetPlot().GetAxis(1,var).GetValueScale().SetMaximum(60);
+		chart.GetPlot().GetAxis(1,var).GetValueScale().SetMinimum(-60);
+		chart.GetPlot().GetAxis(1,var).GetAxisTitle().SetText(radioTime.GetCheck() ? "Hours" : "Actions"); 
+		chart.GetPlot().GetAxis(0,var).GetAxisTitle().SetText("Day"); 
+		chart.SetRowCount(saDates1.GetSize() > saDates2.GetSize() ? saDates1.GetSize() + 1 : saDates2.GetSize() + 1);
+	}
+	double iChartMin=0;
+	double iChartMax=10;
+
+	CString str; 
+	table_period.DeleteAllItems();
+	str.LoadString(trif.GetIds(IDS_STRING1667));
+	stat_periodTable.SetWindowText(str);
+	char ch[100];float sec;
+	for (int ii=0; ii<saDates1.GetSize(); ii++)
+	{
+		char fname[2048];
+		sprintf_s(fname, "%sactiv_user_%s.a", path_actuser.c_str(), saDates1[ii]);
+		activ aDayActiv;
+			if (!LoadFileDay(fname, aDayActiv))
+		{
+			CString str;
+			str.LoadString(trif.GetIds(IDS_STRING1655));
+			AfxMessageBox(str + saDates1[ii]);
+			return "";
+		}
+		activ_exe activExe; 
+		activ_hours activHours;
+		int row=table_period.InsertItem(0, saDates1[ii]);
+		CalculateUsefulTimeAndActs(aDayActiv, activExe, activHours);
+		// добавляем локальный справочник activHours к основному lastAverageHoursGraph
+		for (activ_hours::iterator iter=activHours.begin(); iter!=activHours.end(); iter++)
+		{
+			activ_hours::iterator iterHour = lastAverageHoursGraph.find((*iter).first);
+			if (iterHour == lastAverageHoursGraph.end())
+			{
+							ActivityExe hourElement;
+				hourElement.usefulActs = (*iter).second.usefulActs;
+				hourElement.usefulTime = (*iter).second.usefulTime;
+				hourElement.sumActs    = (*iter).second.sumActs;
+				hourElement.sumTime    = (*iter).second.sumTime;
+				lastAverageHoursGraph[(*iter).first] = hourElement;
+			} else {
+				(*iterHour).second.usefulActs += (*iter).second.usefulActs;
+				(*iterHour).second.usefulTime += (*iter).second.usefulTime;
+				(*iterHour).second.sumActs    += (*iter).second.sumActs;
+				(*iterHour).second.sumTime    += (*iter).second.sumTime;
+					}
+		}
+		firstPeriod.sumActs+=activHours[25].sumActs; firstPeriod.sumTime+=activHours[25].sumTime; 
+		firstPeriod.usefulActs+=activHours[25].usefulActs; firstPeriod.usefulTime+=activHours[25].usefulTime;
+
+//		if (saDates1.GetSize()>1) //одна точка на первой линии четко видна
+		{
+			double chartValue = radioTime.GetCheck() ? activHours[25].usefulTime/60/60/1000 : activHours[25].usefulActs;
+			chart.GetDataGrid().SetData(ii+1, 1, chartValue, 0); 
+			if (chartValue>iChartMax)
+				iChartMax=chartValue;
+					if (chartValue<iChartMin)
+				iChartMin=chartValue;
+			chart.SetRow(ii+1);
+			char ch_ii[100];
+			sprintf_s(ch_ii, "%s", saDates1[ii]);
+			chart.SetRowLabelIndex(1);
+			chart.SetRowLabel(ch_ii);
+		}
+
+		float sec = activHours[25].usefulTime/1000;
+		FormatSeconds(ch, sec);
+		table_period.SetItemText(row, 1, ch);
+		sec = activHours[25].sumTime/1000;
+		FormatSeconds(ch, sec);
+		table_period.SetItemText(row, 2, ch);
+		sprintf_s(ch, "%d", activHours[25].usefulActs);
+		table_period.SetItemText(row, 3, ch);
+		sprintf_s(ch, "%d", activHours[25].sumActs);
+		table_period.SetItemText(row, 4, ch);
+
+	}
+	int row;
+	if (saDates1.GetSize()>1)
+	{	// для одной даты не имеет смысла выводить среднее
+		str.LoadString(trif.GetIds(IDS_STRING1657));//Среднее
+		int row=table_period.InsertItem(0, str);
+		float sec = firstPeriod.usefulTime/1000/saDates1.GetSize();
+		FormatSeconds(ch, sec);
+		table_period.SetItemText(row, 1, ch);
+		sec = firstPeriod.sumTime/1000/saDates1.GetSize();
+		FormatSeconds(ch, sec);
+		table_period.SetItemText(row, 2, ch);
+		sprintf_s(ch, "%d", firstPeriod.usefulActs/saDates1.GetSize());
+		table_period.SetItemText(row, 3, ch);
+		sprintf_s(ch, "%d", firstPeriod.sumActs/saDates1.GetSize());
+		table_period.SetItemText(row, 4, ch);
+	}
+//	table_period.InsertItem(table_period.GetItemCount(), "");
+	table_period.InsertItem(table_period.GetItemCount(), "");
+
+	ActivityExe min1, min2;//для вычета самых непродуктивных дней (выходных)
+	int indexMin1, indexMin2;
+	int rowAddSecondPeriod = table_period.GetItemCount();
+	for (int ii=0; ii<saDates2.GetSize(); ii++)
+	{
+		char fname[2048];
+		sprintf_s(fname, "%sactiv_user_%s.a", path_actuser.c_str(), saDates2[ii]);
+		activ aDayActiv;
+		if (!LoadFileDay(fname, aDayActiv))
+		{
+			CString str;
+			str.LoadString(trif.GetIds(IDS_STRING1655));
+			AfxMessageBox(str + saDates2[ii]);
+			return "";
+		}
+		activ_exe activExe; 
+		activ_hours activHours;
+		int row=table_period.InsertItem(rowAddSecondPeriod, saDates2[ii]);
+		CalculateUsefulTimeAndActs(aDayActiv, activExe, activHours);
+		// добавляем локальный справочник activHours к основному lastAverageHoursGraph
+		for (activ_hours::iterator iter=activHours.begin(); iter!=activHours.end(); iter++)
+		{
+			activ_hours::iterator iterHour = lastAverageHoursGraph.find((*iter).first);
+			if (iterHour == lastAverageHoursGraph.end())
+			{
+				ActivityExe hourElement;
+				hourElement.usefulActs = (*iter).second.usefulActs;
+				hourElement.usefulTime = (*iter).second.usefulTime;
+				hourElement.sumActs    = (*iter).second.sumActs;
+				hourElement.sumTime    = (*iter).second.sumTime;
+				lastAverageHoursGraph[(*iter).first] = hourElement;
+			} else {
+				(*iterHour).second.usefulActs += (*iter).second.usefulActs;
+				(*iterHour).second.usefulTime += (*iter).second.usefulTime;
+				(*iterHour).second.sumActs    += (*iter).second.sumActs;
+				(*iterHour).second.sumTime    += (*iter).second.sumTime;
+			}
+		}
+		secondPeriod.sumActs+=activHours[25].sumActs; secondPeriod.sumTime+=activHours[25].sumTime; 
+		secondPeriod.usefulActs+=activHours[25].usefulActs; secondPeriod.usefulTime+=activHours[25].usefulTime;
+
+		if (saDates2.GetSize()>1) //на втором графике одна точка не видна
+		{
+			double chartValue = radioTime.GetCheck() ? activHours[25].usefulTime/60/60/1000 : activHours[25].usefulActs;
+			chart.GetDataGrid().SetData(ii+1, 2, chartValue, 0); 
+			if (chartValue>iChartMax)
+				iChartMax=chartValue;
+			if (chartValue<iChartMin)
+				iChartMin=chartValue;
+			//вычисляем 2 наименьших акцентируемых параметра
+			double accentValue = radioTime.GetCheck() ? activHours[25].usefulTime : activHours[25].usefulActs;
+			if (ii==0)
+			{
+				min1=min2=activHours[25];
+				indexMin1=indexMin2=0;
+			} else {
+				if (radioTime.GetCheck() ? (accentValue < min1.usefulTime) : (accentValue < min1.usefulActs))
+				{
+					min2 = min1; indexMin2 = indexMin1;
+					min1 = activHours[25]; indexMin1 = ii;
+				} else if (radioTime.GetCheck() ? min2.usefulTime : min2.usefulActs) {
+					min2 = activHours[25]; indexMin2 = ii;
+				}
+			}
+			chart.SetRow(ii+1);
+			char ch_ii[100];
+			sprintf_s(ch_ii, "%s", saDates2[ii]);
+			chart.SetRowLabelIndex(2);
+			chart.SetRowLabel(ch_ii);
+			if (ii>=saDates1.GetSize())
+			{	//заполняем от первого графика не установленные точки метками ""
+				chart.SetRowLabelIndex(1);
+				chart.SetRowLabel("");
+			}
+		}
+
+		float sec = activHours[25].usefulTime/1000;
+		FormatSeconds(ch, sec);
+		table_period.SetItemText(row, 1, ch);
+		sec = activHours[25].sumTime/1000;
+		FormatSeconds(ch, sec);
+		table_period.SetItemText(row, 2, ch);
+		sprintf_s(ch, "%d", activHours[25].usefulActs);
+		table_period.SetItemText(row, 3, ch);
+		sprintf_s(ch, "%d", activHours[25].sumActs);
+		table_period.SetItemText(row, 4, ch);
+
+	}
+	if (MinusDays==2)
+	{
+		secondPeriod.usefulTime -= min1.usefulTime;
+		secondPeriod.usefulActs -= min1.usefulActs;
+		secondPeriod.sumActs    -= min1.sumActs;
+		secondPeriod.sumTime    -= min1.sumTime;
+		secondPeriod.usefulTime -= min2.usefulTime;
+		secondPeriod.usefulActs -= min2.usefulActs;
+		secondPeriod.sumActs    -= min2.sumActs;
+		secondPeriod.sumTime    -= min2.sumTime;
+		//удаление двух худших элементов таблицы
+		for (int ii=0; ii < table_period.GetItemCount(); ii++)
+		{
+			str = table_period.GetItemText(ii, 0);
+			if (str==saDates2[indexMin1] || str==saDates2[indexMin2])
+			{
+				table_period.DeleteItem(ii);
+				ii--;
+			}
+		}
+	}
+	str.LoadString(trif.GetIds(IDS_STRING1657));//Среднее
+	row=table_period.InsertItem(rowAddSecondPeriod, str);
+	sec = secondPeriod.usefulTime/1000/(saDates2.GetSize() - MinusDays);
+	FormatSeconds(ch, sec);
+	table_period.SetItemText(row, 1, ch);
+	sec = secondPeriod.sumTime/1000/(saDates2.GetSize() - MinusDays);
+	FormatSeconds(ch, sec);
+	table_period.SetItemText(row, 2, ch);
+	sprintf_s(ch, "%d", secondPeriod.usefulActs/(saDates2.GetSize() - MinusDays));
+	table_period.SetItemText(row, 3, ch);
+	sprintf_s(ch, "%d", secondPeriod.sumActs/(saDates2.GetSize() - MinusDays));
+	table_period.SetItemText(row, 4, ch);
+
+	str.LoadString(trif.GetIds(IDS_STRING1659));//Прирост
+	row = table_period.InsertItem(0, str);
+	double grow = (firstPeriod.usefulTime/saDates1.GetSize())/(secondPeriod.usefulTime/
+		(saDates2.GetSize() - MinusDays))*100.0 - 100.0;
+	sprintf_s(ch, "%.2f%%", grow);
+	CString theme;
+	theme.Format("%s %s полезного времени и %.2f%% полезных действий", str, ch, 
+		((double)firstPeriod.usefulActs/saDates1.GetSize())/((double)secondPeriod.usefulActs/
+		(saDates2.GetSize() - MinusDays))*100.0 - 100.0);
+	table_period.SetItemText(row, 1, ch);
+	grow = (firstPeriod.sumTime/saDates1.GetSize())/(secondPeriod.sumTime/
+		(saDates2.GetSize() - MinusDays))*100.0 - 100.0;
+	sprintf_s(ch, "%.2f%%", grow);
+	table_period.SetItemText(row, 2, ch);
+	grow = ((double)firstPeriod.usefulActs/saDates1.GetSize())/((double)secondPeriod.usefulActs/
+		(saDates2.GetSize() - MinusDays))*100.0 - 100.0;
+	sprintf_s(ch, "%.2f%%", grow);
+	table_period.SetItemText(row, 3, ch);
+	grow = ((double)firstPeriod.sumActs/saDates1.GetSize())/((double)secondPeriod.sumActs/
+		(saDates2.GetSize() - MinusDays))*100.0 - 100.0;
+	sprintf_s(ch, "%.2f%%", grow);
+	table_period.SetItemText(row, 4, ch);
+
+	table_period.InsertItem(0, "..");
+
+	//более корректно масштабируем график
+	iChartMax=((int)(iChartMax/10)+1)*10;
+	iChartMin=((int)(iChartMin/10)-1)*10;
+	if (saDates2.GetSize()>1 || saDates1.GetSize()>1)
+	{
+		chart.GetPlot().GetAxis(1,var).GetValueScale().SetMaximum(iChartMax);
+		chart.GetPlot().GetAxis(1,var).GetValueScale().SetMinimum(iChartMin);
+	}
+	return theme;
+}
+
+//подсчет и сравнение среднего полезного времени/действий двух промежутков времени 
+//		на графике строятся 2 линии с посуточной разверткой
+void CEactivityDlg::CompareTwoPeriodsOfMons(CStringArray& saDates1, CStringArray& saDates2)
+{
+	checkAutoUpdate.SetCheck(false);//отключаем автоматическое обновление
+	ActivityExe firstPeriod; //суммарная статистика по первому периоду, чтобы потом показать усредненную по дням
+	firstPeriod.sumActs=0; firstPeriod.sumTime=0; firstPeriod.usefulActs=0; firstPeriod.usefulTime=0;
+	ActivityExe secondPeriod; //суммарная статистика по первому периоду, чтобы потом показать усредненную по дням
+	secondPeriod.sumActs=0; secondPeriod.sumTime=0; secondPeriod.usefulActs=0; secondPeriod.usefulTime=0;
+
+	VARIANT var;//приводим график в исходное состояние
+	if (saDates2.GetSize()>1 || saDates1.GetSize()>1)
+	{
+		chart.GetPlot().GetAxis(1,var).GetValueScale().SetMaximum(60);
+		chart.GetPlot().GetAxis(1,var).GetValueScale().SetMinimum(-60);
+		chart.GetPlot().GetAxis(1,var).GetAxisTitle().SetText(radioTime.GetCheck() ? "Hours" : "Actions"); 
+		chart.GetPlot().GetAxis(0,var).GetAxisTitle().SetText("Month"); 
+		chart.SetRowCount(saDates1.GetSize() > saDates2.GetSize() ? saDates1.GetSize() : saDates2.GetSize());
+		if (saDates2.GetSize()>1)
+			chart.SetColumnCount(2);
+	}
+	double iChartMin=0;
+	double iChartMax=10;
+
+	table_period.DeleteAllItems();
+	char ch[100];
+	for (int ii=0; ii<saDates1.GetSize(); ii++)
+	{
+		char fname[2048];
+		sprintf_s(fname, "%sactiv_user_%s.am", path_actuser.c_str(), saDates1[ii]);
+		activ aDayActiv;
+		float monTime=0; float monUsefulTime=0; int monActs=0; int monUsefulActs=0;
+		if (!statsF.LoadFileMonth(fname, aDayActiv, monTime, monUsefulTime, monActs, monUsefulActs))
+		{
+			CString str;
+			str.LoadString(trif.GetIds(IDS_STRING1665));//не удалось загрузить статистику для дня
+			AfxMessageBox(str + saDates1[ii]);
+			return;
+		}
+		int row=table_period.InsertItem(0, saDates1[ii]);
+
+		if (saDates1.GetSize()>1)
+		{
+			double chartValue = radioTime.GetCheck() ? monUsefulTime/60/60/1000 : monUsefulActs;
+			chart.GetDataGrid().SetData(ii+1, 1, chartValue, 0); 
+			if (chartValue>iChartMax)
+				iChartMax=chartValue;
+			if (chartValue<iChartMin)
+				iChartMin=chartValue;
+			chart.SetRow(ii+1);
+			char ch_ii[100];
+			sprintf_s(ch_ii, "%s/%s", saDates1[ii], saDates1[ii]);
+			chart.SetRowLabelIndex(2);
+			chart.SetRowLabel(ch_ii);
+		}
+
+ 		firstPeriod.sumActs+=monActs; firstPeriod.sumTime+=monTime; 
+ 		firstPeriod.usefulActs+=monUsefulActs; firstPeriod.usefulTime+=monUsefulTime;
+		float sec =monUsefulTime/1000;
+		FormatSeconds(ch, sec);
+		table_period.SetItemText(row, 1, ch);
+		sec = monTime/1000;
+		FormatSeconds(ch, sec);
+		table_period.SetItemText(row, 2, ch);
+		sprintf_s(ch, "%d", monUsefulActs);
+		table_period.SetItemText(row, 3, ch);
+		sprintf_s(ch, "%d", monActs);
+		table_period.SetItemText(row, 4, ch);
+
+	}
+	CString str; 
+	str.LoadString(trif.GetIds(IDS_STRING1657));//Среднее
+	int row=table_period.InsertItem(0, str);
+	float sec = firstPeriod.usefulTime/1000/saDates1.GetSize();
+	FormatSeconds(ch, sec);
+	table_period.SetItemText(row, 1, ch);
+	sec = firstPeriod.sumTime/1000/saDates1.GetSize();
+	FormatSeconds(ch, sec);
+	table_period.SetItemText(row, 2, ch);
+	sprintf_s(ch, "%d", firstPeriod.usefulActs/saDates1.GetSize());
+	table_period.SetItemText(row, 3, ch);
+	sprintf_s(ch, "%d", firstPeriod.sumActs/saDates1.GetSize());
+	table_period.SetItemText(row, 4, ch);
+	table_period.InsertItem(0, "");
+
+	for (int ii=0; ii<saDates2.GetSize(); ii++)
+	{
+		char fname[2048];
+		sprintf_s(fname, "%sactiv_user_%s.am", path_actuser.c_str(), saDates2[ii]);
+		activ aDayActiv;
+		float monTime=0; float monUsefulTime=0; int monActs=0; int monUsefulActs=0;
+		if (!statsF.LoadFileMonth(fname, aDayActiv, monTime, monUsefulTime, monActs, monUsefulActs))
+		{
+			CString str;
+			str.LoadString(trif.GetIds(IDS_STRING1665));
+			AfxMessageBox(str + saDates2[ii]);
+			return;
+		}
+		int row=table_period.InsertItem(0, saDates2[ii]);
+
+		if (saDates2.GetSize()>1)
+		{
+			double chartValue = radioTime.GetCheck() ? monUsefulTime/60/60/1000 : monUsefulActs;
+			chart.GetDataGrid().SetData(ii+1, 2, chartValue, 0); 
+			if (chartValue>iChartMax)
+				iChartMax=chartValue;
+			if (chartValue<iChartMin)
+				iChartMin=chartValue;
+		}
+// 		chart.SetRow(ii+1);
+// 		char ch_ii[100];
+// 		sprintf_s(ch_ii, "%s\n%s", saDates1[ii], saDates1[ii]);
+//		chart.SetRowLabel(ch_ii);
+
+		secondPeriod.sumActs+=monActs; secondPeriod.sumTime+=monTime; 
+		secondPeriod.usefulActs+=monUsefulActs; secondPeriod.usefulTime+=monUsefulTime;
+		float sec =monUsefulTime/1000;
+		FormatSeconds(ch, sec);
+		table_period.SetItemText(row, 1, ch);
+		sec = monTime/1000;
+		FormatSeconds(ch, sec);
+		table_period.SetItemText(row, 2, ch);
+		sprintf_s(ch, "%d", monUsefulActs);
+		table_period.SetItemText(row, 3, ch);
+		sprintf_s(ch, "%d", monActs);
+		table_period.SetItemText(row, 4, ch);
+	}
+	str.LoadString(trif.GetIds(IDS_STRING1657));//Среднее
+	row=table_period.InsertItem(0, str);
+	sec = secondPeriod.usefulTime/1000/saDates2.GetSize();
+	FormatSeconds(ch, sec);
+	table_period.SetItemText(row, 1, ch);
+	sec = secondPeriod.sumTime/1000/saDates2.GetSize();
+	FormatSeconds(ch, sec);
+	table_period.SetItemText(row, 2, ch);
+	sprintf_s(ch, "%d", secondPeriod.usefulActs/saDates2.GetSize());
+	table_period.SetItemText(row, 3, ch);
+	sprintf_s(ch, "%d", secondPeriod.sumActs/saDates2.GetSize());
+	table_period.SetItemText(row, 4, ch);
+
+	str.LoadString(trif.GetIds(IDS_STRING1659));//Прирост
+	row = table_period.InsertItem(0, str);
+	double grow = (firstPeriod.usefulTime/saDates1.GetSize())/(secondPeriod.usefulTime/saDates2.GetSize())*100.0 - 100.0;
+	sprintf_s(ch, "%.2f%%", grow);
+	table_period.SetItemText(row, 1, ch);
+	grow = (firstPeriod.sumTime/saDates1.GetSize())/(secondPeriod.sumTime/saDates2.GetSize())*100.0 - 100.0;
+	sprintf_s(ch, "%.2f%%", grow);
+	table_period.SetItemText(row, 2, ch);
+	grow = ((double)firstPeriod.usefulActs/saDates1.GetSize())/((double)secondPeriod.usefulActs/saDates2.GetSize())*100.0 - 100.0;
+	sprintf_s(ch, "%.2f%%", grow);
+	table_period.SetItemText(row, 3, ch);
+	grow = ((double)firstPeriod.sumActs/saDates1.GetSize())/((double)secondPeriod.sumActs/saDates2.GetSize())*100.0 - 100.0;
+	sprintf_s(ch, "%.2f%%", grow);
+	table_period.SetItemText(row, 4, ch);
+
+	table_period.InsertItem(0, "..");
+
+	//более корректно масштабируем график
+	iChartMax=((int)(iChartMax/10)+1)*10;
+	iChartMin=((int)(iChartMin/10)-1)*10;
+	if (saDates2.GetSize()>1 || saDates1.GetSize()>1)
+	{
+		chart.GetPlot().GetAxis(1,var).GetValueScale().SetMaximum(iChartMax);
+		chart.GetPlot().GetAxis(1,var).GetValueScale().SetMinimum(iChartMin);
+	}
+}
 
 void CEactivityDlg::OnMenu()
 {
@@ -2695,10 +3075,89 @@ void CEactivityDlg::OnGetreportFromlast20workingdays()
 
 void CEactivityDlg::OnReportsUsefulActionsFromLast5WorkingDays()
 {
-	CalculateAverageUsefulParameter(5, USEFULACTS);
+	CalculateAverageUsefulParameter(5);
 }
 
 void CEactivityDlg::OnBnClickedRadio1()
 {
 	OnOk2();
+}
+
+void CEactivityDlg::OnReportsUsefulParameterFromSelectedPeriod()
+{
+	CReportSelectedPeriod report;
+	report.path_actuser=path_actuser;
+	POSITION pos = table_period.GetFirstSelectedItemPosition();
+	if (!pos)
+	{
+		AfxMessageBox(trif.GetIds(IDS_STRING1663));
+		return;
+	}
+	CString date = table_period.GetItemText((int)pos-1, 0);
+	while (pos)
+	{
+		int nextItem = table_period.GetNextSelectedItem(pos);
+		TRACE(_T("Item %d was selected!\n"), nextItem);
+		date = table_period.GetItemText(nextItem, 0);
+		report.saDates.Add(date);
+	}
+	if (report.DoModal()!=IDOK)
+		return;
+	if (!report.saDates.GetSize() || !report.saDates2.GetSize())
+	{
+		AfxMessageBox(trif.GetIds(IDS_STRING1661));
+		return;
+	}
+	switch (report.saDates[0].GetLength())
+	{
+	case DAY:
+		CompareTwoPeriodsOfDays(report.saDates, report.saDates2);
+		break;
+	case MON:
+		CompareTwoPeriodsOfMons(report.saDates, report.saDates2);
+		break;
+	}
+}
+
+void CEactivityDlg::OnCompare2periods()
+{
+	OnReportsUsefulParameterFromSelectedPeriod();
+}
+
+void CEactivityDlg::OnCompareWithBest5Days()
+{
+	POSITION pos = table_period.GetFirstSelectedItemPosition();
+	if (!pos)
+	{
+		AfxMessageBox(trif.GetIds(IDS_STRING1663));
+		return;
+	}
+	CString date = table_period.GetItemText((int)pos-1, 0);
+	CStringArray saDates;
+	while (pos)
+	{
+		int nextItem = table_period.GetNextSelectedItem(pos);
+		TRACE(_T("Item %d was selected!\n"), nextItem);
+		date = table_period.GetItemText(nextItem, 0);
+		saDates.Add(date);
+	}
+
+	CStringArray saDates2;
+	CTime ct=CTime::GetCurrentTime();
+	ct-=60*60*24*7;
+	while (ct.GetDayOfWeek()!=2)
+	{
+		ct-=60*60*24;
+	}
+	for (int ii=1; ii<=7; ii++)
+	{
+		date.Format("%d_%d_%d", ct.GetYear(), ct.GetMonth(), ct.GetDay());
+		saDates2.Add(date);
+		ct+=60*60*24;
+	}
+	CString res = CompareTwoPeriodsOfDays(saDates, saDates2, 2);
+//	if (res!="")
+//		SendMailMessage("smtp.gmail.com", 587, "silencenotif@gmail.com", 
+//			"densaf.ace@gmail.com", "densaf.ace@gmail.com", "GhjcajhyZ88", res, "TablePeriod");
+
 }

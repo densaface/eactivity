@@ -22,7 +22,9 @@ static char THIS_FILE[]=__FILE__;
 #define NumPartner 0;//мое
 //#define NumPartner 1;//xStarter
 
-#ifdef ReleaseRU
+#ifdef DebugRU
+#define NumLan 1;//русский
+#elif ReleaseRU
 #define NumLan 1;//русский
 #else
 #define NumLan 2;//английский

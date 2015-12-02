@@ -3,6 +3,7 @@
 #include "koeff.h"
 #include "newmenu.h"
 #include "ViewRules.h"
+#include "openssl-0.9.8l\CSmtp.h"
 #include <string>
 #include <map>
 #include <iostream>
@@ -12,6 +13,7 @@
 #include <vector>
 #include <algorithm>
 #include "XHTMLStatic.h"
+#include "statsfunc.h"
 #include "graph\mschart.h"
 #include "graph\vcaxis.h"
 #include "graph\vcvaluescale.h"
@@ -22,7 +24,11 @@
 #include "graph\vcSeries.h"
 #include "graph\vcpen.h"
 #include "graph\vccolor.h"
+#include "graph\vcdatapoints.h"
+#include "graph\vcdatapoint.h"
+#include "graph\vcdatapointlabel.h"
 #include "ListCtrl\CGridListCtrlEx\CGridListCtrlEx.h"
+#include "ReportSelectedPeriod.h"
 #include "afxwin.h"
 #define WM_USER30 WM_USER + 30
 #define USEFULTIME 1
@@ -38,43 +44,13 @@ using namespace std;
 
 /////////////////////////////////////////////////////////////////////////////
 // CEactivityDlg dialog
-struct Activity
-{
-	HWND hwMain;
-	HWND hwChil;
-	string exe;
-	string capt;
-	int sumActs;		// суммарное количество кликов/нажатий клавиатуры
-	int usefulActs;		// клики/нажати€ клавиатуры засчитанные как полезные
-	int hour;
-	float sumTime; //врем€, уделенное какой-либо программе, в мс 
-	float usefulTime; //врем€, засчитанное как полезное с учетом пользовательских коэффициентов
-};
-
-//структура дл€ хранени€ активности только по EXE (сокращенна€ форма Activity)
-struct ActivityExe
-{
-	string exe;//поле дублирующее ключ справочника, 
-				// нужно дл€ сортировки при перегоне справочника в векторный массив
-	int sumActs;
-	int usefulActs;
-	int hour;
-	float sumTime; //врем€, уделенное программе, в мс
-	float usefulTime;
-};
-
-typedef map<string, Activity, less<string> > activ;
-typedef map<string, ActivityExe, less<string> > activ_exe;
-typedef map<int, ActivityExe, less<int> > activ_hours;
-typedef map<string, string, less<string> > forExe;
-typedef map<HWND, string, less<HWND> > exeSpis;
-typedef map<HWND, HWND, less<HWND> > GetParSpis;
 
 class CEactivityDlg : public CDialog
 {
 // Construction
 	CNewMenu MainMenu;
-	CNewMenu menu_cur_day;
+	CNewMenu menuExeCapt;
+	CNewMenu menuTablePeriod;
 //	CPPToolTip tool_tip;
 	BOOL __SetHook__(BOOL fSet);
 	BOOL hookload;//запущен хук или нет
@@ -89,6 +65,7 @@ class CEactivityDlg : public CDialog
 	LRESULT OnIcon(WPARAM wp, LPARAM lp);
 	HHOOK SetHook;
 	UINT RR, GG;//цвет статика отставани€ в текущем дне
+	StatsFunc statsF; //функции работы со статистикой вынесены в отдельный файл
 public:
 	CEactivityDlg(CWnd* pParent = NULL);	// standard constructor
 	void Exit();
@@ -105,8 +82,10 @@ public:
 	void CalculateUsefulTimeAndActs(activ &allActiv, activ_exe &exeActiv, activ_hours &activHours);
 	int GetUsefulActsFromExe(string exe, activ &forLoad1);
 	float GetTimeFromExe (string exe, activ &forLoad1);
-	void CalculateAverageUsefulParameter(int lastDays, int accentParameter = USEFULTIME);
-	
+	void CalculateAverageUsefulParameter(int lastDays);
+	CString CompareTwoPeriodsOfDays(CStringArray& saDates1, CStringArray& saDates2, int MinusDays=0);
+	void CompareTwoPeriodsOfMons(CStringArray& saDates1, CStringArray& saDates2);
+
 	void AddToExeCapt(char *capt, string &exe, HWND HChil, HWND hwMain, int sumActs, float sumTime);
 //	void AddToOnlyExe(string &exe, int sumActs, float sumTime);
 	void AnalActivUser(SendStruct* curAct);
@@ -120,7 +99,6 @@ public:
 	//дл€ выделенного дн€ (не сегодн€шнего)
 	string SelectedDay; // содержит дату не текущего дн€ в формате 2015_11_23
 	activ aSelDayView;
-	string curYear;
 	activ aCurYear;	//статистика по ћ≈—я÷јћ дл€ текущего показа в “«ѕ¬
 	activ aCurMon;	//статистика по дн€м дл€ текущего показа в “«ѕ¬, 
 		//подробности про aCurMon в описании UpdatePeriodTableViewByHours
@@ -131,21 +109,25 @@ public:
 
 	void SaveCurDay(bool smena=false);
 	void LoadCurDay();
+	void SendReportOfDayOnMail(string dateToday);
+	BOOL SendMailMessage(LPCTSTR szServer,
+		UINT port, 
+		LPCTSTR szFrom, 
+		LPCTSTR szTo, 
+		LPCTSTR szUser, 
+		LPCTSTR szPas, 
+		LPCTSTR szSubject, 
+		LPCTSTR szMessage);
+
 	bool LoadFileDay(string fname, activ &forLoad1);
 	string curDayFileName;//содержит дату текущего дн€ "activ_user_2015_11_26.a"
 	int curHour; //текущий час, смена провер€етс€ каждые 5 сек
 	
 	void SaveCurMonth(bool smena=false);
 	void LoadCurMonth();
-	bool LoadFileMonth(string fname, activ &forLoad1, float &sumTime, int &sumActs, int &usefulActs);
-	void LoadMonthFromStatDays(activ &forLoad1, string mon, float &sumTime, int &sumActs, int &usefulActs);
-	void SumDayStat(activ &forLoad1, string fname, float &sumTime, int &sumActs, int &usefulActs);
 	string curMonFileName;
 	
 	void SaveYear();
-	void LoadYear();
-	void LoadYearFromStatMons(string mon, float &sumTime, int &sumAct, int &usefulActs);
-	void SumMonStat(string fname, float &sumTime, int &sumAct, int &usefulActs);
 	
 	rulSpis RULES;
 	void SaveRules();
@@ -198,7 +180,8 @@ protected:
 	afx_msg void OnSelchangeComboDownTable();
 	afx_msg void OnDblclkListCurDay(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnActivitySetKoef();
-	afx_msg void OnRclickListCurDay(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void OnRclickTableExeCapt(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void OnRclickPeriodTable(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnActivitySetkoefeExe();
 	afx_msg void OnChangeEDITcapts();
 	afx_msg void OnActivityShowAllCapts();
@@ -220,6 +203,10 @@ public:
 	CButton radioTime;
 	CButton radioActs;
 	afx_msg void OnBnClickedRadio1();
+	afx_msg void OnReportsUsefulParameterFromSelectedPeriod();
+	CButton checkAutoUpdate;
+	afx_msg void OnCompare2periods();
+	afx_msg void OnCompareWithBest5Days();
 };
 
 //{{AFX_INSERT_LOCATION}}
