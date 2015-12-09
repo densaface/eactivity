@@ -1,24 +1,18 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "eactivity", "eactivity.vcproj", "{9C969C16-3604-49DD-BBDB-02C50AAF9250}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "eactivity", "eactivity\eactivity.vcproj", "{9AB39731-EB75-4961-B74A-DAC089366E0D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
-		DebugRU|Win32 = DebugRU|Win32
 		Release|Win32 = Release|Win32
-		ReleaseRU|Win32 = ReleaseRU|Win32
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{9C969C16-3604-49DD-BBDB-02C50AAF9250}.Debug|Win32.ActiveCfg = Debug|Win32
-		{9C969C16-3604-49DD-BBDB-02C50AAF9250}.Debug|Win32.Build.0 = Debug|Win32
-		{9C969C16-3604-49DD-BBDB-02C50AAF9250}.DebugRU|Win32.ActiveCfg = DebugRU|Win32
-		{9C969C16-3604-49DD-BBDB-02C50AAF9250}.DebugRU|Win32.Build.0 = DebugRU|Win32
-		{9C969C16-3604-49DD-BBDB-02C50AAF9250}.Release|Win32.ActiveCfg = Release|Win32
-		{9C969C16-3604-49DD-BBDB-02C50AAF9250}.Release|Win32.Build.0 = Release|Win32
-		{9C969C16-3604-49DD-BBDB-02C50AAF9250}.ReleaseRU|Win32.ActiveCfg = ReleaseRU|Win32
-		{9C969C16-3604-49DD-BBDB-02C50AAF9250}.ReleaseRU|Win32.Build.0 = ReleaseRU|Win32
+		{9AB39731-EB75-4961-B74A-DAC089366E0D}.Debug|Win32.ActiveCfg = Debug|Win32
+		{9AB39731-EB75-4961-B74A-DAC089366E0D}.Debug|Win32.Build.0 = Debug|Win32
+		{9AB39731-EB75-4961-B74A-DAC089366E0D}.Release|Win32.ActiveCfg = Release|Win32
+		{9AB39731-EB75-4961-B74A-DAC089366E0D}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

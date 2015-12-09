@@ -1,0 +1,451 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#ifndef APSTUDIO_INVOKED
+#include "targetver.h"
+#endif
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Russian resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_RUS)
+#ifdef _WIN32
+LANGUAGE LANG_RUSSIAN, SUBLANG_DEFAULT
+#pragma code_page(1251)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#ifndef APSTUDIO_INVOKED\r\n"
+    "#include ""targetver.h""\r\n"
+    "#endif\r\n"
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
+    "#define _AFX_NO_OLE_RESOURCES\r\n"
+    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)\r\n"
+    "LANGUAGE 9, 1\r\n"
+    "#pragma code_page(1252)\r\n"
+    "#include ""res\\eactivity.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
+    "#include ""afxres.rc""     // Standard components\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_MAINFRAME           ICON                    "res\\eactivity.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_ABOUTBOX DIALOGEX 0, 0, 170, 62
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "About eactivity"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    ICON            IDR_MAINFRAME,IDC_STATIC,14,14,21,20
+    LTEXT           "eactivity, Version 1.0",IDC_STATIC,42,14,114,8,SS_NOPREFIX
+    LTEXT           "Copyright (C) 2015",IDC_STATIC,42,26,114,8
+    DEFPUSHBUTTON   "OK",IDOK,113,41,50,14,WS_GROUP
+END
+
+IDD_EACTIVITY_DIALOG DIALOGEX 0, 0, 617, 442
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_MINIMIZEBOX | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_APPWINDOW
+CAPTION "ActivateMe"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "test",IDOK,503,229,50,14
+    PUSHBUTTON      "Выход",IDCANCEL,558,229,50,14
+    DEFPUSHBUTTON   "Refresh",IDOK2,468,137,50,14
+    CONTROL         "",IDC_LIST2,"SysListView32",LVS_REPORT | LVS_SHOWSELALWAYS | WS_BORDER | WS_GROUP | WS_TABSTOP,7,173,452,122
+    PUSHBUTTON      "Редактировать коэффициенты",IDC_BUTTON1,468,173,114,14
+    COMBOBOX        IDC_COMBO1,362,158,96,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "",IDC_LIST3,"SysListView32",LVS_REPORT | LVS_SHOWSELALWAYS | WS_BORDER | WS_GROUP | WS_TABSTOP,7,21,452,130
+    LTEXT           "Статистика для текущего месяца",IDC_STATIC_cur_mon,3,7,319,8
+    LTEXT           "Активность для текущего дня",IDC_STATIC_curday,2,158,319,8
+    EDITTEXT        IDC_EDITr17,324,158,18,14,ES_AUTOHSCROLL | ES_NUMBER,WS_EX_STATICEDGE
+    CONTROL         "",IDC_SPIN2,"msctls_updown32",UDS_SETBUDDYINT | UDS_ARROWKEYS,342,158,11,14
+    COMBOBOX        IDC_COMBO2,325,4,134,56,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CTEXT           "__",IDC_STATIC_percent_day,465,31,143,27
+    CTEXT           "__",IDC_STATIC_percent_day2,465,20,143,8
+    CTEXT           "__",IDC_STATIC_percent_hour,465,58,143,8
+    CTEXT           "__",IDC_STATIC_percent_hour2,465,69,143,27
+    CONTROL         "Полезное время",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP,468,284,73,10
+    CONTROL         "Пол. действия",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,545,284,65,10
+    CTEXT           "Делать акцент на:",IDC_STATIC_percent_hour3,471,273,129,8
+    CONTROL         "Автообновление таблиц",IDC_CHECK1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,468,124,140,10
+    CONTROL         "Custom1",IDC_CHARTCTRL,"ChartCtrl",WS_CLIPCHILDREN | WS_TABSTOP,7,317,462,111
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_ABOUTBOX, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 163
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 55
+    END
+
+    IDD_EACTIVITY_DIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 610
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 435
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog Info
+//
+
+IDD_EACTIVITY_DIALOG DLGINIT
+BEGIN
+    IDC_COMBO1, 0x403, 19, 0
+0xeed1, 0xf2f0, 0xf0e8, 0xe2ee, 0xf2e0, 0x20fc, 0xeeef, 0x4520, 0x4558, 
+"\000" 
+    IDC_COMBO1, 0x403, 22, 0
+0xeed1, 0xf2f0, 0xf0e8, 0xe2ee, 0xf2e0, 0x20fc, 0xeeef, 0xe120, 0xebe0, 
+0xe0eb, 0x00ec, 
+    IDC_COMBO1, 0x403, 23, 0
+0xeed1, 0xf2f0, 0xf0e8, 0xe2ee, 0xf2e0, 0x20fc, 0xeeef, 0xe220, 0xe5f0, 
+0xe5ec, 0xe8ed, "\000" 
+    IDC_COMBO1, 0x403, 25, 0
+0xeed1, 0xf2f0, 0xf0e8, 0xe2ee, 0xf2e0, 0x20fc, 0xeeef, 0xe420, 0xe9e5, 
+0xf2f1, 0xe8e2, 0xecff, "\000" 
+    IDC_COMBO2, 0x403, 21, 0
+0xf0c3, 0xeff3, 0xe8ef, 0xeef0, 0xe0e2, 0xfcf2, 0xef20, 0x20ee, 0xede4, 
+0xecff, "\000" 
+    IDC_COMBO2, 0x403, 24, 0
+0xf0c3, 0xeff3, 0xe8ef, 0xeef0, 0xe0e2, 0xfcf2, 0xef20, 0x20ee, 0xe5ec, 
+0xfff1, 0xe0f6, 0x00ec, 
+    0
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_MAIN_MENU MENU 
+BEGIN
+    POPUP "Reports"
+    BEGIN
+        MENUITEM "Useful time from last 5 working days", ID_Menu
+        MENUITEM "Useful time from last 10 working days", ID_GETREPORT_FROMLAST10WORKINGDAYS
+        MENUITEM "Useful time from last 20 working days", ID_GETREPORT_FROMLAST20WORKINGDAYS
+        MENUITEM "Useful actions from last 5 working days", ID_REPORTS_USEFULACTIONSFROMLAST5WORKINGDAYS
+        MENUITEM "Useful parameter from selected period", ID_REPORTS_USEFULPARAMETERFROMSELECTEDPERIOD
+    END
+END
+
+IDR_MAIN_MENU_RU MENU 
+BEGIN
+    POPUP "Reports"
+    BEGIN
+        MENUITEM "Отчет за последние 5 рабочих дней", ID_Menu
+        MENUITEM "Useful time from last 10 working days", ID_GETREPORT_FROMLAST10WORKINGDAYS
+        MENUITEM "Useful time from last 20 working days", ID_GETREPORT_FROMLAST20WORKINGDAYS
+        MENUITEM "Useful actions from last 5 working days", ID_REPORTS_USEFULACTIONSFROMLAST5WORKINGDAYS
+        MENUITEM "Useful parameter from selected period", ID_REPORTS_USEFULPARAMETERFROMSELECTEDPERIOD
+    END
+END
+
+IDR_CONTEXT_TABLEPERIOD_RU MENU 
+BEGIN
+    POPUP "IDR_CONTEXT_EXECAPT_RU"
+    BEGIN
+        MENUITEM "Сравнить выбранные дни с другим произвольным периодом", ID_Compare2Periods
+        MENUITEM "Сравнить выбранные дни с 5ю лучшими рабочими днями прошлой недели", ID_IDR_32783
+    END
+END
+
+IDR_CONTEXT_EXECAPT_RU MENU 
+BEGIN
+    POPUP "IDR_CONTEXT_EXECAPT_RU"
+    BEGIN
+        MENUITEM "Установить коэффициент для выделенного EXE файла", ID_ACTIVITY_SETKOEFEXE
+        MENUITEM "Установить коэффициент для выделенного заголовка", ID_ACTIVITY_SETKOEF
+        MENUITEM "Показать все заголовки для выделенного EXE файла", ID_ACTIVITY_EXE
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDS_ABOUTBOX            "&About eactivity..."
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_STRING1279          "Не устанавливается перехватчик клавиатуры и мыши!!! Отправьте это сообщение на admin@autoclickextreme.com"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_STRING1280          "Hook is not set!!! Send this message at admin@autoclickextreme.com"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_STRING1569          "Активность"
+    IDS_STRING1570          "Activity"
+    IDS_STRING1571          "Активность для <b>%s</b>: полезного времени <b>%s</b> из %s, полезных действий <b>%d</b> из %d"
+    IDS_STRING1572          "Activity for <b>%s</b>: useful time <b>%s</b> from %s, useful actions <b>%d</b> from %d"
+    IDS_STRING1573          "Не найден соответствующий файл статистики"
+    IDS_STRING1574          "The respective statistics file was not found"
+    IDS_STRING1575          "Активность <b>СЕГОДНЯ</b>: полезного времени <b>%s</b> из %s, полезных действий <b>%d</b> из %d"
+    IDS_STRING1576          "Activity for <b>TODAY</b>: useful time <b>%s</b> from %s, useful actions <b>%d</b> from %d"
+    IDS_STRING1577          "К заголовку и к EXE"
+    IDS_STRING1578          "To the header and to EXE"
+    IDS_STRING1579          "Ко всему EXE"
+    IDS_STRING1580          "To the whole EXE "
+    IDS_STRING1581          "Вы уверены что хотите удалить коэффициент?"
+    IDS_STRING1582          "Are you sure you want to delete the coefficient"
+    IDS_STRING1583          "Сколько показывать заголовков к каждому EXE"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_STRING1584          "How many headers should be displayed for each EXE"
+    IDS_STRING1585          "Показать все заголовки для выделенного EXE файла"
+    IDS_STRING1586          "Show all headers for selected EXE file"
+    IDS_STRING1587          "Вернуться к прежнему виду"
+    IDS_STRING1588          "Return to the previous view"
+    IDS_STRING1589          "        %d заголов%s"
+    IDS_STRING1590          "        %d headers"
+    IDS_STRING1591          "Активность для <b>ТЕКУЩЕГО МЕСЯЦА</b>: полезное время <b>%s</b> из %s, полезных действий <b>%d</b> из %d"
+    IDS_STRING1592          "Activity for the <b>CURRENT MONTH</b>: useful time <b>%s</b> from %s, useful actions <b>%d</b> from %d"
+    IDS_STRING1593          "Активность для <b>ТЕКУЩЕГО ГОДА</b>: полезное время <b>%s</b> из %s, полезных действий <b>%d</b> из %d"
+    IDS_STRING1594          "Activity for the <b>CURRENT YEAR</b>: useful time <b>%s</b> from %s, useful actions <b>%d</b> from %d"
+    IDS_STRING1595          "Активность для <b>%s</b>: полезное время <b>%s</b> из %s, полезных действий <b>%d</b> из %d"
+    IDS_STRING1596          "Activity for <b>%s</b>: useful time <b>%s</b> from %s, useful actions <b>%d</b> from %d"
+    IDS_STRING1597          "Частично к заголовку и к EXE"
+    IDS_STRING1598          "Partially to the header and to EXE"
+    IDS_STRING1599          "Сортировать по EXE"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_STRING1600          "Sort by EXE"
+    IDS_STRING1601          "Сортировать по баллам"
+    IDS_STRING1602          "Sort by useful actions"
+    IDS_STRING1603          "Сортировать по времени"
+    IDS_STRING1604          "Sort by time"
+    IDS_STRING1605          "Сортировать по действиям"
+    IDS_STRING1606          "Sort by actions"
+    IDS_STRING1607          "Группировать по дням"
+    IDS_STRING1608          "Group by days"
+    IDS_STRING1609          "Группировать по месяцам"
+    IDS_STRING1610          "Group by months"
+    IDS_STRING1611          "Обновить"
+    IDS_STRING1612          "Refresh"
+    IDS_STRING1613          "Редактировать коэффициенты"
+    IDS_STRING1614          "Edit coefficients"
+    IDS_STRING1615          "Установить коэффициент"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_STRING1616          "Set the coefficient"
+    IDS_STRING1617          "Коэффициент (for examp 1.50, -3.00, 0.33):"
+    IDS_STRING1618          "Coefficient (for examp 1.50, -3.00, 0.33):"
+    IDS_STRING1619          "Совпадение заголовка:"
+    IDS_STRING1620          "Header matching"
+    IDS_STRING1621          "Точное"
+    IDS_STRING1622          "Full"
+    IDS_STRING1623          "Частичное"
+    IDS_STRING1624          "Partial"
+    IDS_STRING1625          "Привязка"
+    IDS_STRING1626          "Binding"
+    IDS_STRING1627          "Коэффициент"
+    IDS_STRING1628          "Coefficient"
+    IDS_STRING1629          "Редактирование коэффициентов"
+    IDS_STRING1630          "Editing of coefficients"
+    IDS_STRING1631          "Удалить коэффициент"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_STRING1632          "Delete coefficient"
+    IDS_STRING1633          "Редактировать"
+    IDS_STRING1634          "Edit"
+    IDS_STRING1635          "Группировать по часам"
+    IDS_STRING1636          "Group by hours"
+    IDS_STRING1637          "Активность <b>СЕГОДНЯ</b>: полезное время %s из %s, полезных действий %d из %d"
+    IDS_STRING1638          "Activity for <b>TODAY</b>: useful time <b>%s</b> from %s, useful actions <b>%d</b> from %d"
+    IDS_STRING1639          "Час"
+    IDS_STRING1640          "Hour"
+    IDS_STRING1641          "День"
+    IDS_STRING1642          "Day"
+    IDS_STRING1643          "Месяц"
+    IDS_STRING1644          "Month"
+    IDS_STRING1645          "Не достаточно дней для выборки"
+    IDS_STRING1646          "Not enough days of statistics"
+    IDS_STRING1647          "Ваше опережение за текущий час:"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_STRING1648          "Ваше опережение за текущий час:"
+    IDS_STRING1649          "Ваше отставание за текущий час:"
+    IDS_STRING1650          "Ваше отставание за текущий час:"
+    IDS_STRING1651          "Ваше опережение за текущий день:"
+    IDS_STRING1652          "Ваше опережение за текущий день:"
+    IDS_STRING1653          "Ваше отставание за текущий день:"
+    IDS_STRING1654          "Ваше отставание за текущий день:"
+    IDS_STRING1655          "Не удалось загрузить статистику для дня: "
+    IDS_STRING1656          "Не удалось загрузить статистику для дня: "
+    IDS_STRING1657          "Среднее:"
+    IDS_STRING1658          "Average:"
+    IDS_STRING1659          "Прирост:"
+    IDS_STRING1660          "Growth:"
+    IDS_STRING1661          "Выбран неверный диапазон дат"
+    IDS_STRING1662          "Выбран неверный диапазон дат"
+    IDS_STRING1663          "Выберете в таблице временных интервалов один или несколько элементов"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_STRING1664          "Выберете в таблице временных интервалов один или несколько элементов"
+    IDS_STRING1665          "Не удалось загрузить статистику для месяца: "
+    IDS_STRING1666          "Не удалось загрузить статистику для месяца: "
+    IDS_STRING1667          "Сравнение двух временных периодов"
+    IDS_STRING1668          "___"
+    IDS_STRING1669          "Отчет за определенный период"
+    IDS_STRING1670          "___"
+END
+
+#endif    // Russian resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,0,0,1
+ PRODUCTVERSION 1,0,0,1
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904e4"
+        BEGIN
+            VALUE "CompanyName", "TODO: <Company name>"
+            VALUE "FileDescription", "TODO: <File description>"
+            VALUE "FileVersion", "1.0.0.1"
+            VALUE "InternalName", "eactivity.exe"
+            VALUE "LegalCopyright", "TODO: (c) <Company name>.  All rights reserved."
+            VALUE "OriginalFilename", "eactivity.exe"
+            VALUE "ProductName", "TODO: <Product name>"
+            VALUE "ProductVersion", "1.0.0.1"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1252
+    END
+END
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#define _AFX_NO_SPLITTER_RESOURCES
+#define _AFX_NO_OLE_RESOURCES
+#define _AFX_NO_TRACKER_RESOURCES
+#define _AFX_NO_PROPERTY_RESOURCES
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE 9, 1
+#pragma code_page(1252)
+#include "res\eactivity.rc2"  // non-Microsoft Visual C++ edited resources
+#include "afxres.rc"     // Standard components
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+
