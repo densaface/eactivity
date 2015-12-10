@@ -97,7 +97,7 @@ BEGIN
     DEFPUSHBUTTON   "test",IDOK,503,229,50,14
     PUSHBUTTON      "Выход",IDCANCEL,558,229,50,14
     DEFPUSHBUTTON   "Refresh",IDOK2,468,137,50,14
-    CONTROL         "",IDC_LIST2,"SysListView32",LVS_REPORT | LVS_SHOWSELALWAYS | WS_BORDER | WS_GROUP | WS_TABSTOP,7,173,452,122
+    CONTROL         "",IDC_LIST2,"SysListView32",LVS_REPORT | LVS_SHOWSELALWAYS | WS_BORDER | WS_GROUP | WS_TABSTOP,7,173,452,127
     PUSHBUTTON      "Редактировать коэффициенты",IDC_BUTTON1,468,173,114,14
     COMBOBOX        IDC_COMBO1,362,158,96,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "",IDC_LIST3,"SysListView32",LVS_REPORT | LVS_SHOWSELALWAYS | WS_BORDER | WS_GROUP | WS_TABSTOP,7,21,452,130
@@ -110,11 +110,104 @@ BEGIN
     CTEXT           "__",IDC_STATIC_percent_day2,465,20,143,8
     CTEXT           "__",IDC_STATIC_percent_hour,465,58,143,8
     CTEXT           "__",IDC_STATIC_percent_hour2,465,69,143,27
-    CONTROL         "Полезное время",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP,468,284,73,10
-    CONTROL         "Пол. действия",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,545,284,65,10
-    CTEXT           "Делать акцент на:",IDC_STATIC_percent_hour3,471,273,129,8
+    CONTROL         "Полезное время",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP,465,303,73,10
+    CONTROL         "Пол. действия",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,542,303,65,10
+    CTEXT           "На графике отображать:",IDC_STATIC_percent_hour3,468,292,129,8
     CONTROL         "Автообновление таблиц",IDC_CHECK1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,468,124,140,10
-    CONTROL         "Custom1",IDC_CHARTCTRL,"ChartCtrl",WS_CLIPCHILDREN | WS_TABSTOP,7,317,462,111
+    CONTROL         "Custom1",IDC_CHARTCTRL,"ChartCtrl",WS_CLIPCHILDREN | WS_TABSTOP,7,317,603,111
+END
+
+IDD_ReportOption DIALOGEX 0, 0, 399, 141
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Отчет за определенный период"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    CONTROL         "Использовать последние активные дни",IDC_RADIO5,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,7,11,180,10
+    CONTROL         "Использовать заданный диапазон",IDC_RADIO22,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,207,11,185,10
+    CONTROL         "Полезное время",IDC_RADIO3,"Button",BS_AUTORADIOBUTTON | WS_GROUP,223,86,73,10
+    CONTROL         "Пол. действия",IDC_RADIO4,"Button",BS_AUTORADIOBUTTON,301,86,65,10
+    DEFPUSHBUTTON   "OK",IDOK,205,120,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,342,120,50,14
+    COMBOBOX        IDC_COMBO1,7,42,65,49,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Количество дней для отчета",IDC_STATIC,7,26,138,8
+    CONTROL         "",IDC_DATETIMEPICKER1,"SysDateTimePick32",DTS_RIGHTALIGN | WS_TABSTOP,209,26,82,15
+    CONTROL         "",IDC_DATETIMEPICKER2,"SysDateTimePick32",DTS_RIGHTALIGN | WS_TABSTOP,310,26,82,15
+    CONTROL         "Не учитывать выходные в отчете",IDC_CHECK1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,75,160,10
+    LTEXT           "Порог полезного времени, ниже которого день принимается за выходной (в часах)",IDC_STATIC,23,90,163,19
+    COMBOBOX        IDC_COMBO2,23,112,65,56,CBS_DROPDOWN | WS_DISABLED | WS_VSCROLL | WS_TABSTOP
+    CTEXT           "На графике отображать:",IDC_STATIC_percent_hour3,227,75,129,8
+END
+
+IDD_Rules DIALOG  0, 0, 366, 123
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Dialog"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,9,102,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,309,102,50,14
+    CONTROL         "",IDC_LIST3,"SysListView32",LVS_REPORT | LVS_SHOWSELALWAYS | WS_BORDER | WS_GROUP | WS_TABSTOP,9,15,350,79
+    PUSHBUTTON      "Delete Rule",IDC_BUTTON1,100,102,81,14
+    PUSHBUTTON      "Редактировать",IDC_BUTTON2,217,102,64,14
+END
+
+IDD_SetKoef DIALOGEX 0, 0, 262, 119
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Dialog"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,55,98,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,205,98,50,14
+    EDITTEXT        IDC_EDIT1,7,18,248,14,ES_AUTOHSCROLL | ES_READONLY
+    LTEXT           "Exe:",IDC_STATIC,7,7,15,8
+    EDITTEXT        IDC_EDIT3,7,47,248,14,ES_AUTOHSCROLL | WS_DISABLED
+    LTEXT           "Caption:",IDC_STATIC,7,36,27,8
+    EDITTEXT        IDC_EDIT5,7,77,68,14,ES_AUTOHSCROLL
+    LTEXT           "Коэффициент (for examp 1.50, -3.00, 0.33):",IDC_STATIC_coef,7,66,140,8
+    COMBOBOX        IDC_COMBO1,122,77,133,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Совпадение заголовка:",IDC_STATIC_sovp,163,66,92,8
+END
+
+IDD_ReportTwoPeriods DIALOGEX 0, 0, 415, 254
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Отчет: Сравнение двух периодов"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,205,233,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,358,233,50,14
+    CONTROL         "",IDC_DATETIMEPICKER1,"SysDateTimePick32",DTS_RIGHTALIGN | WS_TABSTOP,209,26,82,15
+    CONTROL         "",IDC_DATETIMEPICKER2,"SysDateTimePick32",DTS_RIGHTALIGN | WS_TABSTOP,296,26,82,15
+    CTEXT           "Диапазон 1",IDC_STATIC_percent_hour3,15,10,129,8
+    CONTROL         "",IDC_DATETIMEPICKER3,"SysDateTimePick32",DTS_RIGHTALIGN | WS_TABSTOP,7,25,82,15
+    CONTROL         "",IDC_DATETIMEPICKER4,"SysDateTimePick32",DTS_RIGHTALIGN | WS_TABSTOP,94,25,82,15
+    CONTROL         "Диапазон 2 для сравнения",IDC_CHECK1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,221,10,138,10
+    CONTROL         "Полезное время",IDC_RADIO6,"Button",BS_AUTORADIOBUTTON | WS_GROUP,211,178,73,10
+    CONTROL         "Пол. действия",IDC_RADIO7,"Button",BS_AUTORADIOBUTTON,289,178,65,10
+    CTEXT           "На графике отображать:",IDC_STATIC_percent_hour4,215,163,129,8
+    CONTROL         "Не учитывать выходные в отчете",IDC_CHECK2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,163,160,10
+    LTEXT           "Порог полезного времени, ниже которого день принимается за выходной (в часах)",IDC_STATIC,23,178,163,19
+    COMBOBOX        IDC_COMBO2,23,200,65,56,CBS_DROPDOWN | WS_DISABLED | WS_VSCROLL | WS_TABSTOP
+    LISTBOX         IDC_LIST1,7,48,95,92,LBS_NOINTEGRALHEIGHT | LBS_EXTENDEDSEL | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Удалить",IDC_BUTTON1,116,48,50,14,WS_DISABLED
+    LISTBOX         IDC_LIST6,210,48,95,92,LBS_NOINTEGRALHEIGHT | LBS_EXTENDEDSEL | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Удалить",IDC_BUTTON2,319,48,50,14,WS_DISABLED
+END
+
+IDD_Report DIALOGEX 0, 0, 446, 184
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Report from selected period"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,324,163,50,14,WS_DISABLED
+    PUSHBUTTON      "Cancel",IDCANCEL,389,163,50,14
+    LISTBOX         IDC_LIST18,7,21,140,102,LBS_SORT | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    LISTBOX         IDC_LIST4,310,21,129,102,LBS_SORT | LBS_MULTIPLESEL | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    LISTBOX         IDC_LIST5,153,21,120,102,LBS_SORT | LBS_MULTIPLESEL | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_COMBO1,361,130,78,61,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Первый список для сравнения",IDC_STATIC,7,7,135,8
+    LTEXT           "Второй список для сравнения",IDC_STATIC,154,7,135,8
+    LTEXT           "Доступные периоды для второго списка",IDC_STATIC,298,7,141,8
+    PUSHBUTTON      "<==",IDC_BUTTON1,276,52,32,14
+    PUSHBUTTON      "==>",IDC_BUTTON2,276,74,32,14
 END
 
 
@@ -140,6 +233,46 @@ BEGIN
         RIGHTMARGIN, 610
         TOPMARGIN, 7
         BOTTOMMARGIN, 435
+    END
+
+    IDD_ReportOption, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 392
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 134
+    END
+
+    IDD_Rules, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 359
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 116
+    END
+
+    IDD_SetKoef, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 255
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 112
+    END
+
+    IDD_ReportTwoPeriods, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 408
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 247
+    END
+
+    IDD_Report, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 439
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 177
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -173,6 +306,15 @@ BEGIN
     0
 END
 
+IDD_SetKoef DLGINIT
+BEGIN
+    IDC_COMBO1, 0x403, 7, 0
+0xeed2, 0xedf7, 0xe5ee, "\000" 
+    IDC_COMBO1, 0x403, 10, 0
+0xe0d7, 0xf2f1, 0xf7e8, 0xeeed, 0x00e5, 
+    0
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -195,10 +337,8 @@ IDR_MAIN_MENU_RU MENU
 BEGIN
     POPUP "Reports"
     BEGIN
-        MENUITEM "Отчет за последние 5 рабочих дней", ID_Menu
-        MENUITEM "Useful time from last 10 working days", ID_GETREPORT_FROMLAST10WORKINGDAYS
-        MENUITEM "Useful time from last 20 working days", ID_GETREPORT_FROMLAST20WORKINGDAYS
-        MENUITEM "Useful actions from last 5 working days", ID_REPORTS_USEFULACTIONSFROMLAST5WORKINGDAYS
+        MENUITEM "Отчет за определенный период времени", ID_REPORTS_32784
+        MENUITEM "Отчет: Сравнение двух заданных периодов времени", ID_REPORTS_32785
         MENUITEM "Useful parameter from selected period", ID_REPORTS_USEFULPARAMETERFROMSELECTEDPERIOD
     END
 END
@@ -371,6 +511,8 @@ BEGIN
     IDS_STRING1668          "___"
     IDS_STRING1669          "Отчет за определенный период"
     IDS_STRING1670          "___"
+    IDS_STRING1671          "Сумма"
+    IDS_STRING1672          "___"
 END
 
 #endif    // Russian resources
@@ -392,8 +534,8 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,0,1
- PRODUCTVERSION 1,0,0,1
+ FILEVERSION 0,0,1,1
+ PRODUCTVERSION 0,0,1,1
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -408,14 +550,14 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "TODO: <Company name>"
-            VALUE "FileDescription", "TODO: <File description>"
-            VALUE "FileVersion", "1.0.0.1"
+            VALUE "CompanyName", "Empty skip"
+            VALUE "FileDescription", "ActivateMe"
+            VALUE "FileVersion", "0.0.1.1"
             VALUE "InternalName", "eactivity.exe"
-            VALUE "LegalCopyright", "TODO: (c) <Company name>.  All rights reserved."
+            VALUE "LegalCopyright", "(c) Empty skip.  All rights reserved."
             VALUE "OriginalFilename", "eactivity.exe"
-            VALUE "ProductName", "TODO: <Product name>"
-            VALUE "ProductVersion", "1.0.0.1"
+            VALUE "ProductName", "ActivateMe"
+            VALUE "ProductVersion", "0.0.1.1"
         END
     END
     BLOCK "VarFileInfo"

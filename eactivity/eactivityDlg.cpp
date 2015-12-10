@@ -101,7 +101,6 @@ void CEactivityDlg::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CEactivityDlg, CDialog)
 	//{{AFX_MSG_MAP(CEactivityDlg)
-	ON_COMMAND(ID_Menu, &CEactivityDlg::OnMenu)
 	ON_CBN_SELCHANGE(IDC_COMBO1, OnSelchangeCombo_sort)
 	ON_NOTIFY(NM_DBLCLK, IDC_LIST3, OnDblclkListDays)
 	ON_CBN_SELCHANGE(IDC_COMBO2, OnSelchangeComboDownTable)
@@ -123,14 +122,14 @@ BEGIN_MESSAGE_MAP(CEactivityDlg, CDialog)
 	ON_BN_CLICKED(IDOK, &CEactivityDlg::OnBnClickedOk)
 	ON_BN_CLICKED(IDCANCEL, &CEactivityDlg::OnBnClickedCancel)
 	ON_BN_CLICKED(IDC_BUTTON1, &CEactivityDlg::OnSave)
-	ON_COMMAND(ID_GETREPORT_FROMLAST10WORKINGDAYS, &CEactivityDlg::OnGetreportFromlast10workingdays)
-	ON_COMMAND(ID_GETREPORT_FROMLAST20WORKINGDAYS, &CEactivityDlg::OnGetreportFromlast20workingdays)
 	ON_COMMAND(ID_REPORTS_USEFULACTIONSFROMLAST5WORKINGDAYS, &CEactivityDlg::OnReportsUsefulActionsFromLast5WorkingDays)
 	ON_BN_CLICKED(IDC_RADIO1, &CEactivityDlg::OnBnClickedRadio1)
 	ON_BN_CLICKED(IDC_RADIO2, &CEactivityDlg::OnBnClickedRadio1)
 	ON_COMMAND(ID_REPORTS_USEFULPARAMETERFROMSELECTEDPERIOD, &CEactivityDlg::OnReportsUsefulParameterFromSelectedPeriod)
 	ON_COMMAND(ID_Compare2Periods, &CEactivityDlg::OnCompare2periods)
 	ON_COMMAND(ID_IDR_32783, &CEactivityDlg::OnCompareWithBest5Days)
+	ON_COMMAND(ID_REPORTS_32784, &CEactivityDlg::OnReportOnePeriod)
+	ON_COMMAND(ID_REPORTS_32785, &CEactivityDlg::OnReportTwoPeriods)
 END_MESSAGE_MAP()
 
 //кликание по иконке в трее
@@ -228,6 +227,7 @@ BOOL CEactivityDlg::OnInitDialog()
 	table_exe_capt.SetColumnWidth(5,60);
 	table_exe_capt.SetColumnWidth(6,0);
 	table_exe_capt.exeCapt=true;
+	table_exe_capt.EnableToolTips(FALSE);
 
 	combo_sort.ResetContent();
 	str.LoadString(trif.GetIds(IDS_STRING1599));
@@ -278,6 +278,7 @@ BOOL CEactivityDlg::OnInitDialog()
 	table_period.SetColumnWidth(3,80);
 	table_period.SetColumnWidth(4,100);
 	table_period.SetColumnWidth(5,80);
+	table_period.EnableToolTips(FALSE);
 
 	path_exe=cpu.GetAppNameFromHandle2(GetSafeHwnd()).c_str();
 	path_exe=path_exe.Left(path_exe.ReverseFind('\\'));
@@ -1284,16 +1285,16 @@ void CEactivityDlg::UpdatePeriodTableViewByHours(activ_hours &activHours)
 			FormatSeconds(ch, sec);
 			table_period.SetItemText(row, 1, ch);
 			double chartValue = radioTime.GetCheck() ? sec/60 : usefulActs;
-			pLineCurrentDay->AddPoint(ii+1, chartValue);
-			pPntsCurrentDay->AddPoint(ii+1, chartValue);
+			pLineCurrentDay->AddPoint(ii, chartValue);
+			pPntsCurrentDay->AddPoint(ii, chartValue);
 			if (lastAverageHoursGraph.size()>2)
 			{
 				if (lastAverageHoursGraph.find(ii)!=lastAverageHoursGraph.end())
 					chartValue = radioTime.GetCheck() ? lastAverageHoursGraph[ii].usefulTime/60/1000 : 
 						lastAverageHoursGraph[ii].usefulActs;
 				else chartValue = 0;
-				pLineAverage->AddPoint(ii+1, chartValue);
-				pPntsAverage->AddPoint(ii+1, chartValue);
+				pLineAverage->AddPoint(ii, chartValue);
+				pPntsAverage->AddPoint(ii, chartValue);
 			}
 			if (ii==curHour)
 				usefulTimeForCurrentHour=usefulTime;
@@ -1313,8 +1314,8 @@ void CEactivityDlg::UpdatePeriodTableViewByHours(activ_hours &activHours)
 		} else {
 			if ((SelectedDay == "" && ii <= curHour) || SelectedDay!="")
 			{	//в ненаступивших часах сегодняшнего дня нулевые точки не ставим
-				pLineCurrentDay->AddPoint(ii+1, 0);
-				pPntsCurrentDay->AddPoint(ii+1, 0);
+				pLineCurrentDay->AddPoint(ii, 0);
+				pPntsCurrentDay->AddPoint(ii, 0);
 			}
 			if (lastAverageHoursGraph.size()>2)
 			{
@@ -1323,8 +1324,8 @@ void CEactivityDlg::UpdatePeriodTableViewByHours(activ_hours &activHours)
 					chartValue = radioTime.GetCheck() ? (lastAverageHoursGraph[ii].usefulTime/60/1000) :
 						lastAverageHoursGraph[ii].usefulActs;
 				else chartValue = 0;
-				pLineAverage->AddPoint(ii+1, chartValue);
-				pPntsAverage->AddPoint(ii+1, chartValue);
+				pLineAverage->AddPoint(ii, chartValue);
+				pPntsAverage->AddPoint(ii, chartValue);
 			}
 		}
 	}
@@ -1955,11 +1956,11 @@ void CEactivityDlg::SendReportOfDayOnMail(string dateToday)
 	CString date;
 	for (int ii=1; ii<=7; ii++)
 	{
-		date.Format("%d_%d_%d", ct.GetYear(), ct.GetMonth(), ct.GetDay());
+		date.Format("%d_%02d_%02d", ct.GetYear(), ct.GetMonth(), ct.GetDay());
 		saDates2.Add(date);
 		ct+=60*60*24;
 	}
-	CString res = CompareTwoPeriodsOfDays(saDates, saDates2, 2);
+	CString res = CompareTwoPeriodsOfDays(saDates, saDates2, radioTime.GetCheck(), 2);
 	if (res!="")
 		SendMailMessage("smtp.gmail.com", 587, "silencenotif@gmail.com", 
 		"densaf.ace@gmail.com", "densaf.ace@gmail.com", "GhjcajhyZ88", res, "TablePeriod");
@@ -2498,8 +2499,9 @@ void CEactivityDlg::OnBnClickedCancel()
 
 //подсчет среднего полезного времени/действий за последние 7 дней или больше 
 //		(сколько указано в lastDays) c разбивкой по часам
-void CEactivityDlg::CalculateAverageUsefulParameter(int lastDays)
+void CEactivityDlg::CalculateAverageUsefulParameter(int lastDays, double thresholdHoliday)
 {
+	::SetCursor(AfxGetApp()->LoadStandardCursor(IDC_WAIT));
 	// дата сегодняшнего дня
 	string date=curDayFileName.substr(curDayFileName.length()-12, 10);
 	int day = atoi(date.substr(date.length()-2, 2).c_str())-1;
@@ -2532,6 +2534,7 @@ void CEactivityDlg::CalculateAverageUsefulParameter(int lastDays)
 			if (skippedDays>15)
 			{
 				AfxMessageBox(trif.GetIds(IDS_STRING1645));
+				::SetCursor(AfxGetApp()->LoadStandardCursor(IDC_ARROW));
 				return;
 			}
 			day--;//переходим к статистике предыдущего дня
@@ -2552,7 +2555,7 @@ void CEactivityDlg::CalculateAverageUsefulParameter(int lastDays)
 		int row=table_period.InsertItem(0, ch);
 		CalculateUsefulTimeAndActs(aDayActiv, activExe, activHours);
 		activHours2=activHours;
-		if (activHours[25].usefulTime>1.5*3600*1000)
+		if (activHours[25].usefulTime>thresholdHoliday*3600*1000)
 		{ //если полезного времени больше 2ух часов, то считаем этот день рабочим и берем статистику по нему
 			sumHandledDays++;
 			// добавляем локальный справочник activHours к основному lastAverageHoursGraph
@@ -2641,13 +2644,16 @@ void CEactivityDlg::CalculateAverageUsefulParameter(int lastDays)
 		pPntsAverage->AddPoint(iter->first, chartValue);
 	}
 	chart.RefreshCtrl();
+	::SetCursor(AfxGetApp()->LoadStandardCursor(IDC_ARROW));
 }
 
 //подсчет и сравнение среднего полезного времени/действий двух промежутков времени 
 //		на графике строятся 2 линии с посуточной разверткой
 // int MinusDays - сколько худших дней не учитывать во втором списке дат (исключаем выходные)
-CString CEactivityDlg::CompareTwoPeriodsOfDays(CStringArray& saDates1, CStringArray& saDates2, int MinusDays)
+CString CEactivityDlg::CompareTwoPeriodsOfDays(CStringArray& saDates1, CStringArray& saDates2, 
+						int accentParameter, int MinusDays, double thresholdHoliday)
 {
+	::SetCursor(AfxGetApp()->LoadStandardCursor(IDC_WAIT));
 	checkAutoUpdate.SetCheck(false);//отключаем автоматическое обновление
 	ActivityExe firstPeriod; //суммарная статистика по первому периоду, чтобы потом показать усредненную по дням
 	firstPeriod.sumActs=0; firstPeriod.sumTime=0; firstPeriod.usefulActs=0; firstPeriod.usefulTime=0;
@@ -2655,8 +2661,8 @@ CString CEactivityDlg::CompareTwoPeriodsOfDays(CStringArray& saDates1, CStringAr
 	secondPeriod.sumActs=0; secondPeriod.sumTime=0; secondPeriod.usefulActs=0; secondPeriod.usefulTime=0;
 
 	//приводим график в исходное состояние
-	CChartLineSerie   *pLinePeriod1, *pLinePeriod2;//
-	CChartPointsSerie *pPntsPeriod1, *pPntsPeriod2;//
+	CChartLineSerie   *pLinePeriod1, *pLinePeriod2;
+	CChartPointsSerie *pPntsPeriod1, *pPntsPeriod2;
 	chart.RemoveAllSeries(); //чистка предыдущих кривых
 	CChartDateTimeAxis* axis1 = chart.CreateDateTimeAxis(CChartCtrl::BottomAxis);
 	axis1->SetTickLabelFormat(false, _T("%d %b"));
@@ -2664,12 +2670,15 @@ CString CEactivityDlg::CompareTwoPeriodsOfDays(CStringArray& saDates1, CStringAr
 	chart.GetLeftAxis()->SetAutomatic(true);
 	chart.GetBottomAxis()->GetLabel()->SetText("Day");
 
-	CChartDateTimeAxis* axis2 = chart.CreateDateTimeAxis(CChartCtrl::TopAxis);
-	axis2->SetTickLabelFormat(false, _T("%d %b"));
-	chart.GetTopAxis()->SetAutomatic(true);
-	chart.GetTopAxis()->GetLabel()->SetText("Day");
+	CChartDateTimeAxis* axis2;
+	if (saDates2.GetSize())
+	{
+		axis2 = chart.CreateDateTimeAxis(CChartCtrl::TopAxis);
+		axis2->SetTickLabelFormat(false, _T("%d %b"));
+		chart.GetTopAxis()->SetAutomatic(true);
+	}
 
-	chart.GetLeftAxis()->GetLabel()->SetText(radioTime.GetCheck() ? "Hours" : "Actions");
+	chart.GetLeftAxis()->GetLabel()->SetText(accentParameter ? "Hours" : "Actions");
 	pLinePeriod1 = chart.CreateLineSerie();
 	pLinePeriod1->SetWidth(2);
 	pPntsPeriod1 = chart.CreatePointsSerie();
@@ -2677,17 +2686,14 @@ CString CEactivityDlg::CompareTwoPeriodsOfDays(CStringArray& saDates1, CStringAr
 	pPntsPeriod1->SetPointSize(11,11);
 	pPntsPeriod1->SetColor(pLinePeriod1->GetColor());
 
-	if (saDates2.GetSize()>1 || saDates1.GetSize()>1)
+	if (saDates2.GetSize())
 	{
- 		if (saDates2.GetSize()>1)
- 		{
-			pLinePeriod2 = chart.CreateLineSerie(1);
-			pLinePeriod2->SetWidth(2);
-			pPntsPeriod2 = chart.CreatePointsSerie(1);
-			pPntsPeriod2->SetPointType(CChartPointsSerie::ptEllipse);
-			pPntsPeriod2->SetPointSize(10,10);
-			pPntsPeriod2->SetColor(pLinePeriod2->GetColor());
-		}
+		pLinePeriod2 = chart.CreateLineSerie(1);
+		pLinePeriod2->SetWidth(2);
+		pPntsPeriod2 = chart.CreatePointsSerie(1);
+		pPntsPeriod2->SetPointType(CChartPointsSerie::ptEllipse);
+		pPntsPeriod2->SetPointSize(10,10);
+		pPntsPeriod2->SetColor(pLinePeriod2->GetColor());
 	}
 
 	CString str; 
@@ -2695,6 +2701,7 @@ CString CEactivityDlg::CompareTwoPeriodsOfDays(CStringArray& saDates1, CStringAr
 	str.LoadString(trif.GetIds(IDS_STRING1667));
 	stat_periodTable.SetWindowText(str);
 	char ch[100];float sec;
+	int handled1=0;
 	for (int ii=0; ii<saDates1.GetSize(); ii++)
 	{
 		char fname[2048];
@@ -2705,44 +2712,47 @@ CString CEactivityDlg::CompareTwoPeriodsOfDays(CStringArray& saDates1, CStringAr
 			CString str;
 			str.LoadString(trif.GetIds(IDS_STRING1655));
 			AfxMessageBox(str + saDates1[ii]);
+			::SetCursor(AfxGetApp()->LoadStandardCursor(IDC_ARROW));
 			return "";
 		}
 		activ_exe activExe; 
 		activ_hours activHours;
 		int row=table_period.InsertItem(0, saDates1[ii]);
 		CalculateUsefulTimeAndActs(aDayActiv, activExe, activHours);
-		// добавляем локальный справочник activHours к основному lastAverageHoursGraph
-		for (activ_hours::iterator iter=activHours.begin(); iter!=activHours.end(); iter++)
+		if (activHours[25].usefulTime>thresholdHoliday*3600*1000)
 		{
-			activ_hours::iterator iterHour = lastAverageHoursGraph.find((*iter).first);
-			if (iterHour == lastAverageHoursGraph.end())
+			handled1++;
+			// добавляем локальный справочник activHours к основному lastAverageHoursGraph
+			for (activ_hours::iterator iter=activHours.begin(); iter!=activHours.end(); iter++)
 			{
-							ActivityExe hourElement;
-				hourElement.usefulActs = (*iter).second.usefulActs;
-				hourElement.usefulTime = (*iter).second.usefulTime;
-				hourElement.sumActs    = (*iter).second.sumActs;
-				hourElement.sumTime    = (*iter).second.sumTime;
-				lastAverageHoursGraph[(*iter).first] = hourElement;
-			} else {
-				(*iterHour).second.usefulActs += (*iter).second.usefulActs;
-				(*iterHour).second.usefulTime += (*iter).second.usefulTime;
-				(*iterHour).second.sumActs    += (*iter).second.sumActs;
-				(*iterHour).second.sumTime    += (*iter).second.sumTime;
-					}
+				activ_hours::iterator iterHour = lastAverageHoursGraph.find((*iter).first);
+				if (iterHour == lastAverageHoursGraph.end())
+				{
+								ActivityExe hourElement;
+					hourElement.usefulActs = (*iter).second.usefulActs;
+					hourElement.usefulTime = (*iter).second.usefulTime;
+					hourElement.sumActs    = (*iter).second.sumActs;
+					hourElement.sumTime    = (*iter).second.sumTime;
+					lastAverageHoursGraph[(*iter).first] = hourElement;
+				} else {
+					(*iterHour).second.usefulActs += (*iter).second.usefulActs;
+					(*iterHour).second.usefulTime += (*iter).second.usefulTime;
+					(*iterHour).second.sumActs    += (*iter).second.sumActs;
+					(*iterHour).second.sumTime    += (*iter).second.sumTime;
+						}
+			}
+			firstPeriod.sumActs+=activHours[25].sumActs; firstPeriod.sumTime+=activHours[25].sumTime; 
+			firstPeriod.usefulActs+=activHours[25].usefulActs; firstPeriod.usefulTime+=activHours[25].usefulTime;
+		} else {
+			table_period.SetItemText(row, 5, "Holiday!");
 		}
-		firstPeriod.sumActs+=activHours[25].sumActs; firstPeriod.sumTime+=activHours[25].sumTime; 
-		firstPeriod.usefulActs+=activHours[25].usefulActs; firstPeriod.usefulTime+=activHours[25].usefulTime;
 
-//		if (saDates1.GetSize()>1)
-		{
- 			double chartValue = radioTime.GetCheck() ? activHours[25].usefulTime/60/60/1000 : activHours[25].usefulActs;
-			//CString deb=saDates1[ii];
-			COleDateTime oleDate(atoi(saDates1[ii].Left(4)), atoi(saDates1[ii].Mid(5)), 
-				atoi(saDates1[ii].Right(2)), 0, 0, 0);
-			pLinePeriod1->AddPoint(oleDate, chartValue);
-			pPntsPeriod1->AddPoint(oleDate, chartValue);
-			chart.RefreshCtrl();
-		}
+		double chartValue = accentParameter ? activHours[25].usefulTime/60/60/1000 : activHours[25].usefulActs;
+		COleDateTime oleDate(atoi(saDates1[ii].Left(4)), atoi(saDates1[ii].Mid(5)), 
+			atoi(saDates1[ii].Right(2)), 0, 0, 0);
+		pLinePeriod1->AddPoint(oleDate, chartValue);
+		pPntsPeriod1->AddPoint(oleDate, chartValue);
+		chart.RefreshCtrl();
 
 		float sec = activHours[25].usefulTime/1000;
 		FormatSeconds(ch, sec);
@@ -2757,19 +2767,32 @@ CString CEactivityDlg::CompareTwoPeriodsOfDays(CStringArray& saDates1, CStringAr
 
 	}
 	int row;
-	if (saDates1.GetSize()>1)
+	if (saDates1.GetSize()>1 && handled1>0)
 	{	// для одной даты не имеет смысла выводить среднее
 		str.LoadString(trif.GetIds(IDS_STRING1657));//Среднее
 		int row=table_period.InsertItem(0, str);
-		float sec = firstPeriod.usefulTime/1000/saDates1.GetSize();
+		float sec = firstPeriod.usefulTime/1000/handled1;
 		FormatSeconds(ch, sec);
 		table_period.SetItemText(row, 1, ch);
-		sec = firstPeriod.sumTime/1000/saDates1.GetSize();
+		sec = firstPeriod.sumTime/1000/handled1;
 		FormatSeconds(ch, sec);
 		table_period.SetItemText(row, 2, ch);
-		sprintf_s(ch, "%d", firstPeriod.usefulActs/saDates1.GetSize());
+		sprintf_s(ch, "%d", firstPeriod.usefulActs/handled1);
 		table_period.SetItemText(row, 3, ch);
-		sprintf_s(ch, "%d", firstPeriod.sumActs/saDates1.GetSize());
+		sprintf_s(ch, "%d", firstPeriod.sumActs/handled1);
+		table_period.SetItemText(row, 4, ch);
+
+		str.LoadString(trif.GetIds(IDS_STRING1671));//Сумма
+		row=table_period.InsertItem(0, str);
+		sec = firstPeriod.usefulTime/1000;
+		FormatSeconds(ch, sec);
+		table_period.SetItemText(row, 1, ch);
+		sec = firstPeriod.sumTime/1000;
+		FormatSeconds(ch, sec);
+		table_period.SetItemText(row, 2, ch);
+		sprintf_s(ch, "%d", firstPeriod.usefulActs);
+		table_period.SetItemText(row, 3, ch);
+		sprintf_s(ch, "%d", firstPeriod.sumActs);
 		table_period.SetItemText(row, 4, ch);
 	}
 	table_period.InsertItem(table_period.GetItemCount(), "");
@@ -2777,6 +2800,7 @@ CString CEactivityDlg::CompareTwoPeriodsOfDays(CStringArray& saDates1, CStringAr
 	ActivityExe min1, min2;//для вычета самых непродуктивных дней (выходных)
 	int indexMin1, indexMin2;
 	int rowAddSecondPeriod = table_period.GetItemCount();
+	int handled2=0;
 	for (int ii=0; ii<saDates2.GetSize(); ii++)
 	{
 		char fname[2048];
@@ -2787,30 +2811,37 @@ CString CEactivityDlg::CompareTwoPeriodsOfDays(CStringArray& saDates1, CStringAr
 			CString str;
 			str.LoadString(trif.GetIds(IDS_STRING1655));
 			AfxMessageBox(str + saDates2[ii]);
+			::SetCursor(AfxGetApp()->LoadStandardCursor(IDC_ARROW));
 			return "";
 		}
 		activ_exe activExe; 
 		activ_hours activHours;
 		int row=table_period.InsertItem(rowAddSecondPeriod, saDates2[ii]);
 		CalculateUsefulTimeAndActs(aDayActiv, activExe, activHours);
-		// добавляем локальный справочник activHours к основному lastAverageHoursGraph
-		for (activ_hours::iterator iter=activHours.begin(); iter!=activHours.end(); iter++)
+		if (activHours[25].usefulTime>thresholdHoliday*3600*1000)
 		{
-			activ_hours::iterator iterHour = lastAverageHoursGraph.find((*iter).first);
-			if (iterHour == lastAverageHoursGraph.end())
+			handled2++;
+			// добавляем локальный справочник activHours к основному lastAverageHoursGraph
+			for (activ_hours::iterator iter=activHours.begin(); iter!=activHours.end(); iter++)
 			{
-				ActivityExe hourElement;
-				hourElement.usefulActs = (*iter).second.usefulActs;
-				hourElement.usefulTime = (*iter).second.usefulTime;
-				hourElement.sumActs    = (*iter).second.sumActs;
-				hourElement.sumTime    = (*iter).second.sumTime;
-				lastAverageHoursGraph[(*iter).first] = hourElement;
-			} else {
-				(*iterHour).second.usefulActs += (*iter).second.usefulActs;
-				(*iterHour).second.usefulTime += (*iter).second.usefulTime;
-				(*iterHour).second.sumActs    += (*iter).second.sumActs;
-				(*iterHour).second.sumTime    += (*iter).second.sumTime;
+				activ_hours::iterator iterHour = lastAverageHoursGraph.find((*iter).first);
+				if (iterHour == lastAverageHoursGraph.end())
+				{
+					ActivityExe hourElement;
+					hourElement.usefulActs = (*iter).second.usefulActs;
+					hourElement.usefulTime = (*iter).second.usefulTime;
+					hourElement.sumActs    = (*iter).second.sumActs;
+					hourElement.sumTime    = (*iter).second.sumTime;
+					lastAverageHoursGraph[(*iter).first] = hourElement;
+				} else {
+					(*iterHour).second.usefulActs += (*iter).second.usefulActs;
+					(*iterHour).second.usefulTime += (*iter).second.usefulTime;
+					(*iterHour).second.sumActs    += (*iter).second.sumActs;
+					(*iterHour).second.sumTime    += (*iter).second.sumTime;
+				}
 			}
+		} else {
+			table_period.SetItemText(row, 5, "Holiday!");
 		}
 		secondPeriod.sumActs+=activHours[25].sumActs; secondPeriod.sumTime+=activHours[25].sumTime; 
 		secondPeriod.usefulActs+=activHours[25].usefulActs; secondPeriod.usefulTime+=activHours[25].usefulTime;
@@ -2818,22 +2849,21 @@ CString CEactivityDlg::CompareTwoPeriodsOfDays(CStringArray& saDates1, CStringAr
 		if (saDates2.GetSize()>1) //на втором графике одна точка не видна
 		{
 			//вычисляем 2 наименьших акцентируемых параметра
-			double accentValue = radioTime.GetCheck() ? activHours[25].usefulTime : activHours[25].usefulActs;
+			double accentValue = accentParameter ? activHours[25].usefulTime : activHours[25].usefulActs;
 			if (ii==0)
 			{
 				min1=min2=activHours[25];
 				indexMin1=indexMin2=0;
 			} else {
-				if (radioTime.GetCheck() ? (accentValue < min1.usefulTime) : (accentValue < min1.usefulActs))
+				if (accentParameter ? (accentValue < min1.usefulTime) : (accentValue < min1.usefulActs))
 				{
 					min2 = min1; indexMin2 = indexMin1;
 					min1 = activHours[25]; indexMin1 = ii;
-				} else if (radioTime.GetCheck() ? min2.usefulTime : min2.usefulActs) {
+				} else if (accentParameter ? min2.usefulTime : min2.usefulActs) {
 					min2 = activHours[25]; indexMin2 = ii;
 				}
 			}
-			double chartValue = radioTime.GetCheck() ? activHours[25].usefulTime/60/60/1000 : activHours[25].usefulActs;
-			//CString deb=saDates2[ii];
+			double chartValue = accentParameter ? activHours[25].usefulTime/60/60/1000 : activHours[25].usefulActs;
 			COleDateTime oleDate(atoi(saDates2[ii].Left(4)), atoi(saDates2[ii].Mid(5)), 
 				atoi(saDates2[ii].Right(2)), 0, 0, 0);
 			pLinePeriod2->AddPoint(oleDate, chartValue);
@@ -2874,41 +2904,57 @@ CString CEactivityDlg::CompareTwoPeriodsOfDays(CStringArray& saDates1, CStringAr
 			}
 		}
 	}
-	str.LoadString(trif.GetIds(IDS_STRING1657));//Среднее
-	row=table_period.InsertItem(rowAddSecondPeriod, str);
-	sec = secondPeriod.usefulTime/1000/(saDates2.GetSize() - MinusDays);
-	FormatSeconds(ch, sec);
-	table_period.SetItemText(row, 1, ch);
-	sec = secondPeriod.sumTime/1000/(saDates2.GetSize() - MinusDays);
-	FormatSeconds(ch, sec);
-	table_period.SetItemText(row, 2, ch);
-	sprintf_s(ch, "%d", secondPeriod.usefulActs/(saDates2.GetSize() - MinusDays));
-	table_period.SetItemText(row, 3, ch);
-	sprintf_s(ch, "%d", secondPeriod.sumActs/(saDates2.GetSize() - MinusDays));
-	table_period.SetItemText(row, 4, ch);
-
-	str.LoadString(trif.GetIds(IDS_STRING1659));//Прирост
-	row = table_period.InsertItem(0, str);
-	double grow = (firstPeriod.usefulTime/saDates1.GetSize())/(secondPeriod.usefulTime/
-		(saDates2.GetSize() - MinusDays))*100.0 - 100.0;
-	sprintf_s(ch, "%.2f%%", grow);
 	CString theme;
-	theme.Format("%s %s полезного времени и %.2f%% полезных действий", str, ch, 
-		((double)firstPeriod.usefulActs/saDates1.GetSize())/((double)secondPeriod.usefulActs/
-		(saDates2.GetSize() - MinusDays))*100.0 - 100.0);
-	table_period.SetItemText(row, 1, ch);
-	grow = (firstPeriod.sumTime/saDates1.GetSize())/(secondPeriod.sumTime/
-		(saDates2.GetSize() - MinusDays))*100.0 - 100.0;
-	sprintf_s(ch, "%.2f%%", grow);
-	table_period.SetItemText(row, 2, ch);
-	grow = ((double)firstPeriod.usefulActs/saDates1.GetSize())/((double)secondPeriod.usefulActs/
-		(saDates2.GetSize() - MinusDays))*100.0 - 100.0;
-	sprintf_s(ch, "%.2f%%", grow);
-	table_period.SetItemText(row, 3, ch);
-	grow = ((double)firstPeriod.sumActs/saDates1.GetSize())/((double)secondPeriod.sumActs/
-		(saDates2.GetSize() - MinusDays))*100.0 - 100.0;
-	sprintf_s(ch, "%.2f%%", grow);
-	table_period.SetItemText(row, 4, ch);
+	if (saDates2.GetSize() && handled2 > 0)
+	{   //Среднее для второго выбранного периода
+		str.LoadString(trif.GetIds(IDS_STRING1657));
+		row=table_period.InsertItem(rowAddSecondPeriod, str);
+		sec = secondPeriod.usefulTime/1000/(handled2 - MinusDays);
+		FormatSeconds(ch, sec);
+		table_period.SetItemText(row, 1, ch);
+		sec = secondPeriod.sumTime/1000/(handled2 - MinusDays);
+		FormatSeconds(ch, sec);
+		table_period.SetItemText(row, 2, ch);
+		sprintf_s(ch, "%d", secondPeriod.usefulActs/(handled2 - MinusDays));
+		table_period.SetItemText(row, 3, ch);
+		sprintf_s(ch, "%d", secondPeriod.sumActs/(handled2 - MinusDays));
+		table_period.SetItemText(row, 4, ch);
+
+		str.LoadString(trif.GetIds(IDS_STRING1671)); //сумма
+		row=table_period.InsertItem(rowAddSecondPeriod, str);
+		sec = secondPeriod.usefulTime/1000;
+		FormatSeconds(ch, sec);
+		table_period.SetItemText(row, 1, ch);
+		sec = secondPeriod.sumTime/1000;
+		FormatSeconds(ch, sec);
+		table_period.SetItemText(row, 2, ch);
+		sprintf_s(ch, "%d", secondPeriod.usefulActs);
+		table_period.SetItemText(row, 3, ch);
+		sprintf_s(ch, "%d", secondPeriod.sumActs);
+		table_period.SetItemText(row, 4, ch);
+
+		str.LoadString(trif.GetIds(IDS_STRING1659));//Прирост
+		row = table_period.InsertItem(0, str);
+		double grow = (firstPeriod.usefulTime/saDates1.GetSize())/(secondPeriod.usefulTime/
+			(handled2 - MinusDays))*100.0 - 100.0;
+		sprintf_s(ch, "%.2f%%", grow);
+		theme.Format("%s %s полезного времени и %.2f%% полезных действий", str, ch, 
+			((double)firstPeriod.usefulActs/saDates1.GetSize())/((double)secondPeriod.usefulActs/
+			(handled2 - MinusDays))*100.0 - 100.0);
+		table_period.SetItemText(row, 1, ch);
+		grow = (firstPeriod.sumTime/saDates1.GetSize())/(secondPeriod.sumTime/
+			(handled2 - MinusDays))*100.0 - 100.0;
+		sprintf_s(ch, "%.2f%%", grow);
+		table_period.SetItemText(row, 2, ch);
+		grow = ((double)firstPeriod.usefulActs/saDates1.GetSize())/((double)secondPeriod.usefulActs/
+			(handled2 - MinusDays))*100.0 - 100.0;
+		sprintf_s(ch, "%.2f%%", grow);
+		table_period.SetItemText(row, 3, ch);
+		grow = ((double)firstPeriod.sumActs/saDates1.GetSize())/((double)secondPeriod.sumActs/
+			(handled2 - MinusDays))*100.0 - 100.0;
+		sprintf_s(ch, "%.2f%%", grow);
+		table_period.SetItemText(row, 4, ch);
+	}
 
 	table_period.InsertItem(0, "..");
 
@@ -2918,11 +2964,7 @@ CString CEactivityDlg::CompareTwoPeriodsOfDays(CStringArray& saDates1, CStringAr
 	axis1->SetMinMax(0.99999*Min, 1.00001*Max);
 	chart.RefreshCtrl();
 
-	if (saDates2.GetSize()>1 || saDates1.GetSize()>1)
-	{
-// 		chart.GetPlot().GetAxis(1,var).GetValueScale().SetMaximum(iChartMax);
-// 		chart.GetPlot().GetAxis(1,var).GetValueScale().SetMinimum(iChartMin);
-	}
+	::SetCursor(AfxGetApp()->LoadStandardCursor(IDC_ARROW));
 	return theme;
 }
 
@@ -2930,25 +2972,44 @@ CString CEactivityDlg::CompareTwoPeriodsOfDays(CStringArray& saDates1, CStringAr
 //		на графике строятся 2 линии с посуточной разверткой
 void CEactivityDlg::CompareTwoPeriodsOfMons(CStringArray& saDates1, CStringArray& saDates2)
 {
+	::SetCursor(AfxGetApp()->LoadStandardCursor(IDC_WAIT));
 	checkAutoUpdate.SetCheck(false);//отключаем автоматическое обновление
 	ActivityExe firstPeriod; //суммарная статистика по первому периоду, чтобы потом показать усредненную по дням
 	firstPeriod.sumActs=0; firstPeriod.sumTime=0; firstPeriod.usefulActs=0; firstPeriod.usefulTime=0;
 	ActivityExe secondPeriod; //суммарная статистика по первому периоду, чтобы потом показать усредненную по дням
 	secondPeriod.sumActs=0; secondPeriod.sumTime=0; secondPeriod.usefulActs=0; secondPeriod.usefulTime=0;
 
-//	VARIANT var;//приводим график в исходное состояние
-	if (saDates2.GetSize()>1 || saDates1.GetSize()>1)
+	//приводим график в исходное состояние
+	CChartLineSerie   *pLinePeriod1, *pLinePeriod2;
+	CChartPointsSerie *pPntsPeriod1, *pPntsPeriod2;
+	chart.RemoveAllSeries(); //чистка предыдущих кривых
+	CChartDateTimeAxis* axis1 = chart.CreateDateTimeAxis(CChartCtrl::BottomAxis);
+	axis1->SetTickLabelFormat(false, _T("%b %Y"));
+	chart.GetBottomAxis()->SetAutomatic(true);
+	chart.GetLeftAxis()->SetAutomatic(true);
+	chart.GetBottomAxis()->GetLabel()->SetText("Month");
+
+	chart.GetLeftAxis()->GetLabel()->SetText(radioTime.GetCheck() ? "Hours" : "Actions");
+	pLinePeriod1 = chart.CreateLineSerie();
+	pLinePeriod1->SetWidth(2);
+	pPntsPeriod1 = chart.CreatePointsSerie();
+	pPntsPeriod1->SetPointType(CChartPointsSerie::ptTriangle);
+	pPntsPeriod1->SetPointSize(11,11);
+	pPntsPeriod1->SetColor(pLinePeriod1->GetColor());
+
+	CChartDateTimeAxis* axis2;
+	if (saDates2.GetSize())
 	{
-// 		chart.GetPlot().GetAxis(1,var).GetValueScale().SetMaximum(60);
-// 		chart.GetPlot().GetAxis(1,var).GetValueScale().SetMinimum(-60);
-// 		chart.GetPlot().GetAxis(1,var).GetAxisTitle().SetText(radioTime.GetCheck() ? "Hours" : "Actions"); 
-// 		chart.GetPlot().GetAxis(0,var).GetAxisTitle().SetText("Month"); 
-// 		chart.SetRowCount(saDates1.GetSize() > saDates2.GetSize() ? saDates1.GetSize() : saDates2.GetSize());
-// 		if (saDates2.GetSize()>1)
-// 			chart.SetColumnCount(2);
+		axis2 = chart.CreateDateTimeAxis(CChartCtrl::TopAxis);
+		axis2->SetTickLabelFormat(false, _T("%b %Y"));
+		chart.GetTopAxis()->SetAutomatic(true);
+		pLinePeriod2 = chart.CreateLineSerie(1);
+		pLinePeriod2->SetWidth(2);
+		pPntsPeriod2 = chart.CreatePointsSerie(1);
+		pPntsPeriod2->SetPointType(CChartPointsSerie::ptEllipse);
+		pPntsPeriod2->SetPointSize(10,10);
+		pPntsPeriod2->SetColor(pLinePeriod2->GetColor());
 	}
-	double iChartMin=0;
-	double iChartMax=10;
 
 	table_period.DeleteAllItems();
 	char ch[100];
@@ -2963,24 +3024,19 @@ void CEactivityDlg::CompareTwoPeriodsOfMons(CStringArray& saDates1, CStringArray
 			CString str;
 			str.LoadString(trif.GetIds(IDS_STRING1665));//не удалось загрузить статистику для дня
 			AfxMessageBox(str + saDates1[ii]);
+			::SetCursor(AfxGetApp()->LoadStandardCursor(IDC_ARROW));
 			return;
 		}
 		int row=table_period.InsertItem(0, saDates1[ii]);
 
-		if (saDates1.GetSize()>1)
-		{
-			double chartValue = radioTime.GetCheck() ? monUsefulTime/60/60/1000 : monUsefulActs;
-//			chart.GetDataGrid().SetData(ii+1, 1, chartValue, 0); 
-			if (chartValue>iChartMax)
-				iChartMax=chartValue;
-			if (chartValue<iChartMin)
-				iChartMin=chartValue;
-//			chart.SetRow(ii+1);
-			char ch_ii[100];
-			sprintf_s(ch_ii, "%s/%s", saDates1[ii], saDates1[ii]);
-// 			chart.SetRowLabelIndex(2);
-// 			chart.SetRowLabel(ch_ii);
-		}
+		double chartValue = radioTime.GetCheck() ? monUsefulTime/60/60/1000 : monUsefulActs;
+		COleDateTime oleDate(atoi(saDates1[ii].Left(4)), atoi(saDates1[ii].Mid(5)), 
+			1, 0, 0, 0);
+		pLinePeriod1->AddPoint(oleDate, chartValue);
+		pPntsPeriod1->AddPoint(oleDate, chartValue);
+		chart.RefreshCtrl();
+		char ch_ii[100];
+		sprintf_s(ch_ii, "%s/%s", saDates1[ii], saDates1[ii]);
 
  		firstPeriod.sumActs+=monActs; firstPeriod.sumTime+=monTime; 
  		firstPeriod.usefulActs+=monUsefulActs; firstPeriod.usefulTime+=monUsefulTime;
@@ -3022,23 +3078,17 @@ void CEactivityDlg::CompareTwoPeriodsOfMons(CStringArray& saDates1, CStringArray
 			CString str;
 			str.LoadString(trif.GetIds(IDS_STRING1665));
 			AfxMessageBox(str + saDates2[ii]);
+			::SetCursor(AfxGetApp()->LoadStandardCursor(IDC_ARROW));
 			return;
 		}
 		int row=table_period.InsertItem(0, saDates2[ii]);
 
-		if (saDates2.GetSize()>1)
-		{
-			double chartValue = radioTime.GetCheck() ? monUsefulTime/60/60/1000 : monUsefulActs;
-//			chart.GetDataGrid().SetData(ii+1, 2, chartValue, 0); 
-			if (chartValue>iChartMax)
-				iChartMax=chartValue;
-			if (chartValue<iChartMin)
-				iChartMin=chartValue;
-		}
-// 		chart.SetRow(ii+1);
-// 		char ch_ii[100];
-// 		sprintf_s(ch_ii, "%s\n%s", saDates1[ii], saDates1[ii]);
-//		chart.SetRowLabel(ch_ii);
+		double chartValue = radioTime.GetCheck() ? monUsefulTime/60/60/1000 : monUsefulActs;
+		COleDateTime oleDate(atoi(saDates2[ii].Left(4)), atoi(saDates2[ii].Mid(5)), 
+			1, 0, 0, 0);
+		pLinePeriod2->AddPoint(oleDate, chartValue);
+		pPntsPeriod2->AddPoint(oleDate, chartValue);
+		chart.RefreshCtrl();
 
 		secondPeriod.sumActs+=monActs; secondPeriod.sumTime+=monTime; 
 		secondPeriod.usefulActs+=monUsefulActs; secondPeriod.usefulTime+=monUsefulTime;
@@ -3083,29 +3133,7 @@ void CEactivityDlg::CompareTwoPeriodsOfMons(CStringArray& saDates1, CStringArray
 
 	table_period.InsertItem(0, "..");
 
-	//более корректно масштабируем график
-	iChartMax=((int)(iChartMax/10)+1)*10;
-	iChartMin=((int)(iChartMin/10)-1)*10;
-	if (saDates2.GetSize()>1 || saDates1.GetSize()>1)
-	{
-// 		chart.GetPlot().GetAxis(1,var).GetValueScale().SetMaximum(iChartMax);
-// 		chart.GetPlot().GetAxis(1,var).GetValueScale().SetMinimum(iChartMin);
-	}
-}
-
-void CEactivityDlg::OnMenu()
-{
-	CalculateAverageUsefulParameter(5);
-}
-
-void CEactivityDlg::OnGetreportFromlast10workingdays()
-{
-	CalculateAverageUsefulParameter(10);
-}
-
-void CEactivityDlg::OnGetreportFromlast20workingdays()
-{
-	CalculateAverageUsefulParameter(20);
+	::SetCursor(AfxGetApp()->LoadStandardCursor(IDC_ARROW));
 }
 
 void CEactivityDlg::OnReportsUsefulActionsFromLast5WorkingDays()
@@ -3146,7 +3174,7 @@ void CEactivityDlg::OnReportsUsefulParameterFromSelectedPeriod()
 	switch (report.saDates[0].GetLength())
 	{
 	case DAY:
-		CompareTwoPeriodsOfDays(report.saDates, report.saDates2);
+		CompareTwoPeriodsOfDays(report.saDates, report.saDates2, radioTime.GetCheck());
 		break;
 	case MON:
 		CompareTwoPeriodsOfMons(report.saDates, report.saDates2);
@@ -3190,9 +3218,40 @@ void CEactivityDlg::OnCompareWithBest5Days()
 		saDates2.Add(date);
 		ct+=60*60*24;
 	}
-	CString res = CompareTwoPeriodsOfDays(saDates, saDates2, 2);
+	CString res = CompareTwoPeriodsOfDays(saDates, saDates2, radioTime.GetCheck(), 2);
 //	if (res!="")
 //		SendMailMessage("smtp.gmail.com", 587, "silencenotif@gmail.com", 
 //			"densaf.ace@gmail.com", "densaf.ace@gmail.com", "GhjcajhyZ88", res, "TablePeriod");
+
+}
+
+void CEactivityDlg::OnReportOnePeriod()
+{
+	CReportOption dialogReport;
+	dialogReport.timeOrActions = radioTime.GetCheck();
+	if (dialogReport.DoModal()!=IDOK)
+		return;
+	checkAutoUpdate.SetCheck(false);//отключаем автоматическое обновление
+	if (dialogReport.useLastDays>0)
+	{
+		CalculateAverageUsefulParameter(dialogReport.useLastDays, 
+			dialogReport.thresholdHoliday);
+	} else {
+		CStringArray emptyDates;
+		CompareTwoPeriodsOfDays(dialogReport.saDates, emptyDates, 
+			dialogReport.accentParameter);
+	}
+}
+
+
+void CEactivityDlg::OnReportTwoPeriods()
+{
+	CReportTwoPeriods dialogReport;
+	dialogReport.timeOrActions = radioTime.GetCheck();
+	if (dialogReport.DoModal()!=IDOK)
+		return;
+	checkAutoUpdate.SetCheck(false);//отключаем автоматическое обновление
+	CompareTwoPeriodsOfDays(dialogReport.saDates1, dialogReport.saDates2, 
+		dialogReport.accentParameter, 0, dialogReport.thresholdHoliday);
 
 }

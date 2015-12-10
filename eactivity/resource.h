@@ -13,11 +13,14 @@
 #define IDD_Rules                       131
 #define IDR_MENU1                       133
 #define IDR_MAIN_MENU                   134
-#define IDD_Report                      135
 #define IDR_CONTEXT_TABLEPERIOD_RU      135
+#define IDD_ReportOption                135
 #define IDR_MAIN_MENU_RU                136
 #define IDD_DIALOG1                     136
 #define IDR_MENU2                       137
+#define IDD_ReportTwoPeriods            139
+#define IDD_Report1                     140
+#define IDD_Report                      141
 #define IDC_MSCHART1                    1000
 #define IDC_CHARTCTRL                   1000
 #define IDC_BUTTON1                     1001
@@ -32,7 +35,18 @@
 #define IDC_EDIT1                       1006
 #define IDC_DATETIMEPICKER2             1006
 #define IDC_EDIT3                       1007
+#define IDC_RADIO3                      1007
+#define IDC_DATETIMEPICKER3             1007
 #define IDC_EDIT5                       1008
+#define IDC_RADIO4                      1008
+#define IDC_DATETIMEPICKER4             1008
+#define IDC_RADIO6                      1009
+#define IDC_RADIO22                     1010
+#define IDC_RADIO7                      1010
+#define IDC_RADIO5                      1011
+#define IDC_CHECK2                      1011
+#define IDC_LIST18                      1011
+#define IDC_LIST6                       1012
 #define IDC_LIST2                       1027
 #define IDC_LIST3                       1028
 #define IDC_EDITr17                     1029
@@ -48,6 +62,7 @@
 #define IDC_STATIC_percent_hour         1189
 #define IDC_STATIC_percent_hour2        1190
 #define IDC_STATIC_percent_hour3        1191
+#define IDC_STATIC_percent_hour4        1192
 #define IDS_STRING1279                  1279
 #define IDS_STRING1280                  1280
 #define IDS_STRING1569                  1569
@@ -152,6 +167,8 @@
 #define IDS_STRING1668                  1668
 #define IDS_STRING1669                  1669
 #define IDS_STRING1670                  1670
+#define IDS_STRING1671                  1671
+#define IDS_STRING1672                  1672
 #define ID_IDR_SDSD                     32771
 #define ID_ACTIVITY_SETKOEFEXE          32772
 #define ID_IDR_SDSD32773                32773
@@ -165,14 +182,16 @@
 #define ID_REPORTS_USEFULPARAMETERFROMSELECTEDPERIOD 32781
 #define ID_Compare2Periods              32782
 #define ID_IDR_32783                    32783
+#define ID_REPORTS_32784                32784
+#define ID_REPORTS_32785                32785
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        138
-#define _APS_NEXT_COMMAND_VALUE         32784
-#define _APS_NEXT_CONTROL_VALUE         1008
+#define _APS_NEXT_RESOURCE_VALUE        140
+#define _APS_NEXT_COMMAND_VALUE         32786
+#define _APS_NEXT_CONTROL_VALUE         1012
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

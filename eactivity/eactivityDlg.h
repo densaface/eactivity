@@ -1,6 +1,8 @@
 //#include "externals/ppToolTip/PPTooltip.h"
 #include "old_my_src/winwork.h"
 #include "koeff.h"
+#include "ReportOption.h"
+#include "ReportTwoPeriods.h"
 #include "externals\newmenu.h"
 #include "ViewRules.h"
 #include "externals/openssl-0.9.8l/CSmtp.h"
@@ -73,8 +75,9 @@ public:
 	void CalculateUsefulTimeAndActs(activ &allActiv, activ_exe &exeActiv, activ_hours &activHours);
 	int GetUsefulActsFromExe(string exe, activ &forLoad1);
 	float GetTimeFromExe (string exe, activ &forLoad1);
-	void CalculateAverageUsefulParameter(int lastDays);
-	CString CompareTwoPeriodsOfDays(CStringArray& saDates1, CStringArray& saDates2, int MinusDays=0);
+	void CalculateAverageUsefulParameter(int lastDays, double thresholdHoliday=1.5);
+	CString CompareTwoPeriodsOfDays(CStringArray& saDates1, CStringArray& saDates2, 
+		int accentParameter, int MinusDays=0, double thresholdHoliday=0.0);
 	void CompareTwoPeriodsOfMons(CStringArray& saDates1, CStringArray& saDates2);
 
 	void AddToExeCapt(char *capt, string &exe, HWND HChil, HWND hwMain, int sumActs, float sumTime);
@@ -176,7 +179,6 @@ protected:
 	afx_msg void OnActivitySetkoefeExe();
 	afx_msg void OnChangeEDITcapts();
 	afx_msg void OnActivityShowAllCapts();
-	afx_msg void OnMenu();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 public:
@@ -184,8 +186,6 @@ public:
 	afx_msg void OnBnClickedCancel();
 	afx_msg void OnSave();
 	CChartCtrl chart; //http://www.codeproject.com/Articles/14075/High-speed-Charting-Control - example
-	afx_msg void OnGetreportFromlast10workingdays();
-	afx_msg void OnGetreportFromlast20workingdays();
 	CXHTMLStatic stat_day_adv;
 	CXHTMLStatic stat_hour_adv;
 	CXHTMLStatic stat_ExeCapt;
@@ -198,6 +198,8 @@ public:
 	CButton checkAutoUpdate;
 	afx_msg void OnCompare2periods();
 	afx_msg void OnCompareWithBest5Days();
+	afx_msg void OnReportOnePeriod();
+	afx_msg void OnReportTwoPeriods();
 };
 
 //{{AFX_INSERT_LOCATION}}

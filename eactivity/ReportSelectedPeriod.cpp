@@ -23,7 +23,7 @@ CReportSelectedPeriod::~CReportSelectedPeriod()
 void CReportSelectedPeriod::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
-	DDX_Control(pDX, IDC_LIST1, listMainDates);
+	DDX_Control(pDX, IDC_LIST18, listMainDates);
 	DDX_Control(pDX, IDC_LIST5, listComparedDates);
 	DDX_Control(pDX, IDC_COMBO1, comboMon);
 	DDX_Control(pDX, IDC_LIST4, listOffers);
