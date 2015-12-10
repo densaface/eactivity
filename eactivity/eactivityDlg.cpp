@@ -319,10 +319,11 @@ BOOL CEactivityDlg::OnInitDialog()
 	checkAutoUpdate.SetCheck(true);
 	CalculateAverageUsefulParameter(5);//сразу строим график средних активностей за час
 #ifndef _DEBUG
+	GetDlgItem(IDOK)->ShowWindow(SW_HIDE);
 #endif
 	hMyDll=NULL;
 	__SetHook__(TRUE);
-	WriteJournal("dialog initialization success");
+	WriteJournal("CEactivityDlg initialized successfully");
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
 
@@ -384,6 +385,7 @@ BOOL CEactivityDlg::__SetHook__(BOOL fSet)
 				}
 			}
 			hMyDll = ::LoadLibrary(path_exe+"\\auxiliar.dll");
+			WriteJournal("library is loaded, res = %d", hMyDll);
 			if (!hMyDll)
 			{
 				AfxMessageBox("Error of library loading \n" + path_exe + "\\auxiliar.dll" );
@@ -410,7 +412,8 @@ BOOL CEactivityDlg::__SetHook__(BOOL fSet)
 				if (!SetHook)
 				{
 					WriteJournal("!!! SetHook is false !!!");
-				}
+				} else
+					WriteJournal("Hook is set, res = %d\n", SetHook);
 #ifdef LOG 
 				char debc[1024]; sprintf_s(debc, "mySetHookFromDll=%x", mySetHookFromDll); trif.RecordLog(debc);  
 #endif
@@ -421,6 +424,7 @@ BOOL CEactivityDlg::__SetHook__(BOOL fSet)
 		if (hMyDll)
 		{
 			glstErr = mySetHookFromDll(false, hMyDll, 0, 0);
+			WriteJournal("Hook is UNset, res = %d\n", glstErr);
 			if (trif.Is64BitOS())
 			{
 				if (glstErr)
@@ -463,8 +467,15 @@ BOOL CEactivityDlg::__SetHook__(BOOL fSet)
 			counloadlib--;
 			if (!FreeLibrary(hMyDll))
 			{
+				WriteJournal("library can't be UNloaded\n");
 				AfxMessageBox("lib not free (#2)!!!");
+			} else {
+				WriteJournal("library is UNloaded\n");
 			}
+			hMyDll = NULL;
+			mySetHookFromDll = NULL; 
+			myFreeLib = NULL;
+			SetHook = 0;
 			// закоментировано поскольку start_dll64 самостоятельно закрывается в 
 				//течении 5 сек после закрытия eactivity
 // 			if (trif.Is64BitOS())
@@ -480,7 +491,6 @@ BOOL CEactivityDlg::__SetHook__(BOOL fSet)
 // 					ShellExecute(0, NULL, sShelEx, "Close", NULL, SW_HIDE);
 // 				}
 // 			}
-			hMyDll=0;
 		}
 	}
 
@@ -2459,9 +2469,8 @@ void CEactivityDlg::OnSelchangeComboDownTable()
 
 void CEactivityDlg::OnBnClickedOk()
 {
-	OnOk2();
-//	COLORREF text = RGB(0,255,0);
-//	table_period.OnDisplayCellColor(2,2, text, text);
+	__SetHook__(FALSE);
+	__SetHook__(TRUE);
 }
 
 bool CEactivityDlg::WriteJournal(LPCTSTR lpszFormat, ...)
