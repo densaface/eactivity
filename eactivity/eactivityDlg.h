@@ -4,7 +4,11 @@
 #include "ReportOption.h"
 #include "ReportTwoPeriods.h"
 #include "externals\newmenu.h"
+//#include "Option1.h"
+#include "Optiontab.h"
+#include "TabOption.h"
 #include "ViewRules.h"
+#include "AlwaysTop.h"
 #include "externals/openssl-0.9.8l/CSmtp.h"
 #include <string>
 #include <map>
@@ -14,7 +18,7 @@
 #include <fstream>
 #include <vector>
 #include <algorithm>
-#include "externals/XHTMLStatic.h"
+//#include "externals/XHTMLStatic.h"
 #include "statsfunc.h"
 #include "externals\graph\ChartCtrl.h"
 #include "externals\graph\ChartLineSerie.h"
@@ -51,13 +55,13 @@ class CEactivityDlg : public CDialog
 //	void OnSave();
 	CString path_exe;
 	bool WriteJournal(LPCTSTR lpszFormat, ...);
-	void FormatSeconds(char (&ch)[100], float secs); 
 	void SetToTray(int ResConst, bool modify=false);
 	void DelIconTray();
 	LRESULT OnIcon(WPARAM wp, LPARAM lp);
 	HHOOK SetHook;
-	UINT RR, GG;//цвет статика отставания в текущем дне
 	StatsFunc statsF; //функции работы со статистикой вынесены в отдельный файл
+	UINT sleepPeriod;
+	double usefulTimeHoliday;
 
 public:
 	CEactivityDlg(CWnd* pParent = NULL);	// standard constructor
@@ -75,7 +79,7 @@ public:
 	void CalculateUsefulTimeAndActs(activ &allActiv, activ_exe &exeActiv, activ_hours &activHours);
 	int GetUsefulActsFromExe(string exe, activ &forLoad1);
 	float GetTimeFromExe (string exe, activ &forLoad1);
-	void CalculateAverageUsefulParameter(int lastDays, double thresholdHoliday=1.5);
+	void CalculateAverageUsefulParameter(int lastDays, double thresholdHoliday);
 	CString CompareTwoPeriodsOfDays(CStringArray& saDates1, CStringArray& saDates2, 
 		int accentParameter, int MinusDays=0, double thresholdHoliday=0.0);
 	void CompareTwoPeriodsOfMons(CStringArray& saDates1, CStringArray& saDates2);
@@ -115,7 +119,6 @@ public:
 
 	bool LoadFileDay(string fname, activ &forLoad1);
 	string curDayFileName;//содержит дату текущего дня "activ_user_2015_11_26.a"
-	int curHour; //текущий час, смена проверяется каждые 5 сек
 	
 	void SaveCurMonth(bool smena=false);
 	void LoadCurMonth();
@@ -129,14 +132,15 @@ public:
 	
 	void UpdateTableExeCapt(activ &allActiv, activ_hours &activHours, 
 		float &sumTime, float &sumUsefulTime, int &sumAct, 
-		int &usefulActs, int onlyOneHour = -1);
-	void UpdateExeCapt(activ_hours &activHours);
-	void UpdatePeriodTableViewByHours(activ_hours &activHours);
+		int &usefulActs, int onlyOneHour = -1, bool showInfoTable=true);
+	void UpdateExeCapt(activ_hours &activHours, bool showInfoTable=true);
+	void UpdatePeriodTableViewByHours(activ_hours &activHours, bool showInfoTable=true);
 	void UpdatePeriodTable(activ &CurView);
 	rulSpis::iterator ownFind(string capt);
 	string GetExeFromTable(int sel);
 	string showAllCaptsForExe;//показывать все заголовки для определенного EXE
 	void SizingWins();
+	CAlwaysTop* dialInfo;//диалоговое окно поверх всех с инфой
 
 // Dialog Data
 	//{{AFX_DATA(CEactivityDlg)
@@ -168,7 +172,7 @@ protected:
 	afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
-	afx_msg void OnOk2();
+	afx_msg void OnRefresh();
 	afx_msg void OnSelchangeCombo_sort();
 	afx_msg void OnDblclkListDays(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnSelchangeComboDownTable();
@@ -200,6 +204,10 @@ public:
 	afx_msg void OnCompareWithBest5Days();
 	afx_msg void OnReportOnePeriod();
 	afx_msg void OnReportTwoPeriods();
+	afx_msg void OnOptionsOptions();
+	CButton check_infopanel;
+	afx_msg void OnBnClickedCheckInfoPanel();
+	afx_msg LRESULT OnCloseInfoPanel(WPARAM wParam, LPARAM lParam);
 };
 
 //{{AFX_INSERT_LOCATION}}

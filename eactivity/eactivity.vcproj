@@ -271,6 +271,10 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath=".\AlwaysTop.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\eactivity.cpp"
 				>
 			</File>
@@ -284,6 +288,10 @@
 			</File>
 			<File
 				RelativePath=".\Koeff.h"
+				>
+			</File>
+			<File
+				RelativePath=".\OptionTab.cpp"
 				>
 			</File>
 			<File
@@ -341,6 +349,10 @@
 						UsePrecompiledHeader="1"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\TabOption.cpp"
+				>
 			</File>
 			<File
 				RelativePath=".\ViewRules.cpp"
@@ -797,6 +809,10 @@
 						>
 					</File>
 				</Filter>
+				<Filter
+					Name="option"
+					>
+				</Filter>
 			</Filter>
 			<Filter
 				Name="old_my_src"
@@ -845,11 +861,19 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
+				RelativePath=".\AlwaysTop.h"
+				>
+			</File>
+			<File
 				RelativePath=".\eactivity.h"
 				>
 			</File>
 			<File
 				RelativePath=".\eactivityDlg.h"
+				>
+			</File>
+			<File
+				RelativePath=".\OptionTab.h"
 				>
 			</File>
 			<File
@@ -862,6 +886,10 @@
 			</File>
 			<File
 				RelativePath=".\stdafx.h"
+				>
+			</File>
+			<File
+				RelativePath=".\TabOption.h"
 				>
 			</File>
 			<File

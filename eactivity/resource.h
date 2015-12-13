@@ -21,6 +21,9 @@
 #define IDD_ReportTwoPeriods            139
 #define IDD_Report1                     140
 #define IDD_Report                      141
+#define IDD_OptionTab                   142
+#define IDD_ALWAYS_TOP                  143
+#define IDD_OptionTab2                  145
 #define IDC_MSCHART1                    1000
 #define IDC_CHARTCTRL                   1000
 #define IDC_BUTTON1                     1001
@@ -32,11 +35,13 @@
 #define IDC_CHECK1                      1004
 #define IDC_LIST5                       1005
 #define IDC_DATETIMEPICKER1             1005
+#define IDC_CHECK3                      1005
 #define IDC_EDIT1                       1006
 #define IDC_DATETIMEPICKER2             1006
 #define IDC_EDIT3                       1007
 #define IDC_RADIO3                      1007
 #define IDC_DATETIMEPICKER3             1007
+#define IDC_EDITHOLIDAY                 1007
 #define IDC_EDIT5                       1008
 #define IDC_RADIO4                      1008
 #define IDC_DATETIMEPICKER4             1008
@@ -169,6 +174,16 @@
 #define IDS_STRING1670                  1670
 #define IDS_STRING1671                  1671
 #define IDS_STRING1672                  1672
+#define IDS_STRING1673                  1673
+#define IDS_STRING1674                  1674
+#define IDS_STRING1675                  1675
+#define IDS_STRING1676                  1676
+#define IDS_STRING1677                  1677
+#define IDS_STRING1678                  1678
+#define IDS_STRING1679                  1679
+#define IDS_STRING1680                  1680
+#define IDS_STRING1681                  1681
+#define IDS_STRING1682                  1682
 #define ID_IDR_SDSD                     32771
 #define ID_ACTIVITY_SETKOEFEXE          32772
 #define ID_IDR_SDSD32773                32773
@@ -184,13 +199,14 @@
 #define ID_IDR_32783                    32783
 #define ID_REPORTS_32784                32784
 #define ID_REPORTS_32785                32785
+#define ID_OPTIONS_OPTIONS              32786
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        140
-#define _APS_NEXT_COMMAND_VALUE         32786
+#define _APS_NEXT_RESOURCE_VALUE        144
+#define _APS_NEXT_COMMAND_VALUE         32787
 #define _APS_NEXT_CONTROL_VALUE         1012
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

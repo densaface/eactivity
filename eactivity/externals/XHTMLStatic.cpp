@@ -143,6 +143,7 @@ BEGIN_MESSAGE_MAP(CXHTMLStatic, CStatic)
 	//}}AFX_MSG_MAP
 	ON_MESSAGE(WM_PRINT, OnPrint)
     ON_CONTROL_REFLECT(STN_CLICKED, OnClicked)
+	ON_WM_SIZE()
 END_MESSAGE_MAP()
 
 //=============================================================================
@@ -210,6 +211,17 @@ CXHTMLStatic::~CXHTMLStatic()
 	if (m_hMemDC)
 		DeleteDC(m_hMemDC);
 	m_hMemDC = NULL;
+}
+
+void CXHTMLStatic::OnSize(UINT nType, int cx, int cy)
+{
+	CStatic::OnSize(nType, cx, cy);
+
+	m_bRefresh = true;
+	if (::IsWindow(GetSafeHwnd()))
+	{
+		InvalidateRect(NULL);
+	}
 }
 
 //=============================================================================

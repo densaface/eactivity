@@ -12,7 +12,7 @@
 #define XHTMLSTATIC_H
 
 #include "XNamedColors.h"
-
+#include "afxcmn.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CXHTMLStatic window
@@ -174,6 +174,7 @@ protected:
 	afx_msg void OnDestroy();
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
+	afx_msg void OnSize(UINT nType, int cx, int cy);
 	//}}AFX_MSG
 	afx_msg void OnClicked();
 	LRESULT OnPrint(WPARAM wParam, LPARAM /*lParam*/);

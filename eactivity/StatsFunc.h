@@ -4,6 +4,7 @@
 #include <iomanip>
 #include "afxwin.h"
 #include <fstream>
+#include "externals/XHTMLStatic.h"
 #pragma once
 using namespace std;
 
@@ -51,4 +52,9 @@ public:
 	~StatsFunc(void);
 	bool LoadFileMonth(string fname, activ &forLoad1, float &sumTime, float &sumUsefulTime, int &sumActs, int &usefulActs);
 	void LoadYear(activ &aCurYear, string fname="");
+	void FormatSeconds(char (&ch)[100], float secs); 
+	void ApplyFont(float secs1, float secs2, int font_size, BOOL bold, BOOL hide_description,  
+		CString faceFont, CXHTMLStatic &stat_day_adv, CXHTMLStatic &stat_hour_adv,
+		CStatic &stat_day_description, CStatic &stat_hour_description, 
+		HWND hwndParent, int RR, int GG, bool resizeWins = false);
 };
