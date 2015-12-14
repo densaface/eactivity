@@ -313,7 +313,7 @@ protected:
 	virtual afx_msg BOOL OnHeaderItemChanging(UINT, NMHDR* pNMHDR, LRESULT* pResult);
 	virtual afx_msg BOOL OnHeaderEndDrag(UINT, NMHDR* pNmhdr, LRESULT* pResult);
 	virtual afx_msg BOOL OnHeaderClick(NMHDR* pNMHDR, LRESULT* pResult);
-	virtual afx_msg BOOL OnToolNeedText(UINT, NMHDR* pNMHDR, LRESULT* pResult);
+//	virtual afx_msg BOOL OnToolNeedText(UINT, NMHDR* pNMHDR, LRESULT* pResult);
 	virtual afx_msg BOOL OnBeginLabelEdit(NMHDR* pNMHDR,LRESULT* pResult);
 	virtual afx_msg BOOL OnEndLabelEdit(NMHDR* pNMHDR, LRESULT* pResult);
 	virtual afx_msg BOOL OnOwnerDataFindItem(NMHDR* pNMHDR, LRESULT* pResult);

@@ -176,8 +176,8 @@ BEGIN_MESSAGE_MAP(CGridListCtrlEx, CListCtrl)
 	ON_NOTIFY_EX(HDN_ENDDRAG, 0, OnHeaderEndDrag)
 	ON_NOTIFY_EX(HDN_DIVIDERDBLCLICKA, 0, OnHeaderDividerDblClick)
 	ON_NOTIFY_EX(HDN_DIVIDERDBLCLICKW, 0, OnHeaderDividerDblClick)
-	ON_NOTIFY_EX(TTN_NEEDTEXTA, 0, OnToolNeedText)
-	ON_NOTIFY_EX(TTN_NEEDTEXTW, 0, OnToolNeedText)
+//	ON_NOTIFY_EX(TTN_NEEDTEXTA, 0, OnToolNeedText)
+//	ON_NOTIFY_EX(TTN_NEEDTEXTW, 0, OnToolNeedText)
 	ON_NOTIFY_REFLECT_EX(LVN_COLUMNCLICK, OnHeaderClick)	// Column Click
 	ON_NOTIFY_REFLECT_EX(NM_CLICK, OnItemClick)				// Cell Click
 	ON_NOTIFY_REFLECT_EX(NM_DBLCLK, OnItemDblClick)			// Cell Double Click
@@ -2251,7 +2251,7 @@ int CGridListCtrlEx::OnToolHitTest(CPoint point, TOOLINFO * pTI) const
 //! @param pResult Not used
 //! @return Is final message handler (Return FALSE to continue routing the message)
 //------------------------------------------------------------------------
-BOOL CGridListCtrlEx::OnToolNeedText(UINT id, NMHDR* pNMHDR, LRESULT* pResult)
+/*BOOL CGridListCtrlEx::OnToolNeedText(UINT id, NMHDR* pNMHDR, LRESULT* pResult)
 {
 	CPoint pt(GetMessagePos());
 	ScreenToClient(&pt);
@@ -2293,7 +2293,7 @@ BOOL CGridListCtrlEx::OnToolNeedText(UINT id, NMHDR* pNMHDR, LRESULT* pResult)
 		lstrcpyn(pTTTW->szText, static_cast<LPCTSTR>(tooltip), sizeof(pTTTW->szText)/sizeof(WCHAR));
 #endif
 	return TRUE;
-}
+}*/
 
 //------------------------------------------------------------------------
 //! Override this method to control whether cell edit should be started

@@ -211,15 +211,21 @@ BEGIN
     PUSHBUTTON      "==>",IDC_BUTTON2,276,74,32,14
 END
 
-IDD_OptionTab DIALOGEX 0, 0, 316, 106
+IDD_OptionTab DIALOGEX 0, 0, 316, 150
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Общие настройки"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    LTEXT           "Порог полезного времени, ниже которого день принимается за выходной (в часах)",IDC_STATIC,7,57,284,15
+    CONTROL         "Фиксированная норма рабочего времени в день",IDC_RADIO1,
+                    "Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,7,101,183,10
+    CONTROL         "Норма рабочего времени вычисляется из 5 последних рабочих дней",IDC_RADIO2,
+                    "Button",BS_AUTORADIOBUTTON | WS_TABSTOP,7,132,280,10
+    LTEXT           "Порог полезного времени, ниже которого день принимается за выходной (в часах)",IDC_STATIC,7,57,284,12
     LTEXT           "Временной интервал бездействия, после которого программа приостанавливает ведение статистики (в секундах)",IDC_STATIC,7,7,302,21
-    EDITTEXT        IDC_EDIT1,7,30,65,12,ES_AUTOHSCROLL | ES_NUMBER
-    EDITTEXT        IDC_EDITHOLIDAY,7,73,65,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT1,7,29,65,12,ES_AUTOHSCROLL | ES_NUMBER
+    EDITTEXT        IDC_EDITHOLIDAY,7,71,65,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT2,37,114,40,14,ES_AUTOHSCROLL
+    LTEXT           "часов в день",IDC_STATIC,80,116,55,8
 END
 
 IDD_ALWAYS_TOP DIALOGEX 0, 0, 157, 89
@@ -322,7 +328,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 309
         TOPMARGIN, 7
-        BOTTOMMARGIN, 99
+        BOTTOMMARGIN, 143
     END
 
     IDD_ALWAYS_TOP, DIALOG
@@ -401,12 +407,12 @@ END
 
 IDR_MAIN_MENU_RU MENU 
 BEGIN
-    MENUITEM "File",                        0
+    MENUITEM "File",                        ID_FILE
     POPUP "Reports"
     BEGIN
         MENUITEM "Отчет за определенный период времени", ID_REPORTS_32784
+        MENUITEM "Отчет по выбранному в таблице периоду времени", ID_REPORTS_USEFULPARAMETERFROMSELECTEDPERIOD
         MENUITEM "Отчет: Сравнение двух заданных периодов времени", ID_REPORTS_32785
-        MENUITEM "Useful parameter from selected period", ID_REPORTS_USEFULPARAMETERFROMSELECTEDPERIOD
     END
     POPUP "Options"
     BEGIN

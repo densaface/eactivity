@@ -36,6 +36,10 @@ BOOL COptionTab::OnInitDialog()
 	edit_sleep_period.SetWindowText(str);
 	str = AfxGetApp()->GetProfileString("App", "UsefulTimeHoliday", "1.5");
 	edit_holiday.SetWindowText(str);
+	
+	int check_radio = AfxGetApp()->GetProfileInt("App", "RadioConstNorm", 1);
+	radio_const_norm    .SetCheck( check_radio);
+	radio_norm_last_days.SetCheck(!check_radio);
 	return TRUE;
 }
 
@@ -53,6 +57,7 @@ BOOL COptionTab::OnApply()
 	edit_holiday.GetWindowText(str);
 	AfxGetApp()->WriteProfileString("App", "UsefulTimeHoliday", str);
 
+	AfxGetApp()->WriteProfileInt("App", "RadioConstNorm", radio_const_norm.GetCheck());
 	return TRUE;
 }
 
@@ -61,6 +66,8 @@ void COptionTab::DoDataExchange(CDataExchange* pDX)
 	CPropertyPage::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_EDIT1, edit_sleep_period);
 	DDX_Control(pDX, IDC_EDITHOLIDAY, edit_holiday);
+	DDX_Control(pDX, IDC_RADIO1, radio_const_norm);
+	DDX_Control(pDX, IDC_RADIO2, radio_norm_last_days);
 }
 
 

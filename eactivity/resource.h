@@ -52,6 +52,7 @@
 #define IDC_CHECK2                      1011
 #define IDC_LIST18                      1011
 #define IDC_LIST6                       1012
+#define IDC_EDIT2                       1012
 #define IDC_LIST2                       1027
 #define IDC_LIST3                       1028
 #define IDC_EDITr17                     1029
@@ -200,14 +201,15 @@
 #define ID_REPORTS_32784                32784
 #define ID_REPORTS_32785                32785
 #define ID_OPTIONS_OPTIONS              32786
+#define ID_FILE                         32787
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        144
-#define _APS_NEXT_COMMAND_VALUE         32787
-#define _APS_NEXT_CONTROL_VALUE         1012
+#define _APS_NEXT_COMMAND_VALUE         32788
+#define _APS_NEXT_CONTROL_VALUE         1013
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

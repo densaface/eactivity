@@ -31,6 +31,8 @@ private:
 	HICON m_hIcon;
 public:
 	CComboBox combo_sleep_period;
+	CButton radio_const_norm;
+	CButton radio_norm_last_days;
 	CEdit edit_sleep_period;
 	CEdit edit_holiday;
 };

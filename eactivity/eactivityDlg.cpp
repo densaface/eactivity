@@ -2004,22 +2004,15 @@ BOOL CEactivityDlg::SendMailMessage(LPCTSTR szServer,
 		//	mail.AddRecipient("dsafonov@parallels.com");
 		mail.SetXPriority(XPRIORITY_NORMAL);
 		mail.SetXMailer("The Bat! (v3.02) Professional");
-// 		mail.AddMsgLine("Hello,");
-// 		mail.AddMsgLine("");
-// 		mail.AddMsgLine("...");
-// 		mail.AddMsgLine("How are you today?");
-// 		mail.AddMsgLine("");
-// 		mail.AddMsgLine("Regards");
-//		mail.ModMsgLine(5,"regards");
-//		mail.DelMsgLine(2);
 		for (int ii=1; ii<table_period.GetItemCount(); ii++)
 		{
-			mail.AddMsgLine(table_period.GetItemText(ii, 0));
+			mail.AddMsgLine(table_period.GetItemText(ii, 0) + 
+				"   " + table_period.GetItemText(ii, 1)+
+				"   " + table_period.GetItemText(ii, 2)+
+				"   " + table_period.GetItemText(ii, 3)+
+				"   " + table_period.GetItemText(ii, 4)+
+				"   " + table_period.GetItemText(ii, 5));
 		}
-
-		//mail.AddAttachment("../test1.jpg");
-		//mail.AddAttachment("c:\\test2.exe");
-		//mail.AddAttachment("c:\\test3.txt");
 		return mail.Send();
 	}
 	catch(ECSmtp e)
