@@ -53,6 +53,8 @@
 #define IDC_LIST18                      1011
 #define IDC_LIST6                       1012
 #define IDC_EDIT2                       1012
+#define IDC_EDIT4                       1013
+#define IDC_EDIT6                       1014
 #define IDC_LIST2                       1027
 #define IDC_LIST3                       1028
 #define IDC_EDITr17                     1029
@@ -185,6 +187,10 @@
 #define IDS_STRING1680                  1680
 #define IDS_STRING1681                  1681
 #define IDS_STRING1682                  1682
+#define IDS_STRING1683                  1683
+#define IDS_STRING1684                  1684
+#define IDS_STRING1685                  1685
+#define IDS_STRING1686                  1686
 #define ID_IDR_SDSD                     32771
 #define ID_ACTIVITY_SETKOEFEXE          32772
 #define ID_IDR_SDSD32773                32773
@@ -202,14 +208,15 @@
 #define ID_REPORTS_32785                32785
 #define ID_OPTIONS_OPTIONS              32786
 #define ID_FILE                         32787
+#define ID_FILE_EXIT                    32788
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        144
-#define _APS_NEXT_COMMAND_VALUE         32788
-#define _APS_NEXT_CONTROL_VALUE         1013
+#define _APS_NEXT_COMMAND_VALUE         32789
+#define _APS_NEXT_CONTROL_VALUE         1014
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

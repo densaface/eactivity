@@ -10,6 +10,18 @@
 
 IMPLEMENT_DYNAMIC(COptionTab, CPropertyPage)
 
+void COptionTab::DoDataExchange(CDataExchange* pDX)
+{
+	CPropertyPage::DoDataExchange(pDX);
+	DDX_Control(pDX, IDC_EDIT1, edit_sleep_period);
+	DDX_Control(pDX, IDC_EDITHOLIDAY, edit_holiday);
+	DDX_Control(pDX, IDC_EDIT2, edit_hour_norm);
+	DDX_Control(pDX, IDC_EDIT4, edit_hour_begin);
+	DDX_Control(pDX, IDC_EDIT6, edit_hour_end);
+	DDX_Control(pDX, IDC_RADIO1, radio_const_norm);
+	DDX_Control(pDX, IDC_RADIO2, radio_norm_last_days);
+}
+
 COptionTab::COptionTab(const char* lpszTitle, UINT nIconID)
 : CPropertyPage(COptionTab::IDD),
 m_nIconID(nIconID),
@@ -40,38 +52,59 @@ BOOL COptionTab::OnInitDialog()
 	int check_radio = AfxGetApp()->GetProfileInt("App", "RadioConstNorm", 1);
 	radio_const_norm    .SetCheck( check_radio);
 	radio_norm_last_days.SetCheck(!check_radio);
+	str = AfxGetApp()->GetProfileString("App", "HoursNorm", "4.0");
+	edit_hour_norm.SetWindowText(str);
+	str = AfxGetApp()->GetProfileString("App", "HourWorkBegin", "9");
+	edit_hour_begin.SetWindowText(str);
+	str = AfxGetApp()->GetProfileString("App", "HourWorkEnd", "18");
+	edit_hour_end.SetWindowText(str);
+	OnBnClickedRadio1();
 	return TRUE;
 }
 
 BOOL COptionTab::OnApply()
 {
-	CString str;
+	CString str, strHourWorkBegin, strHourWorkEnd;
 	edit_sleep_period.GetWindowText(str);
 	if (atoi(str)<1)
 	{
 		AfxMessageBox(trif.GetIds(IDS_STRING1673));
 		return FALSE;
 	}
+	edit_hour_begin.GetWindowText(strHourWorkBegin);
+	edit_hour_end.GetWindowText(strHourWorkEnd);
+	if (atoi(strHourWorkBegin)>=atoi(strHourWorkEnd))
+	{
+		AfxMessageBox(trif.GetIds(IDS_STRING1683));
+		return FALSE;
+	}
+
 	AfxGetApp()->WriteProfileInt("App", "SleepPeriod", atoi(str));
 
 	edit_holiday.GetWindowText(str);
 	AfxGetApp()->WriteProfileString("App", "UsefulTimeHoliday", str);
 
 	AfxGetApp()->WriteProfileInt("App", "RadioConstNorm", radio_const_norm.GetCheck());
+
+	edit_hour_norm.GetWindowText(str);
+	AfxGetApp()->WriteProfileString("App", "HoursNorm", str);
+	AfxGetApp()->WriteProfileString("App", "HourWorkBegin", strHourWorkBegin);
+	AfxGetApp()->WriteProfileString("App", "HourWorkEnd", strHourWorkEnd);
+
 	return TRUE;
 }
 
-void COptionTab::DoDataExchange(CDataExchange* pDX)
+void COptionTab::OnBnClickedRadio1()
 {
-	CPropertyPage::DoDataExchange(pDX);
-	DDX_Control(pDX, IDC_EDIT1, edit_sleep_period);
-	DDX_Control(pDX, IDC_EDITHOLIDAY, edit_holiday);
-	DDX_Control(pDX, IDC_RADIO1, radio_const_norm);
-	DDX_Control(pDX, IDC_RADIO2, radio_norm_last_days);
+	BOOL radio_check = radio_const_norm.GetCheck();
+	edit_hour_norm.EnableWindow(radio_check);
+	edit_hour_begin.EnableWindow(radio_check);
+	edit_hour_end.EnableWindow(radio_check);
 }
 
-
 BEGIN_MESSAGE_MAP(COptionTab, CPropertyPage)
+	ON_BN_CLICKED(IDC_RADIO1, &COptionTab::OnBnClickedRadio1)
+	ON_BN_CLICKED(IDC_RADIO2, &COptionTab::OnBnClickedRadio1)
 END_MESSAGE_MAP()
 // OptionTab.cpp : implementation file
 //

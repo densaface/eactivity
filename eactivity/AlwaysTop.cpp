@@ -49,8 +49,8 @@ BOOL CAlwaysTop::OnInitDialog()
 	int bottom = AfxGetApp()->GetProfileInt("App", "InfoPanelPosition.bottom", 
 		80+winInfo.Height());
 	if (left>rect_desktop.right-2 || left < 0+2 || top>rect_desktop.Height()-2 || top < 0+2)
-		MoveWindow(rect_desktop.right - winInfo.Width(), 80, winInfo.Width(), 
-			winInfo.Height());
+		MoveWindow(rect_desktop.right - winInfo.Width(), 80, right-left, 
+			bottom-top);
 	else
 		MoveWindow(left, top, winInfo.Width(), winInfo.Height());
 	return FALSE;
@@ -95,7 +95,7 @@ void CAlwaysTop::OnTimer(UINT nIDEvent)
 }
 
 CString CAlwaysTop::CalculateDayNorm(activ_hours &lastAverageHoursGraph,
-	float sumUsefulSec, CString &static2)
+	float sumUsefulSec, CString &static2, double coefNorm)
 {
 	double sumUsefulTimeBeforeCurrentHour=0;
 	SYSTEMTIME st;
@@ -106,6 +106,8 @@ CString CAlwaysTop::CalculateDayNorm(activ_hours &lastAverageHoursGraph,
 			sumUsefulTimeBeforeCurrentHour+=lastAverageHoursGraph[ii].usefulTime;
 	}
 	sumUsefulTimeBeforeCurrentHour += lastAverageHoursGraph[st.wHour].usefulTime/60*(st.wMinute+1);
+	if (coefNorm>0.0)
+		sumUsefulTimeBeforeCurrentHour = sumUsefulTimeBeforeCurrentHour/coefNorm;
 	//если достигли четверти нормы в отставании, то присваиваем самый красный цвет и дальше делаем его темнее
 	double lag = (sumUsefulTimeBeforeCurrentHour-sumUsefulSec)/
 		(sumUsefulTimeBeforeCurrentHour + 1000); //1000 чтобы избежать деление на ноль
@@ -145,7 +147,7 @@ CString CAlwaysTop::CalculateDayNorm(activ_hours &lastAverageHoursGraph,
 }
 
 CString CAlwaysTop::CalculateHourNorm(activ_hours &lastAverageHoursGraph,
-	float usefulTimeForCurrentHour, CString &static2)
+	float usefulTimeForCurrentHour, CString &static2, double coefNorm)
 {
 	double perc_coef;
 	SYSTEMTIME st;
@@ -158,9 +160,13 @@ CString CAlwaysTop::CalculateHourNorm(activ_hours &lastAverageHoursGraph,
 			60/(st.wMinute+1)*100-100;
 		if (perc_coef>500) perc_coef=500;
 	}
-	double lag=(lastAverageHoursGraph[st.wHour].usefulTime/
-		60*(st.wMinute+1) - usefulTimeForCurrentHour)/(lastAverageHoursGraph[st.wHour].usefulTime/
-		60*(st.wMinute+1));
+	double norm_current_hour = lastAverageHoursGraph[st.wHour].usefulTime;
+	if (coefNorm > 0.0) 
+	{
+		norm_current_hour = norm_current_hour / coefNorm;
+	}
+	double lag=(norm_current_hour/60*(st.wMinute+1) - usefulTimeForCurrentHour)/
+		(norm_current_hour/60*(st.wMinute+1));
 	int rr=0, gg=0;
 	if (perc_coef < 0)
 	{
@@ -177,7 +183,7 @@ CString CAlwaysTop::CalculateHourNorm(activ_hours &lastAverageHoursGraph,
 	char fmtSecs[100];
 	char res[300];
 	float secs = usefulTimeForCurrentHour/1000-
-		lastAverageHoursGraph[st.wHour].usefulTime/1000/60*(st.wMinute+1);
+		(float)norm_current_hour/1000/60*(st.wMinute+1);
 	statsF.FormatSeconds(fmtSecs, secs);
 	if (stat_hour_adv.m_hWnd)
 	{	//для инфопанели форматируем текст в уменьшенном размере

@@ -106,10 +106,10 @@ BEGIN
     EDITTEXT        IDC_EDITr17,324,158,18,14,ES_AUTOHSCROLL | ES_NUMBER,WS_EX_STATICEDGE
     CONTROL         "",IDC_SPIN2,"msctls_updown32",UDS_SETBUDDYINT | UDS_ARROWKEYS,342,158,11,14
     COMBOBOX        IDC_COMBO2,325,4,134,56,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    CTEXT           "__",IDC_STATIC_percent_day,465,31,143,27
-    CTEXT           "__",IDC_STATIC_percent_day2,465,20,143,8
-    CTEXT           "__",IDC_STATIC_percent_hour,465,58,143,8
-    CTEXT           "__",IDC_STATIC_percent_hour2,465,69,143,22
+    CTEXT           "",IDC_STATIC_percent_day,465,31,143,27
+    CTEXT           "",IDC_STATIC_percent_day2,465,20,143,8
+    CTEXT           "",IDC_STATIC_percent_hour,465,58,143,8
+    CTEXT           "",IDC_STATIC_percent_hour2,465,69,143,22
     CONTROL         "Полезное время",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP,465,303,73,10
     CONTROL         "Пол. действия",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,542,303,65,10
     CTEXT           "На графике отображать:",IDC_STATIC_percent_hour3,468,292,129,8
@@ -218,7 +218,7 @@ FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     CONTROL         "Фиксированная норма рабочего времени в день",IDC_RADIO1,
                     "Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,7,101,183,10
-    CONTROL         "Норма рабочего времени вычисляется из 5 последних рабочих дней",IDC_RADIO2,
+    CONTROL         "Норма рабочего времени вычисляется из 3-5 последних рабочих дней",IDC_RADIO2,
                     "Button",BS_AUTORADIOBUTTON | WS_TABSTOP,7,132,280,10
     LTEXT           "Порог полезного времени, ниже которого день принимается за выходной (в часах)",IDC_STATIC,7,57,284,12
     LTEXT           "Временной интервал бездействия, после которого программа приостанавливает ведение статистики (в секундах)",IDC_STATIC,7,7,302,21
@@ -226,6 +226,10 @@ BEGIN
     EDITTEXT        IDC_EDITHOLIDAY,7,71,65,12,ES_AUTOHSCROLL
     EDITTEXT        IDC_EDIT2,37,114,40,14,ES_AUTOHSCROLL
     LTEXT           "часов в день",IDC_STATIC,80,116,55,8
+    EDITTEXT        IDC_EDIT4,163,114,40,14,ES_AUTOHSCROLL | ES_NUMBER
+    EDITTEXT        IDC_EDIT6,226,114,40,14,ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "с",IDC_STATIC,151,116,8,8
+    LTEXT           "до",IDC_STATIC,211,116,8,8
 END
 
 IDD_ALWAYS_TOP DIALOGEX 0, 0, 157, 89
@@ -255,7 +259,6 @@ BEGIN
     CTEXT           "--",IDC_STATIC_percent_day,11,70,143,27
     CTEXT           "--",IDC_STATIC_percent_day2,11,56,143,8
     CONTROL         "Скрывать поясняющие\n надписи",IDC_CHECK3,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,169,67,125,10
-    PUSHBUTTON      "Применить",IDC_BUTTON1,194,89,50,14
 END
 
 
@@ -407,7 +410,10 @@ END
 
 IDR_MAIN_MENU_RU MENU 
 BEGIN
-    MENUITEM "File",                        ID_FILE
+    POPUP "File"
+    BEGIN
+        MENUITEM "Exit",                        ID_FILE_EXIT
+    END
     POPUP "Reports"
     BEGIN
         MENUITEM "Отчет за определенный период времени", ID_REPORTS_32784
@@ -604,6 +610,10 @@ BEGIN
     IDS_STRING1680          "Опережение за сегодня:"
     IDS_STRING1681          "Отставание за сегодня:"
     IDS_STRING1682          "Отставание за сегодня:"
+    IDS_STRING1683          "Не правильно указаны первый и последний рабочие часы"
+    IDS_STRING1684          "__"
+    IDS_STRING1685          "Для подсчета нормы из предыдущих рабочих дней не хватает статистических данных. Рекомендуем в настройках включить Фиксированную норму рабочего времени, либо установите коэффициенты для полезных программ."
+    IDS_STRING1686          "__"
 END
 
 #endif    // Russian resources

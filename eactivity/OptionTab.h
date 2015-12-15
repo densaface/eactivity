@@ -23,18 +23,22 @@ protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	virtual BOOL OnApply();
 	virtual BOOL OnInitDialog();
+	afx_msg void OnBnClickedRadio1();
 
 	DECLARE_MESSAGE_MAP()
 
 private:
 	UINT m_nIconID;
 	HICON m_hIcon;
-public:
+protected:
 	CComboBox combo_sleep_period;
 	CButton radio_const_norm;
 	CButton radio_norm_last_days;
 	CEdit edit_sleep_period;
 	CEdit edit_holiday;
+	CEdit edit_hour_norm;
+	CEdit edit_hour_begin;
+	CEdit edit_hour_end;
 };
 #pragma once
 

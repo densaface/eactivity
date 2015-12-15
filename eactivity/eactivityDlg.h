@@ -62,6 +62,10 @@ class CEactivityDlg : public CDialog
 	StatsFunc statsF; //функции работы со статистикой вынесены в отдельный файл
 	UINT sleepPeriod;
 	double usefulTimeHoliday;
+	double hoursNorm; //дневная норма рабочих часов, если 0, то берется среднее 
+						//значение за последние 5 рабочих дней
+	double coefIncNorm; //коэффициент превышения нормы за последние 5 дней 
+						//(чтобы делить на него при нормировании средней нагрузки)
 
 public:
 	CEactivityDlg(CWnd* pParent = NULL);	// standard constructor
@@ -79,7 +83,8 @@ public:
 	void CalculateUsefulTimeAndActs(activ &allActiv, activ_exe &exeActiv, activ_hours &activHours);
 	int GetUsefulActsFromExe(string exe, activ &forLoad1);
 	float GetTimeFromExe (string exe, activ &forLoad1);
-	void CalculateAverageUsefulParameter(int lastDays, double thresholdHoliday);
+	int CalculateAverageUsefulParameter(int lastDays, activ_hours& averageHoursGraph, 
+		double thresholdHoliday, double hoursNormLine=0.0);
 	CString CompareTwoPeriodsOfDays(CStringArray& saDates1, CStringArray& saDates2, 
 		int accentParameter, int MinusDays=0, double thresholdHoliday=0.0);
 	void CompareTwoPeriodsOfMons(CStringArray& saDates1, CStringArray& saDates2);
@@ -102,8 +107,12 @@ public:
 		//подробности про aCurMon в описании UpdatePeriodTableViewByHours
 	activ aSelMon;	//для выбранного показа по двойному клику
 	string SelectedMon; //выбран не текущий месяц (какой-то прошедший)
-	activ_hours lastAverageHoursGraph; //средняя почасовая статистика за последнюю неделю
-		//в 25ом часе содержит суммарное усредненное значение за сутки
+	activ_hours standardHoursForLastWeek; //средняя почасовая статистика за последнюю неделю
+		// используется как норма почасового распределения, с которой будет сравниваться 
+		// текущий день
+		// в 25ом часе содержит суммарное усредненное значение за сутки
+	void SetHourNormStandard(double NormHoursInDay); //устанавливает почасовое распределение
+		// в случае если не достаточно дней для выборки
 
 	void SaveCurDay(bool smena=false);
 	void LoadCurDay();
@@ -167,6 +176,7 @@ protected:
 	// Generated message map functions
 	//{{AFX_MSG(CEactivityDlg)
 	virtual BOOL OnInitDialog();
+	virtual void OnCancel();
 	afx_msg BOOL OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCopyDataStruct);
 	afx_msg void OnTimer(UINT nIDEvent);
 	afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
@@ -185,7 +195,7 @@ protected:
 	afx_msg void OnActivityShowAllCapts();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
-public:
+//public:
 	afx_msg void OnBnClickedOk();
 	afx_msg void OnBnClickedCancel();
 	afx_msg void OnSave();
@@ -194,7 +204,6 @@ public:
 	CXHTMLStatic stat_hour_adv;
 	CXHTMLStatic stat_ExeCapt;
 	CXHTMLStatic stat_periodTable;
-	afx_msg void OnReportsUsefulActionsFromLast5WorkingDays();
 	CButton radioTime;
 	CButton radioActs;
 	afx_msg void OnBnClickedRadio1();
@@ -203,6 +212,7 @@ public:
 	afx_msg void OnCompare2periods();
 	afx_msg void OnCompareWithBest5Days();
 	afx_msg void OnReportOnePeriod();
+	afx_msg void OnMainMenuExit();
 	afx_msg void OnReportTwoPeriods();
 	afx_msg void OnOptionsOptions();
 	CButton check_infopanel;

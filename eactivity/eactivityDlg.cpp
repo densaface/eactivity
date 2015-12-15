@@ -122,15 +122,15 @@ BEGIN_MESSAGE_MAP(CEactivityDlg, CDialog)
 	ON_MESSAGE(WM_MYICONNOTIFY,OnIcon)
 	//}}AFX_MSG_MAP
 	ON_BN_CLICKED(IDOK, &CEactivityDlg::OnBnClickedOk)
-	ON_BN_CLICKED(IDCANCEL, &CEactivityDlg::OnBnClickedCancel)
+	//ON_BN_CLICKED(IDCANCEL, &CEactivityDlg::OnBnClickedCancel)
 	ON_BN_CLICKED(IDC_BUTTON1, &CEactivityDlg::OnSave)
-	ON_COMMAND(ID_REPORTS_USEFULACTIONSFROMLAST5WORKINGDAYS, &CEactivityDlg::OnReportsUsefulActionsFromLast5WorkingDays)
 	ON_BN_CLICKED(IDC_RADIO1, &CEactivityDlg::OnBnClickedRadio1)
 	ON_BN_CLICKED(IDC_RADIO2, &CEactivityDlg::OnBnClickedRadio1)
 	ON_COMMAND(ID_REPORTS_USEFULPARAMETERFROMSELECTEDPERIOD, &CEactivityDlg::OnReportsUsefulParameterFromSelectedPeriod)
 	ON_COMMAND(ID_Compare2Periods, &CEactivityDlg::OnCompare2periods)
 	ON_COMMAND(ID_IDR_32783, &CEactivityDlg::OnCompareWithBest5Days)
 	ON_COMMAND(ID_REPORTS_32784, &CEactivityDlg::OnReportOnePeriod)
+	ON_COMMAND(ID_FILE_EXIT, &CEactivityDlg::OnMainMenuExit)
 	ON_COMMAND(ID_REPORTS_32785, &CEactivityDlg::OnReportTwoPeriods)
 	ON_COMMAND(ID_OPTIONS_OPTIONS, &CEactivityDlg::OnOptionsOptions)
 	ON_BN_CLICKED(IDC_CHECK2, &CEactivityDlg::OnBnClickedCheckInfoPanel)
@@ -225,6 +225,10 @@ BOOL CEactivityDlg::OnInitDialog()
 	sleepPeriod = AfxGetApp()->GetProfileInt("App", "SleepPeriod", 30);
 	usefulTimeHoliday = atof(AfxGetApp()->GetProfileString(
 		"App", "UsefulTimeHoliday", "1.5"));
+	hoursNorm = coefIncNorm = 0.0;
+	if (AfxGetApp()->GetProfileInt("App", "RadioConstNorm", 1))
+		hoursNorm = atof(AfxGetApp()->GetProfileString(
+			"App", "HoursNorm", "1.5"));
 
 	char ch[300];
 //	tool_tip.Create(this, TTS_ALWAYSTIP);
@@ -343,11 +347,22 @@ BOOL CEactivityDlg::OnInitDialog()
 	SetTimer(3564, 5*60*1000, 0); //автосохранение каждые 5 минут
 	SetTimer(AUTOREFRESHINFOPANEL, dialInfo->frequpdate*1000, 0);
 	checkAutoUpdate.SetCheck(true);
-	CalculateAverageUsefulParameter(5, usefulTimeHoliday);//сразу строим график средних активностей за час
+	//строим график средних активностей за час
+	if (CalculateAverageUsefulParameter(5, standardHoursForLastWeek, 
+		usefulTimeHoliday, hoursNorm)<3)
+	{
+		if (hoursNorm>0.0) 
+		{
+			SetHourNormStandard(hoursNorm);
+		}
+	}
+	if (standardHoursForLastWeek.size()<3)
+		check_infopanel.SetCheck(FALSE);//отменяем показ инфопанели, если нечего в ней показывать
 	if (check_infopanel.GetCheck())
 		dialInfo->StartShow();
 #ifndef _DEBUG
 	GetDlgItem(IDOK)->ShowWindow(SW_HIDE);
+	GetDlgItem(IDCANCEL)->ShowWindow(SW_HIDE);
 #endif
 	hMyDll=NULL;
 	__SetHook__(TRUE);
@@ -1183,17 +1198,39 @@ void CEactivityDlg::OnTimer(UINT nIDEvent)
 			char date[27];
 			SYSTEMTIME st;
 			GetLocalTime(&st);
-			GetDateFormat(LOCALE_USER_DEFAULT, LOCALE_USE_CP_ACP, &st, "activ_user_yyyy_MM_dd.a", date, 25);
-			if (strcmp(date, curDayFileName.c_str())!=0)
-			{
-				SaveCurDay(true);//переходим на новый день
-				curDayFileName=date;
-			}
+
 			GetDateFormat(LOCALE_USER_DEFAULT, LOCALE_USE_CP_ACP, &st, "activ_user_yyyy_MM.am", date, 25);
 			if (strcmp(date, curMonFileName.c_str())!=0)
 			{
 				SaveCurMonth(true);//переходим на новый месяц
+				Activity tmpForLoad;
+				tmpForLoad.capt="";
+				tmpForLoad.exe="";
+				tmpForLoad.hwChil=0;
+				tmpForLoad.hwMain=0;
+				tmpForLoad.sumActs=0;
+				tmpForLoad.sumTime=0;
+				tmpForLoad.usefulActs=0;
+				tmpForLoad.usefulTime=0;
+				aCurYear[date]=tmpForLoad;
 				curMonFileName=date;
+			}
+
+			GetDateFormat(LOCALE_USER_DEFAULT, LOCALE_USE_CP_ACP, &st, "activ_user_yyyy_MM_dd.a", date, 25);
+			if (strcmp(date, curDayFileName.c_str())!=0)
+			{
+				SaveCurDay(true);//переходим на новый день
+				Activity tmpForLoad;
+				tmpForLoad.capt="";
+				tmpForLoad.exe="";
+				tmpForLoad.hwChil=0;
+				tmpForLoad.hwMain=0;
+				tmpForLoad.sumActs=0;
+				tmpForLoad.sumTime=0;
+				tmpForLoad.usefulActs=0;
+				tmpForLoad.usefulTime=0;
+				aCurMon[date]=tmpForLoad;
+				curDayFileName=date;
 			}
 			dialInfo->curHour=st.wHour;
 		}
@@ -1287,7 +1324,7 @@ void CEactivityDlg::UpdatePeriodTableViewByHours(activ_hours &activHours, bool s
 		pPntsCurrentDay->SetPointType(CChartPointsSerie::ptTriangle);
 		pPntsCurrentDay->SetPointSize(11,11);
 		pPntsCurrentDay->SetColor(pLineCurrentDay->GetColor());
-		if (lastAverageHoursGraph.size()>2)
+		if (standardHoursForLastWeek.size()>2)
 		{
 			pLineAverage = chart.CreateLineSerie();
 			pLineAverage->SetWidth(3);
@@ -1353,12 +1390,15 @@ void CEactivityDlg::UpdatePeriodTableViewByHours(activ_hours &activHours, bool s
 			double chartValue = radioTime.GetCheck() ? sec/60 : usefulActs;
 			pLineCurrentDay->AddPoint(ii, chartValue);
 			pPntsCurrentDay->AddPoint(ii, chartValue);
-			if (lastAverageHoursGraph.size()>2)
+			if (standardHoursForLastWeek.size()>2)
 			{
-				if (lastAverageHoursGraph.find(ii)!=lastAverageHoursGraph.end())
-					chartValue = radioTime.GetCheck() ? lastAverageHoursGraph[ii].usefulTime/60/1000 : 
-						lastAverageHoursGraph[ii].usefulActs;
+				if (standardHoursForLastWeek.find(ii)!=standardHoursForLastWeek.end())
+					chartValue = radioTime.GetCheck() ? 
+					standardHoursForLastWeek[ii].usefulTime/60/1000 : 
+					standardHoursForLastWeek[ii].usefulActs;
 				else chartValue = 0;
+				if (hoursNorm>0.0 && coefIncNorm>0.0)
+					chartValue = chartValue/coefIncNorm;
 				pLineAverage->AddPoint(ii, chartValue);
 				pPntsAverage->AddPoint(ii, chartValue);
 			}
@@ -1376,13 +1416,15 @@ void CEactivityDlg::UpdatePeriodTableViewByHours(activ_hours &activHours, bool s
 				pLineCurrentDay->AddPoint(ii, 0);
 				pPntsCurrentDay->AddPoint(ii, 0);
 			}
-			if (lastAverageHoursGraph.size()>2)
+			if (standardHoursForLastWeek.size()>2)
 			{
 				double chartValue;
-				if (lastAverageHoursGraph.find(ii)!=lastAverageHoursGraph.end())
-					chartValue = radioTime.GetCheck() ? (lastAverageHoursGraph[ii].usefulTime/60/1000) :
-						lastAverageHoursGraph[ii].usefulActs;
+				if (standardHoursForLastWeek.find(ii)!=standardHoursForLastWeek.end())
+					chartValue = radioTime.GetCheck() ? (standardHoursForLastWeek[ii].usefulTime/60/1000) :
+						standardHoursForLastWeek[ii].usefulActs;
 				else chartValue = 0;
+				if (hoursNorm>0.0 && coefIncNorm>0.0)
+					chartValue = chartValue/coefIncNorm;
 				pLineAverage->AddPoint(ii, chartValue);
 				pPntsAverage->AddPoint(ii, chartValue);
 			}
@@ -1391,15 +1433,15 @@ void CEactivityDlg::UpdatePeriodTableViewByHours(activ_hours &activHours, bool s
 
 	//обновляем статики с прогрессом/отставанием в работе
 	CString str;
-	if (lastAverageHoursGraph.size()>2 && (SelectedDay=="" || !showInfoTable))
+	if (standardHoursForLastWeek.size()>2 && (SelectedDay=="" || !showInfoTable))
 	{//вычисляем процент выполняемой нормы для текущего часа
 		stat_hour_adv.SetWindowText(dialInfo->CalculateHourNorm(
-			lastAverageHoursGraph, usefulTimeForCurrentHour, str));
+			standardHoursForLastWeek, usefulTimeForCurrentHour, str, coefIncNorm));
 		GetDlgItem(IDC_STATIC_percent_hour)->SetWindowText(str);
 
 		//вычисляем выполняемую норму для текущих суток
 		stat_day_adv.SetWindowText(dialInfo->CalculateDayNorm(
-			lastAverageHoursGraph, sumUsefulSec, str));
+			standardHoursForLastWeek, sumUsefulSec, str, coefIncNorm));
 		GetDlgItem(IDC_STATIC_percent_day2)->SetWindowText(str);
 	}
 
@@ -1664,6 +1706,10 @@ void CEactivityDlg::SizingWins()
 
 void CEactivityDlg::Exit() 
 {
+	KillTimer(AUTOREFRESHINFOPANEL);
+	KillTimer(3564);
+	KillTimer(2500);
+	KillTimer(1500);
 	SaveCurDay();
 	SaveCurMonth();
 	SaveYear();
@@ -1679,6 +1725,7 @@ void CEactivityDlg::Exit()
 	dialInfo->SavePosition();
 	DelIconTray();
 	delete dialInfo;
+	CDialog::OnCancel();
 }
 
 bool CEactivityDlg::LoadFileDay(string fname, activ &forLoad1) 
@@ -2481,9 +2528,9 @@ void CEactivityDlg::OnBnClickedCancel()
 	OnCancel();
 }
 
-//подсчет среднего полезного времени/действий за последние 7 дней или больше 
-//		(сколько указано в lastDays) c разбивкой по часам
-void CEactivityDlg::CalculateAverageUsefulParameter(int lastDays, double thresholdHoliday)
+//подсчет среднего полезного времени/действий за последние lastDays дней c разбивкой по часам
+int CEactivityDlg::CalculateAverageUsefulParameter(int lastDays, activ_hours& averageHoursGraph,
+	double thresholdHoliday, double hoursNormLine)
 {
 	::SetCursor(AfxGetApp()->LoadStandardCursor(IDC_WAIT));
 	// дата сегодняшнего дня
@@ -2517,9 +2564,9 @@ void CEactivityDlg::CalculateAverageUsefulParameter(int lastDays, double thresho
 			skippedDays++;
 			if (skippedDays>15)
 			{
-				AfxMessageBox(trif.GetIds(IDS_STRING1645));
+				//AfxMessageBox(trif.GetIds(IDS_STRING1645));
 				::SetCursor(AfxGetApp()->LoadStandardCursor(IDC_ARROW));
-				return;
+				return sumHandledDays;
 			}
 			day--;//переходим к статистике предыдущего дня
 			if (!day)
@@ -2542,18 +2589,18 @@ void CEactivityDlg::CalculateAverageUsefulParameter(int lastDays, double thresho
 		if (activHours[25].usefulTime>thresholdHoliday*3600*1000)
 		{ //если полезного времени больше 2ух часов, то считаем этот день рабочим и берем статистику по нему
 			sumHandledDays++;
-			// добавляем локальный справочник activHours к основному lastAverageHoursGraph
+			// добавляем локальный справочник activHours к основному averageHoursGraph
 			for (activ_hours::iterator iter=activHours.begin(); iter!=activHours.end(); iter++)
 			{
-				activ_hours::iterator iterHour = lastAverageHoursGraph.find((*iter).first);
-				if (iterHour == lastAverageHoursGraph.end())
+				activ_hours::iterator iterHour = averageHoursGraph.find((*iter).first);
+				if (iterHour == averageHoursGraph.end())
 				{
 					ActivityExe hourElement;
 					hourElement.usefulActs = (*iter).second.usefulActs;
 					hourElement.usefulTime = (*iter).second.usefulTime;
 					hourElement.sumActs    = (*iter).second.sumActs;
 					hourElement.sumTime    = (*iter).second.sumTime;
-					lastAverageHoursGraph[(*iter).first] = hourElement;
+					averageHoursGraph[(*iter).first] = hourElement;
 				} else {
 					(*iterHour).second.usefulActs += (*iter).second.usefulActs;
 					(*iterHour).second.usefulTime += (*iter).second.usefulTime;
@@ -2615,20 +2662,24 @@ void CEactivityDlg::CalculateAverageUsefulParameter(int lastDays, double thresho
 	pPntsAverage->SetPointType(CChartPointsSerie::ptTriangle);
 	pPntsAverage->SetPointSize(11,11);
 	pPntsAverage->SetColor(pLineAverage->GetColor());
-	for (activ_hours::iterator iter=lastAverageHoursGraph.begin(); iter!=lastAverageHoursGraph.end(); iter++)
+	if (hoursNormLine > 0 && sumHandledDays)
+		coefIncNorm = alldays.usefulTime/(hoursNormLine*sumHandledDays)/1000/3600;
+	for (activ_hours::iterator iter=averageHoursGraph.begin(); iter!=averageHoursGraph.end(); iter++)
 	{
 		//усредняем время с почасовым разбиением
 		(*iter).second.usefulTime = (*iter).second.usefulTime / sumHandledDays;
 		(*iter).second.usefulActs = (*iter).second.usefulActs / sumHandledDays;
 		if (iter->first==25)
 			continue;
-		double chartValue = radioTime.GetCheck() ? (*iter).second.usefulTime/60/1000 : 
+		double chartValue = radioTime.GetCheck() ? 
+			(*iter).second.usefulTime/60/1000/coefIncNorm : 
 			(*iter).second.usefulActs;
 		pLineAverage->AddPoint(iter->first, chartValue);
 		pPntsAverage->AddPoint(iter->first, chartValue);
 	}
 	chart.RefreshCtrl();
 	::SetCursor(AfxGetApp()->LoadStandardCursor(IDC_ARROW));
+	return sumHandledDays;
 }
 
 //подсчет и сравнение среднего полезного времени/действий двух промежутков времени 
@@ -2706,25 +2757,25 @@ CString CEactivityDlg::CompareTwoPeriodsOfDays(CStringArray& saDates1, CStringAr
 		if (activHours[25].usefulTime>thresholdHoliday*3600*1000)
 		{
 			handled1++;
-			// добавляем локальный справочник activHours к основному lastAverageHoursGraph
-			for (activ_hours::iterator iter=activHours.begin(); iter!=activHours.end(); iter++)
-			{
-				activ_hours::iterator iterHour = lastAverageHoursGraph.find((*iter).first);
-				if (iterHour == lastAverageHoursGraph.end())
-				{
-								ActivityExe hourElement;
-					hourElement.usefulActs = (*iter).second.usefulActs;
-					hourElement.usefulTime = (*iter).second.usefulTime;
-					hourElement.sumActs    = (*iter).second.sumActs;
-					hourElement.sumTime    = (*iter).second.sumTime;
-					lastAverageHoursGraph[(*iter).first] = hourElement;
-				} else {
-					(*iterHour).second.usefulActs += (*iter).second.usefulActs;
-					(*iterHour).second.usefulTime += (*iter).second.usefulTime;
-					(*iterHour).second.sumActs    += (*iter).second.sumActs;
-					(*iterHour).second.sumTime    += (*iter).second.sumTime;
-						}
-			}
+// 			// добавляем локальный справочник activHours к основному averageHoursGraph
+// 			for (activ_hours::iterator iter=activHours.begin(); iter!=activHours.end(); iter++)
+// 			{
+// 				activ_hours::iterator iterHour = lastAverageHoursGraph.find((*iter).first);
+// 				if (iterHour == lastAverageHoursGraph.end())
+// 				{
+// 					ActivityExe hourElement;
+// 					hourElement.usefulActs = (*iter).second.usefulActs;
+// 					hourElement.usefulTime = (*iter).second.usefulTime;
+// 					hourElement.sumActs    = (*iter).second.sumActs;
+// 					hourElement.sumTime    = (*iter).second.sumTime;
+// 					lastAverageHoursGraph[(*iter).first] = hourElement;
+// 				} else {
+// 					(*iterHour).second.usefulActs += (*iter).second.usefulActs;
+// 					(*iterHour).second.usefulTime += (*iter).second.usefulTime;
+// 					(*iterHour).second.sumActs    += (*iter).second.sumActs;
+// 					(*iterHour).second.sumTime    += (*iter).second.sumTime;
+// 				}
+// 			}
 			firstPeriod.sumActs+=activHours[25].sumActs; firstPeriod.sumTime+=activHours[25].sumTime; 
 			firstPeriod.usefulActs+=activHours[25].usefulActs; firstPeriod.usefulTime+=activHours[25].usefulTime;
 		} else {
@@ -2805,25 +2856,25 @@ CString CEactivityDlg::CompareTwoPeriodsOfDays(CStringArray& saDates1, CStringAr
 		if (activHours[25].usefulTime>thresholdHoliday*3600*1000)
 		{
 			handled2++;
-			// добавляем локальный справочник activHours к основному lastAverageHoursGraph
-			for (activ_hours::iterator iter=activHours.begin(); iter!=activHours.end(); iter++)
-			{
-				activ_hours::iterator iterHour = lastAverageHoursGraph.find((*iter).first);
-				if (iterHour == lastAverageHoursGraph.end())
-				{
-					ActivityExe hourElement;
-					hourElement.usefulActs = (*iter).second.usefulActs;
-					hourElement.usefulTime = (*iter).second.usefulTime;
-					hourElement.sumActs    = (*iter).second.sumActs;
-					hourElement.sumTime    = (*iter).second.sumTime;
-					lastAverageHoursGraph[(*iter).first] = hourElement;
-				} else {
-					(*iterHour).second.usefulActs += (*iter).second.usefulActs;
-					(*iterHour).second.usefulTime += (*iter).second.usefulTime;
-					(*iterHour).second.sumActs    += (*iter).second.sumActs;
-					(*iterHour).second.sumTime    += (*iter).second.sumTime;
-				}
-			}
+// 			// добавляем локальный справочник activHours к основному lastAverageHoursGraph
+// 			for (activ_hours::iterator iter=activHours.begin(); iter!=activHours.end(); iter++)
+// 			{
+// 				activ_hours::iterator iterHour = lastAverageHoursGraph.find((*iter).first);
+// 				if (iterHour == lastAverageHoursGraph.end())
+// 				{
+// 					ActivityExe hourElement;
+// 					hourElement.usefulActs = (*iter).second.usefulActs;
+// 					hourElement.usefulTime = (*iter).second.usefulTime;
+// 					hourElement.sumActs    = (*iter).second.sumActs;
+// 					hourElement.sumTime    = (*iter).second.sumTime;
+// 					lastAverageHoursGraph[(*iter).first] = hourElement;
+// 				} else {
+// 					(*iterHour).second.usefulActs += (*iter).second.usefulActs;
+// 					(*iterHour).second.usefulTime += (*iter).second.usefulTime;
+// 					(*iterHour).second.sumActs    += (*iter).second.sumActs;
+// 					(*iterHour).second.sumTime    += (*iter).second.sumTime;
+// 				}
+// 			}
 		} else {
 			table_period.SetItemText(row, 5, "Holiday!");
 		}
@@ -3120,11 +3171,6 @@ void CEactivityDlg::CompareTwoPeriodsOfMons(CStringArray& saDates1, CStringArray
 	::SetCursor(AfxGetApp()->LoadStandardCursor(IDC_ARROW));
 }
 
-void CEactivityDlg::OnReportsUsefulActionsFromLast5WorkingDays()
-{
-	CalculateAverageUsefulParameter(5, usefulTimeHoliday);
-}
-
 void CEactivityDlg::OnBnClickedRadio1()
 {
 	OnRefresh();
@@ -3209,6 +3255,17 @@ void CEactivityDlg::OnCompareWithBest5Days()
 
 }
 
+void CEactivityDlg::OnMainMenuExit()
+{
+	Exit();
+}
+
+void CEactivityDlg::OnCancel()
+{
+	//отменяем выход программы через крестик в правом верхнем углу
+	OnIcon(0, 515);
+}
+
 void CEactivityDlg::OnReportOnePeriod()
 {
 	CReportOption dialogReport;
@@ -3218,7 +3275,8 @@ void CEactivityDlg::OnReportOnePeriod()
 	checkAutoUpdate.SetCheck(false);//отключаем автоматическое обновление
 	if (dialogReport.useLastDays>0)
 	{
-		CalculateAverageUsefulParameter(dialogReport.useLastDays, 
+		activ_hours averageHoursGraph;
+		CalculateAverageUsefulParameter(dialogReport.useLastDays, averageHoursGraph,
 			dialogReport.thresholdHoliday);
 	} else {
 		CStringArray emptyDates;
@@ -3259,6 +3317,25 @@ void CEactivityDlg::OnOptionsOptions()
 	sleepPeriod = AfxGetApp()->GetProfileInt("App", "SleepPeriod", 30);
 	usefulTimeHoliday = atof(AfxGetApp()->GetProfileString(
 		"App", "UsefulTimeHoliday", "1.5"));
+	if (AfxGetApp()->GetProfileInt("App", "RadioConstNorm", 1))
+	{
+		hoursNorm = atof(AfxGetApp()->GetProfileString("App", "HoursNorm", "1.5"));
+	} else {
+		hoursNorm=coefIncNorm=0.0;
+	}
+	standardHoursForLastWeek.clear();
+	if (CalculateAverageUsefulParameter(5, standardHoursForLastWeek, 
+		usefulTimeHoliday, hoursNorm) < 3)
+	{
+		if (hoursNorm>0.0) 
+		{
+			SetHourNormStandard(hoursNorm);
+		} else {
+			if (!AfxGetApp()->GetProfileInt("App", "RadioConstNorm", 1))
+				AfxMessageBox(trif.GetIds(IDS_STRING1685));
+
+		}
+	}
 	//значения из второй закладки настроек
 	dialInfo->sizefont = AfxGetApp()->GetProfileInt("App", "InfoPanel.sizefont", 10);
 	dialInfo->frequpdate = AfxGetApp()->GetProfileInt("App", "InfoPanel.frequpdate", 5);
@@ -3267,8 +3344,27 @@ void CEactivityDlg::OnOptionsOptions()
 	KillTimer(AUTOREFRESHINFOPANEL);
 	dialInfo->resizeWins = true;
 	SetTimer(AUTOREFRESHINFOPANEL, dialInfo->frequpdate*1000, 0);
+	OnRefresh();
 }
 
+void CEactivityDlg::SetHourNormStandard(double NormHoursInDay)
+{
+	int hourBegin = atoi(AfxGetApp()->GetProfileString("App", "HourWorkBegin", "9"));
+	int hourend = atoi(AfxGetApp()->GetProfileString("App", "HourWorkEnd", "18"));
+	ActivityExe hourElement;
+	for (int ii=0; ii<24; ii++)
+	{
+		hourElement.usefulActs = 0;
+		if (ii>=hourBegin && ii<hourend)
+			hourElement.usefulTime = (float)NormHoursInDay/(hourend-hourBegin)*3600*1000;
+		else
+			hourElement.usefulTime = 0;
+		hourElement.sumActs    = 0;
+		hourElement.sumTime    = 0;
+		standardHoursForLastWeek[ii] = hourElement;
+	}
+	
+}
 void CEactivityDlg::OnBnClickedCheckInfoPanel()
 {
 	if (check_infopanel.GetCheck())

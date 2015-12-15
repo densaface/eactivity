@@ -90,7 +90,10 @@ void StatsFunc::LoadMonthFromStatDays(activ &forLoad1, string mon, float &sumTim
 	}
 }
 
-void StatsFunc::SumDayStat(activ &forLoad1, string fname, float &sumTime, int &sumAct, int &sumUsefulActs) 
+//подгрузка дней статистики в мес€чное представление, которых не было в сводном 
+//		мес€чном файле статистики
+void StatsFunc::SumDayStat(activ &forLoad1, string fname, float &sumTime, 
+						   int &sumAct, int &sumUsefulActs) 
 {
 	activ::iterator iter=forLoad1.find(fname.substr(fname.length()-12, 10));
 	if (iter!=forLoad1.end())

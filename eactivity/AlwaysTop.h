@@ -21,9 +21,9 @@ public:
 	int curHour; //текущий час, смена проверяется каждые 5 сек
 	UINT RR, GG;//цвет статика отставания в текущем дне
 	CString CalculateDayNorm(activ_hours &lastAverageHoursGraph,
-		float sumUsefulSec, CString &static2);
+		float sumUsefulSec, CString &static2, double coefNorm);
 	CString CalculateHourNorm(activ_hours &lastAverageHoursGraph,
-		float usefulTimeForCurrentHour, CString &static2);
+		float usefulTimeForCurrentHour, CString &static2, double coefNorm);
 	void SavePosition();
 	BOOL bold;
 	BOOL hidedescription;
