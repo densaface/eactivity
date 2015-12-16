@@ -24,6 +24,7 @@
 #define IDD_OptionTab                   142
 #define IDD_ALWAYS_TOP                  143
 #define IDD_OptionTab2                  145
+#define IDD_OptionTabMail               146
 #define IDC_MSCHART1                    1000
 #define IDC_CHARTCTRL                   1000
 #define IDC_BUTTON1                     1001
@@ -191,6 +192,10 @@
 #define IDS_STRING1684                  1684
 #define IDS_STRING1685                  1685
 #define IDS_STRING1686                  1686
+#define IDS_STRING1687                  1687
+#define IDS_STRING1688                  1688
+#define IDS_STRING1689                  1689
+#define IDS_STRING1690                  1690
 #define ID_IDR_SDSD                     32771
 #define ID_ACTIVITY_SETKOEFEXE          32772
 #define ID_IDR_SDSD32773                32773
@@ -209,13 +214,14 @@
 #define ID_OPTIONS_OPTIONS              32786
 #define ID_FILE                         32787
 #define ID_FILE_EXIT                    32788
+#define ID_REPORTS_32789                32789
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        144
-#define _APS_NEXT_COMMAND_VALUE         32789
+#define _APS_NEXT_COMMAND_VALUE         32790
 #define _APS_NEXT_CONTROL_VALUE         1014
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

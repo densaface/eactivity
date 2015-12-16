@@ -33,7 +33,7 @@ END_MESSAGE_MAP()
 BOOL CTabOption::OnInitDialog()
 {
 	CPropertySheet::OnInitDialog();
-	HighColorTab::UpdateImageList( *this );
+//	HighColorTab::UpdateImageList( *this );
 	return TRUE;
 }
 

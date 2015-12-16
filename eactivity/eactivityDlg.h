@@ -9,7 +9,6 @@
 #include "TabOption.h"
 #include "ViewRules.h"
 #include "AlwaysTop.h"
-#include "externals/openssl-0.9.8l/CSmtp.h"
 #include <string>
 #include <map>
 #include <iostream>
@@ -117,15 +116,6 @@ public:
 	void SaveCurDay(bool smena=false);
 	void LoadCurDay();
 	void SendReportOfDayOnMail(string dateToday);
-	BOOL SendMailMessage(LPCTSTR szServer,
-		UINT port, 
-		LPCTSTR szFrom, 
-		LPCTSTR szTo, 
-		LPCTSTR szUser, 
-		LPCTSTR szPas, 
-		LPCTSTR szSubject, 
-		LPCTSTR szMessage);
-
 	bool LoadFileDay(string fname, activ &forLoad1);
 	string curDayFileName;//содержит дату текущего дня "activ_user_2015_11_26.a"
 	
@@ -214,6 +204,7 @@ protected:
 	afx_msg void OnReportOnePeriod();
 	afx_msg void OnMainMenuExit();
 	afx_msg void OnReportTwoPeriods();
+	afx_msg void OnSendTableOnMail();
 	afx_msg void OnOptionsOptions();
 	CButton check_infopanel;
 	afx_msg void OnBnClickedCheckInfoPanel();

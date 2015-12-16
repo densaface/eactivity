@@ -77,3 +77,35 @@ public:
 	afx_msg void OnApplyFont();
 	afx_msg void OnBnClickedCheck3();
 };
+#pragma once
+
+
+// COptionTabMail dialog
+
+class COptionTabMail : public CPropertyPage
+{
+	DECLARE_DYNAMIC(COptionTabMail)
+
+	StatsFunc statsF;
+	CTrifle trif;
+	UINT m_nIconID;
+	HICON m_hIcon;
+public:
+	COptionTabMail(const char* lpszTitle, UINT nIconID);
+	virtual ~COptionTabMail();
+
+// Dialog Data
+	enum { IDD = IDD_OptionTabMail };
+
+protected:
+	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+
+	DECLARE_MESSAGE_MAP()
+	afx_msg void OnTestMail();
+	virtual BOOL OnInitDialog();
+	virtual BOOL OnApply();
+	afx_msg void OnBnClickedCheckEmail();
+
+	CEdit edit_email;
+	CButton check_email;
+};

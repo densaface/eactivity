@@ -132,6 +132,7 @@ BEGIN_MESSAGE_MAP(CEactivityDlg, CDialog)
 	ON_COMMAND(ID_REPORTS_32784, &CEactivityDlg::OnReportOnePeriod)
 	ON_COMMAND(ID_FILE_EXIT, &CEactivityDlg::OnMainMenuExit)
 	ON_COMMAND(ID_REPORTS_32785, &CEactivityDlg::OnReportTwoPeriods)
+	ON_COMMAND(ID_REPORTS_32789, &CEactivityDlg::OnSendTableOnMail)
 	ON_COMMAND(ID_OPTIONS_OPTIONS, &CEactivityDlg::OnOptionsOptions)
 	ON_BN_CLICKED(IDC_CHECK2, &CEactivityDlg::OnBnClickedCheckInfoPanel)
 	ON_MESSAGE(WM_INFO_CLOSE, OnCloseInfoPanel)
@@ -1212,7 +1213,7 @@ void CEactivityDlg::OnTimer(UINT nIDEvent)
 				tmpForLoad.sumTime=0;
 				tmpForLoad.usefulActs=0;
 				tmpForLoad.usefulTime=0;
-				aCurYear[date]=tmpForLoad;
+				aCurYear[curMonFileName.substr(11, 7)]=tmpForLoad;
 				curMonFileName=date;
 			}
 
@@ -1229,7 +1230,7 @@ void CEactivityDlg::OnTimer(UINT nIDEvent)
 				tmpForLoad.sumTime=0;
 				tmpForLoad.usefulActs=0;
 				tmpForLoad.usefulTime=0;
-				aCurMon[date]=tmpForLoad;
+				aCurMon[curDayFileName.substr(curDayFileName.length()-12, 10)]=tmpForLoad;
 				curDayFileName=date;
 			}
 			dialInfo->curHour=st.wHour;
@@ -1991,87 +1992,23 @@ void CEactivityDlg::SendReportOfDayOnMail(string dateToday)
 		ct+=60*60*24;
 	}
 	CString res = CompareTwoPeriodsOfDays(saDates, saDates2, radioTime.GetCheck(), 2);
-	if (res!="")
-		SendMailMessage("smtp.gmail.com", 587, "silencenotif@gmail.com", 
-		"densaf.ace@gmail.com", "densaf.ace@gmail.com", "GhjcajhyZ88", res, "TablePeriod");
-}
-
-BOOL CEactivityDlg::SendMailMessage(LPCTSTR szServer,
-								   UINT port, 
-								   LPCTSTR szFrom, 
-								   LPCTSTR szTo, 
-								   LPCTSTR szUser, 
-								   LPCTSTR szPas, 
-								   LPCTSTR szSubject, 
-								   LPCTSTR szMessage)
-{
-
-	CSmtp mail;
-
-//#define test_gmail_tls
-
-	bool bError = false;
-
-	try
+	if (res!="" && AfxGetApp()->GetProfileInt("App", "email.enable", 0))
 	{
-#define test_gmail_ssl
-
-#if defined(test_gmail_tls)
-		mail.SetSMTPServer("smtp.gmail.com",587);
-		mail.SetSecurityType(USE_TLS);
-		mail.SetLogin(szUser);//"silencenotif@gmail.com"
-		mail.SetPassword(szPas);//"yhfveus347tw272d%$"
-		mail.SetSenderName("Silence Notif");
-		mail.SetSenderMail(szUser);
-		mail.SetReplyTo(szUser);
-#elif defined(test_gmail_ssl)
-		mail.SetSMTPServer("smtp.mail.ru",465);
-		mail.SetSecurityType(USE_SSL);
-		mail.SetLogin("denis_safonov_81@mail.ru");
-		mail.SetPassword("djfGNurnvusmv63^");
-		mail.SetSenderName("denis_safonov");
-		mail.SetSenderMail("denis_safonov_81@mail.ru");
-		mail.SetReplyTo("denis_safonov_81@mail.ru");
-#elif defined(test_hotmail_TLS)
-		mail.SetSMTPServer("smtp.live.com",25);
-		mail.SetSecurityType(USE_TLS);
-#elif defined(test_aol_tls)
-		mail.SetSMTPServer("smtp.aol.com",587);
-		mail.SetSecurityType(USE_TLS);
-#elif defined(test_yahoo_ssl)
-		mail.SetSMTPServer("plus.smtp.mail.yahoo.com",465);
-		mail.SetSecurityType(USE_SSL);
-#endif
-		CString str;
-		//edit_theme.GetWindowText(str);
-		mail.SetSubject(szSubject);
-		//edit_to.GetWindowText(str);
-		mail.AddRecipient("densaf.ace@gmail.com");
-		//	mail.AddRecipient("densaf.ace@gmail.com");
-		//	mail.AddRecipient("dsafonov@parallels.com");
-		mail.SetXPriority(XPRIORITY_NORMAL);
-		mail.SetXMailer("The Bat! (v3.02) Professional");
+		CStringArray saMessage;
+		saMessage.Add("Дата/Время\t   Полезное время\t   Общрее время\t   Полезных действий\t   Всего действий\t   Комментарий");
 		for (int ii=1; ii<table_period.GetItemCount(); ii++)
 		{
-			mail.AddMsgLine(table_period.GetItemText(ii, 0) + 
+			saMessage.Add(table_period.GetItemText(ii, 0) + 
 				"   " + table_period.GetItemText(ii, 1)+
 				"   " + table_period.GetItemText(ii, 2)+
 				"   " + table_period.GetItemText(ii, 3)+
 				"   " + table_period.GetItemText(ii, 4)+
 				"   " + table_period.GetItemText(ii, 5));
 		}
-		return mail.Send();
+		CString sEmail = AfxGetApp()->GetProfileString("App", "email.to", "");
+		statsF.SendMailMessage("smtp.gmail.com", 587, "silencenotif@gmail.com", 
+		sEmail, sEmail, "GhjcajhyZ88", res, saMessage);
 	}
-	catch(ECSmtp e)
-	{
-		//	std::cout << "Error: " << e.GetErrorText().c_str() << ".\n";
-		AfxMessageBox(e.GetErrorText().c_str());
-		//OnReport(e.GetErrorText().c_str());
-		bError = true;
-	}
-	//if(!bError)
-	//std::cout << "Mail was send successfully.\n";
-	return !bError;
 }
 
 void CEactivityDlg::OnSave() 
@@ -3285,6 +3222,32 @@ void CEactivityDlg::OnReportOnePeriod()
 	}
 }
 
+void CEactivityDlg::OnSendTableOnMail()
+{
+	int emailEnable = AfxGetApp()->GetProfileInt("App", "email.enable", 0);
+	if (!emailEnable)
+	{
+		AfxMessageBox(trif.GetIds(IDS_STRING1689));
+		return;
+	}
+	if (emailEnable)
+	{
+		CStringArray saMessage;
+		saMessage.Add("Дата/Время\t   Полезное время\t   Общрее время\t   Полезных действий\t   Всего действий\t   Комментарий");
+		for (int ii=0; ii<table_period.GetItemCount(); ii++)
+		{
+			saMessage.Add(table_period.GetItemText(ii, 0) + 
+				"\t   " + table_period.GetItemText(ii, 1)+
+				"\t   " + table_period.GetItemText(ii, 2)+
+				"\t   " + table_period.GetItemText(ii, 3)+
+				"\t   " + table_period.GetItemText(ii, 4)+
+				"\t   " + table_period.GetItemText(ii, 5));
+		}
+		CString sEmail = AfxGetApp()->GetProfileString("App", "email.to", "");
+		statsF.SendMailMessage("smtp.gmail.com", 587, "silencenotif@gmail.com", 
+			sEmail, sEmail, "GhjcajhyZ88", "Активность пользователя", saMessage);
+	}
+}
 
 void CEactivityDlg::OnReportTwoPeriods()
 {
@@ -3301,15 +3264,17 @@ void CEactivityDlg::OnOptionsOptions()
 {
 	//example http://www.codeproject.com/Articles/6234/High-color-icons-for-CPropertySheet
 	COptionTab page_1( "Общие", IDR_MAINFRAME );
-	COptionTab2 page_2( "Настройки информационной панели", IDR_MAINFRAME );
+	COptionTab2 page_2( "Информационная панель", IDR_MAINFRAME );
+	COptionTabMail page_3( "Email информирование", IDR_MAINFRAME );
 	CTabOption sheet( "Настройки" );
 	CFont* cf = GetFont();
 	LOGFONT lf;
 	int res = cf->GetLogFont(&lf);
 	if (res)
 		page_2.faceFont = lf.lfFaceName;
-	sheet.AddPage((CPropertyPage*)&page_1 );
-	sheet.AddPage((CPropertyPage*)&page_2 );
+	sheet.AddPage(&page_1 );
+	sheet.AddPage(&page_2 );
+	sheet.AddPage(&page_3 );
 	sheet.m_psh.dwFlags |= PSH_NOAPPLYNOW;
 
 	if (sheet.DoModal()!=IDOK)

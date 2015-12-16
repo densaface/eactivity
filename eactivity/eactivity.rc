@@ -211,7 +211,7 @@ BEGIN
     PUSHBUTTON      "==>",IDC_BUTTON2,276,74,32,14
 END
 
-IDD_OptionTab DIALOGEX 0, 0, 316, 150
+IDD_OptionTab DIALOGEX 0, 0, 298, 150
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Общие настройки"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
@@ -221,7 +221,7 @@ BEGIN
     CONTROL         "Норма рабочего времени вычисляется из 3-5 последних рабочих дней",IDC_RADIO2,
                     "Button",BS_AUTORADIOBUTTON | WS_TABSTOP,7,132,280,10
     LTEXT           "Порог полезного времени, ниже которого день принимается за выходной (в часах)",IDC_STATIC,7,57,284,12
-    LTEXT           "Временной интервал бездействия, после которого программа приостанавливает ведение статистики (в секундах)",IDC_STATIC,7,7,302,21
+    LTEXT           "Временной интервал бездействия, после которого программа приостанавливает ведение статистики (в секундах)",IDC_STATIC,7,7,278,21
     EDITTEXT        IDC_EDIT1,7,29,65,12,ES_AUTOHSCROLL | ES_NUMBER
     EDITTEXT        IDC_EDITHOLIDAY,7,71,65,12,ES_AUTOHSCROLL
     EDITTEXT        IDC_EDIT2,37,114,40,14,ES_AUTOHSCROLL
@@ -259,6 +259,17 @@ BEGIN
     CTEXT           "--",IDC_STATIC_percent_day,11,70,143,27
     CTEXT           "--",IDC_STATIC_percent_day2,11,56,143,8
     CONTROL         "Скрывать поясняющие\n надписи",IDC_CHECK3,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,169,67,125,10
+END
+
+IDD_OptionTabMail DIALOGEX 0, 0, 249, 157
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Email информирование"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    EDITTEXT        IDC_EDIT5,7,20,108,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "Test",IDC_BUTTON1,129,19,50,14
+    CONTROL         "Ежедневно посылать письма об активности прошедшего дня",IDC_CHECK1,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,7,235,10
 END
 
 
@@ -329,7 +340,7 @@ BEGIN
     IDD_OptionTab, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 309
+        RIGHTMARGIN, 291
         TOPMARGIN, 7
         BOTTOMMARGIN, 143
     END
@@ -348,6 +359,14 @@ BEGIN
         RIGHTMARGIN, 294
         TOPMARGIN, 7
         BOTTOMMARGIN, 145
+    END
+
+    IDD_OptionTabMail, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 242
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 150
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -419,6 +438,7 @@ BEGIN
         MENUITEM "Отчет за определенный период времени", ID_REPORTS_32784
         MENUITEM "Отчет по выбранному в таблице периоду времени", ID_REPORTS_USEFULPARAMETERFROMSELECTEDPERIOD
         MENUITEM "Отчет: Сравнение двух заданных периодов времени", ID_REPORTS_32785
+        MENUITEM "Отправить содержимое сводной таблицы по почте", ID_REPORTS_32789
     END
     POPUP "Options"
     BEGIN
@@ -552,7 +572,7 @@ BEGIN
     IDS_STRING1634          "Edit"
     IDS_STRING1635          "Группировать по часам"
     IDS_STRING1636          "Group by hours"
-    IDS_STRING1637          "Активность <b>СЕГОДНЯ</b>: полезное время %s из %s, полезных действий %d из %d"
+    IDS_STRING1637          "Активность <b>СЕГОДНЯ</b>: полезное время <b>%s</b> из %s, полезных действий <b>%d<b> из %d"
     IDS_STRING1638          "Activity for <b>TODAY</b>: useful time <b>%s</b> from %s, useful actions <b>%d</b> from %d"
     IDS_STRING1639          "Час"
     IDS_STRING1640          "Hour"
@@ -614,6 +634,10 @@ BEGIN
     IDS_STRING1684          "__"
     IDS_STRING1685          "Для подсчета нормы из предыдущих рабочих дней не хватает статистических данных. Рекомендуем в настройках включить Фиксированную норму рабочего времени, либо установите коэффициенты для полезных программ."
     IDS_STRING1686          "__"
+    IDS_STRING1687          "Введен не правильный эмейл адрес"
+    IDS_STRING1688          "__"
+    IDS_STRING1689          "Задайте эмейл адрес в настройках программы"
+    IDS_STRING1690          "__"
 END
 
 #endif    // Russian resources

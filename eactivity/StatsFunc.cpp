@@ -385,3 +385,76 @@ void StatsFunc::ApplyFont(float secs1, float secs2, int font_size,
 	stat_hour_description.ShowWindow(hide_description ? SW_HIDE : SW_SHOW);
 	stat_day_description .ShowWindow(hide_description ? SW_HIDE : SW_SHOW);
 }
+
+BOOL StatsFunc::SendMailMessage(LPCTSTR szServer,
+									UINT port, 
+									LPCTSTR szFrom, 
+									LPCTSTR szTo, 
+									LPCTSTR szUser, 
+									LPCTSTR szPas, 
+									LPCTSTR szSubject, 
+									CStringArray& saMessage)
+{
+
+	CSmtp mail;
+
+	//#define test_gmail_tls
+
+	bool bError = false;
+
+	try
+	{
+#define test_gmail_ssl
+
+#if defined(test_gmail_tls)
+		mail.SetSMTPServer("smtp.gmail.com",587);
+		mail.SetSecurityType(USE_TLS);
+		mail.SetLogin(szUser);//"silencenotif@gmail.com"
+		mail.SetPassword(szPas);//"yhfveus347tw272d%$"
+		mail.SetSenderName("Silence Notif");
+		mail.SetSenderMail(szUser);
+		mail.SetReplyTo(szUser);
+#elif defined(test_gmail_ssl)
+		mail.SetSMTPServer("smtp.mail.ru",465);
+		mail.SetSecurityType(USE_SSL);
+		mail.SetLogin("denis_safonov_81@mail.ru");
+		mail.SetPassword("djfGNurnvusmv63^");
+		mail.SetSenderName("ActivateMe");
+		mail.SetSenderMail("denis_safonov_81@mail.ru");
+		mail.SetReplyTo("denis_safonov_81@mail.ru");
+#elif defined(test_hotmail_TLS)
+		mail.SetSMTPServer("smtp.live.com",25);
+		mail.SetSecurityType(USE_TLS);
+#elif defined(test_aol_tls)
+		mail.SetSMTPServer("smtp.aol.com",587);
+		mail.SetSecurityType(USE_TLS);
+#elif defined(test_yahoo_ssl)
+		mail.SetSMTPServer("plus.smtp.mail.yahoo.com",465);
+		mail.SetSecurityType(USE_SSL);
+#endif
+		CString str;
+		//edit_theme.GetWindowText(str);
+		mail.SetSubject(szSubject);
+		//edit_to.GetWindowText(str);
+		mail.AddRecipient(szTo);
+		//	mail.AddRecipient("densaf.ace@gmail.com");
+		//	mail.AddRecipient("dsafonov@parallels.com");
+		mail.SetXPriority(XPRIORITY_NORMAL);
+		mail.SetXMailer("The Bat! (v3.02) Professional");
+		for (int ii=0; ii<saMessage.GetCount(); ii++)
+		{
+			mail.AddMsgLine(saMessage[ii]);
+		}
+		return mail.Send();
+	}
+	catch(ECSmtp e)
+	{
+		//	std::cout << "Error: " << e.GetErrorText().c_str() << ".\n";
+		AfxMessageBox(e.GetErrorText().c_str());
+		//OnReport(e.GetErrorText().c_str());
+		bError = true;
+	}
+	//if(!bError)
+	//std::cout << "Mail was send successfully.\n";
+	return !bError;
+}

@@ -5,6 +5,7 @@
 #include "afxwin.h"
 #include <fstream>
 #include "externals/XHTMLStatic.h"
+#include "externals/openssl-0.9.8l/CSmtp.h"
 #pragma once
 using namespace std;
 
@@ -57,4 +58,13 @@ public:
 		CString faceFont, CXHTMLStatic &stat_day_adv, CXHTMLStatic &stat_hour_adv,
 		CStatic &stat_day_description, CStatic &stat_hour_description, 
 		HWND hwndParent, int RR, int GG, bool resizeWins = false);
+	BOOL SendMailMessage(LPCTSTR szServer,
+		UINT port, 
+		LPCTSTR szFrom, 
+		LPCTSTR szTo, 
+		LPCTSTR szUser, 
+		LPCTSTR szPas, 
+		LPCTSTR szSubject, 
+		CStringArray& saMessage);
+
 };

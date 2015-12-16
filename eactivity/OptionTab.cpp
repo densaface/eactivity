@@ -204,3 +204,86 @@ void COptionTab2::OnBnClickedCheck3()
 {
 	OnApplyFont();
 }
+// OptionTab.cpp : implementation file
+//
+
+#include "stdafx.h"
+#include "eactivity.h"
+#include "OptionTab.h"
+
+
+// COptionTabMail dialog
+
+IMPLEMENT_DYNAMIC(COptionTabMail, CPropertyPage)
+
+COptionTabMail::COptionTabMail(const char* lpszTitle, UINT nIconID)
+: CPropertyPage(COptionTabMail::IDD),
+m_nIconID(nIconID),
+m_hIcon(NULL)
+{
+	if( NULL != m_nIconID )
+	{
+		m_psp.dwFlags |= PSP_USEHICON;
+		HICON hIconTab = AfxGetApp()->LoadIcon( m_nIconID );
+		m_psp.hIcon = hIconTab;
+	}
+}
+
+COptionTabMail::~COptionTabMail()
+{
+}
+
+void COptionTabMail::DoDataExchange(CDataExchange* pDX)
+{
+	CPropertyPage::DoDataExchange(pDX);
+	DDX_Control(pDX, IDC_EDIT5, edit_email);
+	DDX_Control(pDX, IDC_CHECK1, check_email);
+}
+
+
+BEGIN_MESSAGE_MAP(COptionTabMail, CPropertyPage)
+	ON_BN_CLICKED(IDC_BUTTON1, &COptionTabMail::OnTestMail)
+	ON_BN_CLICKED(IDC_CHECK1, &COptionTabMail::OnBnClickedCheckEmail)
+END_MESSAGE_MAP()
+
+BOOL COptionTabMail::OnInitDialog()
+{
+	CPropertyPage::OnInitDialog();
+	CString str;
+	int regValue = AfxGetApp()->GetProfileInt("App", "email.enable", 0);
+	check_email.SetCheck(regValue);
+	edit_email.SetWindowText(AfxGetApp()->GetProfileString("App", "email.to", ""));
+	OnBnClickedCheckEmail();
+	return TRUE;
+}
+
+BOOL COptionTabMail::OnApply()
+{
+	CString str;
+	edit_email.GetWindowText(str);
+	if (check_email.GetCheck() && str.Find("@")==-1)
+	{
+		AfxMessageBox(trif.GetIds(IDS_STRING1687));
+		return FALSE;
+	}
+	AfxGetApp()->WriteProfileString("App", "email.to", str);
+	AfxGetApp()->WriteProfileInt("App", "email.enable", check_email.GetCheck());
+
+	return TRUE;
+}
+
+void COptionTabMail::OnTestMail() 
+{
+	CStringArray saMessage;
+	CString str;
+	edit_email.GetWindowText(str);
+	statsF.SendMailMessage("smtp.gmail.com", 587, "silencenotif@gmail.com", 
+		str, str, "GhjcajhyZ88", 
+		"Test from ActivateMe", saMessage);
+}
+
+void COptionTabMail::OnBnClickedCheckEmail()
+{
+	BOOL email_check = check_email.GetCheck();
+	edit_email.EnableWindow(email_check);
+}
