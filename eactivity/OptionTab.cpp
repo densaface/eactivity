@@ -20,6 +20,7 @@ void COptionTab::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_EDIT6, edit_hour_end);
 	DDX_Control(pDX, IDC_RADIO1, radio_const_norm);
 	DDX_Control(pDX, IDC_RADIO2, radio_norm_last_days);
+	DDX_Control(pDX, IDC_CHECK4, check_show_legend);
 }
 
 COptionTab::COptionTab(const char* lpszTitle, UINT nIconID)
@@ -48,6 +49,8 @@ BOOL COptionTab::OnInitDialog()
 	edit_sleep_period.SetWindowText(str);
 	str = AfxGetApp()->GetProfileString("App", "UsefulTimeHoliday", "1.5");
 	edit_holiday.SetWindowText(str);
+	regValue = AfxGetApp()->GetProfileInt("App", "ShowLegend", 1);
+	check_show_legend.SetCheck(regValue);
 	
 	int check_radio = AfxGetApp()->GetProfileInt("App", "RadioConstNorm", 1);
 	radio_const_norm    .SetCheck( check_radio);
@@ -85,6 +88,7 @@ BOOL COptionTab::OnApply()
 	AfxGetApp()->WriteProfileString("App", "UsefulTimeHoliday", str);
 
 	AfxGetApp()->WriteProfileInt("App", "RadioConstNorm", radio_const_norm.GetCheck());
+	AfxGetApp()->WriteProfileInt("App", "ShowLegend", check_show_legend.GetCheck());
 
 	edit_hour_norm.GetWindowText(str);
 	AfxGetApp()->WriteProfileString("App", "HoursNorm", str);

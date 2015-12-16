@@ -189,7 +189,7 @@ protected:
 	afx_msg void OnBnClickedOk();
 	afx_msg void OnBnClickedCancel();
 	afx_msg void OnSave();
-	CChartCtrl chart; //http://www.codeproject.com/Articles/14075/High-speed-Charting-Control - example
+	CChartCtrl chart; //http://www.codeproject.com/Articles/14075/High-speed-Charting-Control
 	CXHTMLStatic stat_day_adv;
 	CXHTMLStatic stat_hour_adv;
 	CXHTMLStatic stat_ExeCapt;

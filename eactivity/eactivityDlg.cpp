@@ -188,6 +188,12 @@ BOOL CEactivityDlg::OnInitDialog()
 	chart.CreateStandardAxis(CChartCtrl::LeftAxis);
 	chart.GetLeftAxis()->SetAutomatic(true);
 	chart.GetBottomAxis()->SetAutomatic(true);
+	if (AfxGetApp()->GetProfileInt("App", "ShowLegend", 1))
+	{
+		chart.GetLegend()->DockLegend(CChartLegend::dsDockBottom);
+		chart.GetLegend()->SetHorizontalMode(true);
+		chart.GetLegend()->SetVisible(true);
+	}
 
 	// Add "About..." menu item to system menu.
 	// IDM_ABOUTBOX must be in the system command range.
@@ -1325,6 +1331,10 @@ void CEactivityDlg::UpdatePeriodTableViewByHours(activ_hours &activHours, bool s
 		pPntsCurrentDay->SetPointType(CChartPointsSerie::ptTriangle);
 		pPntsCurrentDay->SetPointSize(11,11);
 		pPntsCurrentDay->SetColor(pLineCurrentDay->GetColor());
+		string legendTitle = radioTime.GetCheck() ? 
+			"Почасовое распределение полезного времени СЕГОДНЯ" :
+			"Почасовое распределение полезных действий СЕГОДНЯ";
+		pLineCurrentDay->SetName( legendTitle );
 		if (standardHoursForLastWeek.size()>2)
 		{
 			pLineAverage = chart.CreateLineSerie();
@@ -1333,6 +1343,9 @@ void CEactivityDlg::UpdatePeriodTableViewByHours(activ_hours &activHours, bool s
 			pPntsAverage->SetPointType(CChartPointsSerie::ptEllipse);
 			pPntsAverage->SetPointSize(10,10);
 			pPntsAverage->SetColor(pLineAverage->GetColor());
+			legendTitle = "Дневная НОРМА ";
+			legendTitle += radioTime.GetCheck() ? "полезного времени" : "полезных действий";
+			pLineAverage->SetName( legendTitle );
 		}
 	}
 
@@ -1504,25 +1517,29 @@ void CEactivityDlg::UpdatePeriodTable(activ &CurView)
 	table_period.DeleteAllItems();
 	float sumUsefulSec=0, sumSec=0;
 	int sumActs=0, sumUsefulActs=0;
-//приводим график в исходное состояние
-	chart.GetLeftAxis()->GetLabel()->SetText(radioTime.GetCheck() ? "Hours" : "Actions");
+	//приводим график в исходное состояние
 	chart.RemoveAllSeries(); //чистка предыдущих кривых
+	chart.GetLeftAxis()->GetLabel()->SetText(radioTime.GetCheck() ? "Hours" : "Actions");
 	CChartDateTimeAxis* axis;
+	string legendTitle;
 	if (combo_group.GetCurSel() == BYDAYS)
 	{
 		chart.CreateStandardAxis(CChartCtrl::BottomAxis);
 		chart.GetBottomAxis()->SetAutomatic(true);
 		chart.GetBottomAxis()->GetLabel()->SetText("Day");
+		legendTitle = radioTime.GetCheck() ? "Распределение полезного времени по дням" : 
+			"Распределение полезных действий по дням";
 	} else {
 		axis = chart.CreateDateTimeAxis(CChartCtrl::BottomAxis);
 		chart.GetBottomAxis()->GetLabel()->SetText("Month");
 		axis->SetDiscrete(true);
-//		axis->SetTickIncrement(false,CChartDateTimeAxis::tiMonth,1);
 		axis->SetTickLabelFormat(false, _T("%b %Y"));
-		//axis->SetTickIncrement(false, CChartDateTimeAxis::tiMonth, 1);
 		chart.GetBottomAxis()->SetAutomatic(true);
+		legendTitle = radioTime.GetCheck() ? "Распределение полезного времени по месяцам" : 
+			"Распределение полезных действий по месяцам";
 	}
 	CChartLineSerie* pLineMonth = chart.CreateLineSerie();
+	pLineMonth->SetName( legendTitle );
 	pLineMonth->SetWidth(2);
 	CChartPointsSerie* pPntsMonth;
 	pPntsMonth = chart.CreatePointsSerie();
@@ -1585,8 +1602,9 @@ void CEactivityDlg::UpdatePeriodTable(activ &CurView)
 
 		if (combo_group.GetCurSel() == BYDAYS)
 		{
-			pLineMonth->AddPoint(chart_index, chartValue);
-			pPntsMonth->AddPoint(chart_index, chartValue);
+			int day = atoi((*iter).first.substr(8).c_str());
+			pLineMonth->AddPoint(day, chartValue);
+			pPntsMonth->AddPoint(day, chartValue);
 		} else {
 			CString mon = (*iter).first.c_str();
 			COleDateTime odDate(atoi(mon.Left(4)), atoi(mon.Right(2)), 
@@ -1614,8 +1632,6 @@ void CEactivityDlg::UpdatePeriodTable(activ &CurView)
 		axis->GetMinMax(Min, Max);
 		//определиться с подходящим диапазоном на разных стадиях сбора статистики
 //		chart.GetBottomAxis()->SetAutomatic(false);
-//		axis->SetDiscrete(true);
-//		axis->SetTickIncrement(false, CChartDateTimeAxis::tiMonth,1);
 		axis->SetMinMax(0.9999*Min, 1.0001*Max);
 	}
 	chart.RefreshCtrl();
@@ -2593,6 +2609,10 @@ int CEactivityDlg::CalculateAverageUsefulParameter(int lastDays, activ_hours& av
 	chart.GetBottomAxis()->GetLabel()->SetText("Hour");
 	chart.GetBottomAxis()->SetAutomatic(true);
 	CChartLineSerie* pLineAverage = chart.CreateLineSerie();
+	string legendTitle = radioTime.GetCheck() ? 
+		"Почасовое распределение полезного времени за отчетный период времени" :
+		"Почасовое распределение полезных действий за отчетный период времени";
+	pLineAverage->SetName(legendTitle);
 	pLineAverage->SetWidth(2);
 	CChartPointsSerie* pPntsAverage;
 	pPntsAverage = chart.CreatePointsSerie();
@@ -2652,6 +2672,10 @@ CString CEactivityDlg::CompareTwoPeriodsOfDays(CStringArray& saDates1, CStringAr
 
 	chart.GetLeftAxis()->GetLabel()->SetText(accentParameter ? "Hours" : "Actions");
 	pLinePeriod1 = chart.CreateLineSerie();
+	string legendTitle = radioTime.GetCheck() ? 
+		"Распределение полезного времени по дням для первого отчетного периода" :
+		"Распределение полезных действий по дням для первого отчетного периода";
+	pLinePeriod1->SetName(legendTitle);
 	pLinePeriod1->SetWidth(2);
 	pPntsPeriod1 = chart.CreatePointsSerie();
 	pPntsPeriod1->SetPointType(CChartPointsSerie::ptTriangle);
@@ -2666,6 +2690,8 @@ CString CEactivityDlg::CompareTwoPeriodsOfDays(CStringArray& saDates1, CStringAr
 		pPntsPeriod2->SetPointType(CChartPointsSerie::ptEllipse);
 		pPntsPeriod2->SetPointSize(10,10);
 		pPntsPeriod2->SetColor(pLinePeriod2->GetColor());
+		legendTitle = "Для второго отчетного периода";
+		pLinePeriod2->SetName(legendTitle);
 	}
 
 	CString str; 
@@ -2694,25 +2720,6 @@ CString CEactivityDlg::CompareTwoPeriodsOfDays(CStringArray& saDates1, CStringAr
 		if (activHours[25].usefulTime>thresholdHoliday*3600*1000)
 		{
 			handled1++;
-// 			// добавляем локальный справочник activHours к основному averageHoursGraph
-// 			for (activ_hours::iterator iter=activHours.begin(); iter!=activHours.end(); iter++)
-// 			{
-// 				activ_hours::iterator iterHour = lastAverageHoursGraph.find((*iter).first);
-// 				if (iterHour == lastAverageHoursGraph.end())
-// 				{
-// 					ActivityExe hourElement;
-// 					hourElement.usefulActs = (*iter).second.usefulActs;
-// 					hourElement.usefulTime = (*iter).second.usefulTime;
-// 					hourElement.sumActs    = (*iter).second.sumActs;
-// 					hourElement.sumTime    = (*iter).second.sumTime;
-// 					lastAverageHoursGraph[(*iter).first] = hourElement;
-// 				} else {
-// 					(*iterHour).second.usefulActs += (*iter).second.usefulActs;
-// 					(*iterHour).second.usefulTime += (*iter).second.usefulTime;
-// 					(*iterHour).second.sumActs    += (*iter).second.sumActs;
-// 					(*iterHour).second.sumTime    += (*iter).second.sumTime;
-// 				}
-// 			}
 			firstPeriod.sumActs+=activHours[25].sumActs; firstPeriod.sumTime+=activHours[25].sumTime; 
 			firstPeriod.usefulActs+=activHours[25].usefulActs; firstPeriod.usefulTime+=activHours[25].usefulTime;
 		} else {
@@ -2793,25 +2800,6 @@ CString CEactivityDlg::CompareTwoPeriodsOfDays(CStringArray& saDates1, CStringAr
 		if (activHours[25].usefulTime>thresholdHoliday*3600*1000)
 		{
 			handled2++;
-// 			// добавляем локальный справочник activHours к основному lastAverageHoursGraph
-// 			for (activ_hours::iterator iter=activHours.begin(); iter!=activHours.end(); iter++)
-// 			{
-// 				activ_hours::iterator iterHour = lastAverageHoursGraph.find((*iter).first);
-// 				if (iterHour == lastAverageHoursGraph.end())
-// 				{
-// 					ActivityExe hourElement;
-// 					hourElement.usefulActs = (*iter).second.usefulActs;
-// 					hourElement.usefulTime = (*iter).second.usefulTime;
-// 					hourElement.sumActs    = (*iter).second.sumActs;
-// 					hourElement.sumTime    = (*iter).second.sumTime;
-// 					lastAverageHoursGraph[(*iter).first] = hourElement;
-// 				} else {
-// 					(*iterHour).second.usefulActs += (*iter).second.usefulActs;
-// 					(*iterHour).second.usefulTime += (*iter).second.usefulTime;
-// 					(*iterHour).second.sumActs    += (*iter).second.sumActs;
-// 					(*iterHour).second.sumTime    += (*iter).second.sumTime;
-// 				}
-// 			}
 		} else {
 			table_period.SetItemText(row, 5, "Holiday!");
 		}
@@ -2963,6 +2951,10 @@ void CEactivityDlg::CompareTwoPeriodsOfMons(CStringArray& saDates1, CStringArray
 
 	chart.GetLeftAxis()->GetLabel()->SetText(radioTime.GetCheck() ? "Hours" : "Actions");
 	pLinePeriod1 = chart.CreateLineSerie();
+	string legendTitle = radioTime.GetCheck() ? 
+		"Полезное время по месяцам для первого отчетного периода" : 
+		"Полезные действия по месяцам для первого отчетного периода";
+	pLinePeriod1->SetName(legendTitle);
 	pLinePeriod1->SetWidth(2);
 	pPntsPeriod1 = chart.CreatePointsSerie();
 	pPntsPeriod1->SetPointType(CChartPointsSerie::ptTriangle);
@@ -2976,6 +2968,8 @@ void CEactivityDlg::CompareTwoPeriodsOfMons(CStringArray& saDates1, CStringArray
 		axis2->SetTickLabelFormat(false, _T("%b %Y"));
 		chart.GetTopAxis()->SetAutomatic(true);
 		pLinePeriod2 = chart.CreateLineSerie(1);
+		legendTitle = "Для второго отчетного периода";
+		pLinePeriod2->SetName(legendTitle);
 		pLinePeriod2->SetWidth(2);
 		pPntsPeriod2 = chart.CreatePointsSerie(1);
 		pPntsPeriod2->SetPointType(CChartPointsSerie::ptEllipse);
@@ -3279,6 +3273,15 @@ void CEactivityDlg::OnOptionsOptions()
 
 	if (sheet.DoModal()!=IDOK)
 		return;
+	if (AfxGetApp()->GetProfileInt("App", "ShowLegend", 1))
+	{
+		chart.GetLegend()->DockLegend(CChartLegend::dsDockBottom);
+		chart.GetLegend()->SetHorizontalMode(true);
+		chart.GetLegend()->SetVisible(true);
+	} else {
+		chart.GetLegend()->SetVisible(false);
+	}
+
 	sleepPeriod = AfxGetApp()->GetProfileInt("App", "SleepPeriod", 30);
 	usefulTimeHoliday = atof(AfxGetApp()->GetProfileString(
 		"App", "UsefulTimeHoliday", "1.5"));
@@ -3328,8 +3331,8 @@ void CEactivityDlg::SetHourNormStandard(double NormHoursInDay)
 		hourElement.sumTime    = 0;
 		standardHoursForLastWeek[ii] = hourElement;
 	}
-	
 }
+
 void CEactivityDlg::OnBnClickedCheckInfoPanel()
 {
 	if (check_infopanel.GetCheck())

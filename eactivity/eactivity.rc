@@ -110,11 +110,11 @@ BEGIN
     CTEXT           "",IDC_STATIC_percent_day2,465,20,143,8
     CTEXT           "",IDC_STATIC_percent_hour,465,58,143,8
     CTEXT           "",IDC_STATIC_percent_hour2,465,69,143,22
-    CONTROL         "Полезное время",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP,465,303,73,10
-    CONTROL         "Пол. действия",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,542,303,65,10
-    CTEXT           "На графике отображать:",IDC_STATIC_percent_hour3,468,292,129,8
+    CONTROL         "Полезное время",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP,465,284,73,10
+    CONTROL         "Пол. действия",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,542,284,65,10
+    CTEXT           "На графике отображать:",IDC_STATIC_percent_hour3,468,273,129,8
     CONTROL         "Автообновление таблиц",IDC_CHECK1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,468,124,140,10
-    CONTROL         "Custom1",IDC_CHARTCTRL,"ChartCtrl",WS_CLIPCHILDREN | WS_TABSTOP,7,317,603,111
+    CONTROL         "Custom1",IDC_CHARTCTRL,"ChartCtrl",WS_CLIPCHILDREN | WS_TABSTOP,7,304,603,124
     CONTROL         "Инфопанель",IDC_CHECK2,"Button",BS_AUTOCHECKBOX | BS_CENTER | WS_TABSTOP,502,93,67,10
 END
 
@@ -220,16 +220,17 @@ BEGIN
                     "Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,7,101,183,10
     CONTROL         "Норма рабочего времени вычисляется из 3-5 последних рабочих дней",IDC_RADIO2,
                     "Button",BS_AUTORADIOBUTTON | WS_TABSTOP,7,132,280,10
-    LTEXT           "Порог полезного времени, ниже которого день принимается за выходной (в часах)",IDC_STATIC,7,57,284,12
+    LTEXT           "Порог полезного времени, ниже которого день принимается за выходной (в часах)",IDC_STATIC,7,46,284,12
     LTEXT           "Временной интервал бездействия, после которого программа приостанавливает ведение статистики (в секундах)",IDC_STATIC,7,7,278,21
     EDITTEXT        IDC_EDIT1,7,29,65,12,ES_AUTOHSCROLL | ES_NUMBER
-    EDITTEXT        IDC_EDITHOLIDAY,7,71,65,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDITHOLIDAY,7,60,65,12,ES_AUTOHSCROLL
     EDITTEXT        IDC_EDIT2,37,114,40,14,ES_AUTOHSCROLL
     LTEXT           "часов в день",IDC_STATIC,80,116,55,8
     EDITTEXT        IDC_EDIT4,163,114,40,14,ES_AUTOHSCROLL | ES_NUMBER
     EDITTEXT        IDC_EDIT6,226,114,40,14,ES_AUTOHSCROLL | ES_NUMBER
     LTEXT           "с",IDC_STATIC,151,116,8,8
     LTEXT           "до",IDC_STATIC,211,116,8,8
+    CONTROL         "Показывать подписи к графикам",IDC_CHECK4,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,82,125,10
 END
 
 IDD_ALWAYS_TOP DIALOGEX 0, 0, 157, 89
@@ -572,7 +573,7 @@ BEGIN
     IDS_STRING1634          "Edit"
     IDS_STRING1635          "Группировать по часам"
     IDS_STRING1636          "Group by hours"
-    IDS_STRING1637          "Активность <b>СЕГОДНЯ</b>: полезное время <b>%s</b> из %s, полезных действий <b>%d<b> из %d"
+    IDS_STRING1637          "Активность <b>СЕГОДНЯ</b>: полезное время <b>%s</b> из %s, полезных действий <b>%d</b> из %d"
     IDS_STRING1638          "Activity for <b>TODAY</b>: useful time <b>%s</b> from %s, useful actions <b>%d</b> from %d"
     IDS_STRING1639          "Час"
     IDS_STRING1640          "Hour"

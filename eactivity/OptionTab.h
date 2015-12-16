@@ -39,6 +39,7 @@ protected:
 	CEdit edit_hour_norm;
 	CEdit edit_hour_begin;
 	CEdit edit_hour_end;
+	CButton check_show_legend;
 };
 #pragma once
 

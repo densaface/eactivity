@@ -46,6 +46,7 @@
 #define IDC_EDIT5                       1008
 #define IDC_RADIO4                      1008
 #define IDC_DATETIMEPICKER4             1008
+#define IDC_CHECK4                      1008
 #define IDC_RADIO6                      1009
 #define IDC_RADIO22                     1010
 #define IDC_RADIO7                      1010
