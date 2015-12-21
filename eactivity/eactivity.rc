@@ -99,13 +99,13 @@ BEGIN
     DEFPUSHBUTTON   "Refresh",IDOK2,468,137,50,14
     CONTROL         "",IDC_LIST2,"SysListView32",LVS_REPORT | LVS_SHOWSELALWAYS | WS_BORDER | WS_GROUP | WS_TABSTOP,7,173,452,127
     PUSHBUTTON      "Редактировать коэффициенты",IDC_BUTTON1,468,173,114,14
-    COMBOBOX        IDC_COMBO1,362,158,96,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "",IDC_LIST3,"SysListView32",LVS_REPORT | LVS_SHOWSELALWAYS | WS_BORDER | WS_GROUP | WS_TABSTOP,7,21,452,130
-    LTEXT           "Статистика для текущего месяца",IDC_STATIC_cur_mon,3,7,319,8
-    LTEXT           "Активность для текущего дня",IDC_STATIC_curday,2,158,319,8
-    EDITTEXT        IDC_EDITr17,324,158,18,14,ES_AUTOHSCROLL | ES_NUMBER,WS_EX_STATICEDGE
-    CONTROL         "",IDC_SPIN2,"msctls_updown32",UDS_SETBUDDYINT | UDS_ARROWKEYS,342,158,11,14
-    COMBOBOX        IDC_COMBO2,325,4,134,56,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_COMBO1,363,158,96,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "",IDC_LIST3,"SysListView32",LVS_REPORT | LVS_SHOWSELALWAYS | WS_BORDER | WS_GROUP | WS_TABSTOP,7,18,452,133
+    LTEXT           "Статистика для текущего месяца",IDC_STATIC_cur_mon,7,0,319,18
+    LTEXT           "Активность для текущего дня",IDC_STATIC_curday,7,153,321,18
+    EDITTEXT        IDC_EDITr17,332,158,18,14,ES_AUTOHSCROLL | ES_NUMBER,WS_EX_STATICEDGE
+    CONTROL         "",IDC_SPIN2,"msctls_updown32",UDS_SETBUDDYINT | UDS_ARROWKEYS,350,158,11,14
+    COMBOBOX        IDC_COMBO2,329,4,130,56,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CTEXT           "",IDC_STATIC_percent_day,465,31,143,27
     CTEXT           "",IDC_STATIC_percent_day2,465,20,143,8
     CTEXT           "",IDC_STATIC_percent_hour,465,58,143,8
@@ -233,15 +233,16 @@ BEGIN
     CONTROL         "Показывать подписи к графикам",IDC_CHECK4,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,82,125,10
 END
 
-IDD_ALWAYS_TOP DIALOGEX 0, 0, 157, 89
+IDD_ALWAYS_TOP DIALOGEX 0, 0, 158, 89
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "ActivateMe"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    CTEXT           "",IDC_STATIC_percent_day,7,17,143,27
-    CTEXT           "",IDC_STATIC_percent_day2,7,0,143,8
-    CTEXT           "",IDC_STATIC_percent_hour,7,44,143,8
-    CTEXT           "",IDC_STATIC_percent_hour2,7,55,143,27
+    CTEXT           "",IDC_STATIC_percent_day,7,17,144,27
+    CTEXT           "",IDC_STATIC_percent_day2,7,0,144,8
+    CTEXT           "",IDC_STATIC_percent_hour,7,44,144,8
+    CTEXT           "",IDC_STATIC_percent_hour2,7,55,144,27
 END
 
 IDD_OptionTab2 DIALOGEX 0, 0, 301, 152
@@ -388,7 +389,7 @@ BEGIN
     IDD_ALWAYS_TOP, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 150
+        RIGHTMARGIN, 151
         TOPMARGIN, 7
         BOTTOMMARGIN, 82
     END
@@ -518,8 +519,8 @@ BEGIN
         MENUITEM "Установить коэффициент для выделенного EXE файла", ID_ACTIVITY_SETKOEFEXE
         MENUITEM "Установить коэффициент для выделенного заголовка", ID_ACTIVITY_SETKOEF
         MENUITEM "Показать все заголовки для выделенного EXE файла", ID_ACTIVITY_EXE
-        MENUITEM "Добавить ручной ввод",        ID_IDR_32792
-        MENUITEM "Сконвертировать в ручной ввод", ID_IDR_32790
+        MENUITEM "Добавить вручную",            ID_IDR_32792
+        MENUITEM "Редактировать",               ID_IDR_32790
         MENUITEM "Удалить",                     ID_IDR_32791
     END
 END
@@ -711,6 +712,8 @@ BEGIN
     IDS_STRING1698          "Minutes"
     IDS_STRING1699          "Часы"
     IDS_STRING1700          "Hours"
+    IDS_STRING1701          "Редактированное"
+    IDS_STRING1702          "Edited"
 END
 
 #endif    // Russian resources

@@ -213,6 +213,8 @@
 #define IDS_STRING1698                  1698
 #define IDS_STRING1699                  1699
 #define IDS_STRING1700                  1700
+#define IDS_STRING1701                  1701
+#define IDS_STRING1702                  1702
 #define ID_IDR_SDSD                     32771
 #define ID_ACTIVITY_SETKOEFEXE          32772
 #define ID_IDR_SDSD32773                32773

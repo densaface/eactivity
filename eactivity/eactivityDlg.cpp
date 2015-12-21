@@ -181,10 +181,10 @@ BOOL CEactivityDlg::OnInitDialog()
 	GetLocalTime(&st);
 	dialInfo = new CAlwaysTop();
 	dialInfo->curHour=st.wHour;
-	dialInfo->sizefont = AfxGetApp()->GetProfileInt("App", "InfoPanel.sizefont", 10);
+	dialInfo->sizefont = AfxGetApp()->GetProfileInt("App", "InfoPanel.sizefont", 0);
 	dialInfo->frequpdate = AfxGetApp()->GetProfileInt("App", "InfoPanel.frequpdate", 5);
 	dialInfo->bold = AfxGetApp()->GetProfileInt("App", "InfoPanel.bold", 1);
-	dialInfo->hidedescription = AfxGetApp()->GetProfileInt("App", "InfoPanel.hidedescription", 0);
+	dialInfo->hidedescription = AfxGetApp()->GetProfileInt("App", "InfoPanel.hidedescription", 1);
 	dialInfo->resizeWins = true;
 
 	chart.CreateStandardAxis(CChartCtrl::BottomAxis);
@@ -1352,6 +1352,8 @@ void CEactivityDlg::UpdatePeriodTableViewByHours(activ_hours &activHours, bool s
 	{
 		chart.RemoveAllSeries(); //чистка предыдущих кривых
 		table_period.DeleteAllItems();
+		if (chart.GetTopAxis())
+			chart.GetTopAxis()->SetVisible(false);
 		chart.CreateStandardAxis(CChartCtrl::BottomAxis);
 		chart.GetBottomAxis()->GetLabel()->SetText("Hour");
 		chart.GetLeftAxis()->GetLabel()->SetText(radioTime.GetCheck() ? "Minutes" : "Actions");
@@ -1363,8 +1365,15 @@ void CEactivityDlg::UpdatePeriodTableViewByHours(activ_hours &activHours, bool s
 		pPntsCurrentDay->SetPointSize(11,11);
 		pPntsCurrentDay->SetColor(pLineCurrentDay->GetColor());
 		string legendTitle = radioTime.GetCheck() ? 
-			"Почасовое распределение полезного времени СЕГОДНЯ" :
-			"Почасовое распределение полезных действий СЕГОДНЯ";
+			"Почасовое распределение полезного времени " :
+			"Почасовое распределение полезных действий ";
+		CString sDate;
+		if (currentExeTableDate.substr(0, 10)==curDayFileName.substr(curDayFileName.length()-12, 10))
+			sDate = "СЕГОДНЯ";
+		else 
+			sDate = currentExeTableDate.substr(0, 10).c_str();
+		legendTitle += sDate;
+
 		pLineCurrentDay->SetName( legendTitle );
 		if (standardHoursForLastWeek.size()>2)
 		{
@@ -1550,6 +1559,8 @@ void CEactivityDlg::UpdatePeriodTable(activ &CurView)
 	int sumActs=0, sumUsefulActs=0;
 	//приводим график в исходное состояние
 	chart.RemoveAllSeries(); //чистка предыдущих кривых
+	if (chart.GetTopAxis())
+		chart.GetTopAxis()->SetVisible(false);
 	chart.GetLeftAxis()->GetLabel()->SetText(radioTime.GetCheck() ? "Hours" : "Actions");
 	CChartDateTimeAxis* axis;
 	string legendTitle;
@@ -1639,7 +1650,7 @@ void CEactivityDlg::UpdatePeriodTable(activ &CurView)
 		} else {
 			CString mon = (*iter).first.c_str();
 			COleDateTime odDate(atoi(mon.Left(4)), atoi(mon.Right(2)), 
-				1, 0, 0, 0);
+				15, 0, 0, 0);
 			pLineMonth->AddPoint(odDate, chartValue);
 			pPntsMonth->AddPoint(odDate, chartValue);
 		}
@@ -2049,6 +2060,8 @@ void CEactivityDlg::SaveCurDay(bool dayChanged)
 
 	if (dayChanged)
 	{
+		WriteJournal("SendReportOfDayOnMail(%s)", 
+			curDayFileName.substr(curDayFileName.length()-12, 10).c_str());
 		SendReportOfDayOnMail(curDayFileName.substr(curDayFileName.length()-12, 10));
 		ActivToday.clear();
 	}
@@ -2952,6 +2965,8 @@ int CEactivityDlg::CalculateAverageUsefulParameter(int lastDays, activ_hours& av
 	//построение графика
 	chart.GetLeftAxis()->GetLabel()->SetText(radioTime.GetCheck() ? "Minutes" : "Actions");
 	chart.RemoveAllSeries(); //чистка предыдущих кривых
+	if (chart.GetTopAxis())
+		chart.GetTopAxis()->SetVisible(false);
 	chart.CreateStandardAxis(CChartCtrl::BottomAxis);
 	chart.GetBottomAxis()->GetLabel()->SetText("Hour");
 	chart.GetBottomAxis()->SetAutomatic(true);
@@ -3015,6 +3030,9 @@ CString CEactivityDlg::CompareTwoPeriodsOfDays(CStringArray& saDates1, CStringAr
 		axis2 = chart.CreateDateTimeAxis(CChartCtrl::TopAxis);
 		axis2->SetTickLabelFormat(false, _T("%d %b"));
 		chart.GetTopAxis()->SetAutomatic(true);
+	} else {
+		if (chart.GetTopAxis())
+			chart.GetTopAxis()->SetVisible(false);
 	}
 
 	chart.GetLeftAxis()->GetLabel()->SetText(accentParameter ? "Hours" : "Actions");
@@ -3322,6 +3340,9 @@ void CEactivityDlg::CompareTwoPeriodsOfMons(CStringArray& saDates1, CStringArray
 		pPntsPeriod2->SetPointType(CChartPointsSerie::ptEllipse);
 		pPntsPeriod2->SetPointSize(10,10);
 		pPntsPeriod2->SetColor(pLinePeriod2->GetColor());
+	} else {
+		if (chart.GetTopAxis())
+			chart.GetTopAxis()->SetVisible(false);
 	}
 
 	table_period.DeleteAllItems();

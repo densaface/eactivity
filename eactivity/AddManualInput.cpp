@@ -102,8 +102,9 @@ void CAddManualInput::OnBnClickedOk()
 		sComment="";
 		return;
 	}
+	str.LoadString(trif.GetIds(IDS_STRING1701));
 	if (sComment=="")
-		sComment = "Manual Input";
+		sComment = str;
 	edit_exe.GetWindowText(ch, 2048);
 	sExe=ch;
 	edit_capt.GetWindowText(ch, 2048);

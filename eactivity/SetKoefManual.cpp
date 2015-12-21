@@ -74,8 +74,10 @@ void CSetKoefManual::OnBnClickedOk()
 		sComment="";
 		return;
 	}
+	CString str;
+	str.LoadString(trif.GetIds(IDS_STRING1701));
 	if (sComment=="")
-		sComment = "Manual Input";
+		sComment = str;
 	edit_exe.GetWindowText(ch, 2048);
 	sExeNew=ch;
 	edit_capt.GetWindowText(ch, 2048);
