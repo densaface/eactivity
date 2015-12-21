@@ -119,6 +119,9 @@ BEGIN_MESSAGE_MAP(CEactivityDlg, CDialog)
 	ON_COMMAND(ID_ACTIVITY_SETKOEFEXE, OnActivitySetkoefeExe)
 	ON_EN_CHANGE(IDC_EDITr17, OnChangeEDITcapts)
 	ON_COMMAND(ID_ACTIVITY_EXE, OnActivityShowAllCapts)
+	ON_COMMAND(ID_IDR_32790, OnActivityManualAdd)
+	ON_COMMAND(ID_IDR_32792, OnActivityFullManualAdd)
+	ON_COMMAND(ID_IDR_32791, OnDeleteRecordFromExeCapt)
 	ON_MESSAGE(WM_MYICONNOTIFY,OnIcon)
 	//}}AFX_MSG_MAP
 	ON_BN_CLICKED(IDOK, &CEactivityDlg::OnBnClickedOk)
@@ -254,14 +257,16 @@ BOOL CEactivityDlg::OnInitDialog()
 	table_exe_capt.InsertColumn(3, "total time");
 	table_exe_capt.InsertColumn(4, "useful acts");
 	table_exe_capt.InsertColumn(5, "total acts");
-	table_exe_capt.InsertColumn(6, "full exe");
+	table_exe_capt.InsertColumn(6, "comment");
+	table_exe_capt.InsertColumn(7, "full exe");
 	table_exe_capt.SetColumnWidth(0,80);
 	table_exe_capt.SetColumnWidth(1,200);
 	table_exe_capt.SetColumnWidth(2,80);
 	table_exe_capt.SetColumnWidth(3,80);
 	table_exe_capt.SetColumnWidth(4,60);
 	table_exe_capt.SetColumnWidth(5,60);
-	table_exe_capt.SetColumnWidth(6,0);
+	table_exe_capt.SetColumnWidth(6,60);
+	table_exe_capt.SetColumnWidth(7,0);
 	table_exe_capt.exeCapt=true;
 	table_exe_capt.EnableToolTips(FALSE);
 
@@ -656,6 +661,14 @@ HCURSOR CEactivityDlg::OnQueryDragIcon()
 
 void CEactivityDlg::OnRefresh() 
 {
+	//снимаем выделение со всех выделенных строчек таблицы
+	POSITION pos=table_period.GetFirstSelectedItemPosition();
+	while (pos)
+	{
+		int nextItem = table_exe_capt.GetNextSelectedItem(pos);
+		table_period.SetItemState(nextItem, 0, LVIS_SELECTED);
+	}
+
 	activ_hours activHours;
 	UpdateExeCapt(activHours);
 	//обновление ТЗПВ
@@ -713,14 +726,24 @@ void CEactivityDlg::UpdateTableExeCapt(activ &allActiv, activ_hours &activHours,
 {
 	//слияние активности в массив без разбияния по часам
 	activ activSumHours;
-	if (onlyOneHour!=-1)
-		onlyOneHour=onlyOneHour;
 	for (activ::iterator ia=allActiv.begin(); ia!=allActiv.end(); ia++)
 	{
 		string exeCapt = ia->first;
-		if (onlyOneHour>-1 && atoi(exeCapt.c_str())!=onlyOneHour)
-			continue; //отображение статистики только для выбранного часа, другие часы отсеиваем
+		if (onlyOneHour>-1)
+		{
+			if (atoi(exeCapt.c_str())!=onlyOneHour)
+			{
+				if (exeCapt.substr(0,1)=="m")
+				{
+					if (atoi(exeCapt.substr(1).c_str())!=onlyOneHour)
+						continue;
+				} else
+					continue; //отображение статистики только для выбранного часа, другие часы отсеиваем
+			}
+		}
 		exeCapt.erase(0, exeCapt.find('\t')+1); //удаляем час
+		if (ia->first.substr(0, 1) == "m")
+			exeCapt = "m\t" + exeCapt;
 		activ::iterator iter=activSumHours.find(exeCapt);
 		if (iter==activSumHours.end())
 		{
@@ -798,7 +821,7 @@ void CEactivityDlg::UpdateTableExeCapt(activ &allActiv, activ_hours &activHours,
 
 		sprintf_s(ch, "%d", (*iv).usefulActs);
 		table_exe_capt.SetItemText(ii, 4, (*iv).usefulActs ? ch : "-");
-		table_exe_capt.SetItemText(ii, 6, (*iv).exe.c_str());
+		table_exe_capt.SetItemText(ii, 7, (*iv).exe.c_str());
 
 		//вслед за суммарной строкой экзешник балы строим строчки детализации к данному экзешнику
 		int sumCapts=0;
@@ -886,22 +909,27 @@ void CEactivityDlg::CalculateUsefulTimeAndActs(activ &allActiv, activ_exe &exeAc
 	for (activ::iterator ia=allActiv.begin(); ia!=allActiv.end(); ia++)
 	{
 		string ExeCapt=(*ia).second.exe+'\t'+(*ia).second.capt;
-		rulSpis::iterator iter=RULES.find(ExeCapt);
-		if (iter==RULES.end())
-			iter=ownFind((*ia).second.capt);
-		if (iter==RULES.end())
-			iter=RULES.find((*ia).second.exe);
-		int   usefulActs = 0;
-		float usefulTime = 0.0;
+		if ((*ia).first.substr(0, 1)=="m")
+		{
+			string deb="ok";
+		} else {
+			rulSpis::iterator iter=RULES.find(ExeCapt);
+			if (iter==RULES.end())
+				iter=ownFind((*ia).second.capt);
+			if (iter==RULES.end())
+				iter=RULES.find((*ia).second.exe);
+			int   usefulActs = 0;
+			float usefulTime = 0.0;
 
-		if (iter!=RULES.end())
-		{ //найдено правило, вычисляем полезное время и действия
-			usefulActs =  (int)((*iter).second.koef * (*ia).second.sumActs);
-			usefulTime =       ((*iter).second.koef * (*ia).second.sumTime);
+			if (iter!=RULES.end())
+			{ //найдено правило, вычисляем полезное время и действия
+				usefulActs =  (int)((*iter).second.koef * (*ia).second.sumActs);
+				usefulTime =       ((*iter).second.koef * (*ia).second.sumTime);
 
+			}
+			(*ia).second.usefulActs = usefulActs;
+			(*ia).second.usefulTime = usefulTime;
 		}
-		(*ia).second.usefulActs = usefulActs;
-		(*ia).second.usefulTime = usefulTime;
 
 		// записываем новый элемент или пополняем существующий в сокращенном справочнике экзешников
 		activ_exe::iterator iterExe = exeActiv.find((*ia).second.exe);
@@ -909,14 +937,14 @@ void CEactivityDlg::CalculateUsefulTimeAndActs(activ &allActiv, activ_exe &exeAc
 		{
 			ActivityExe exeElement;
 			exeElement.exe = (*ia).second.exe;
-			exeElement.usefulActs = usefulActs;
-			exeElement.usefulTime = usefulTime;
+			exeElement.usefulActs = (*ia).second.usefulActs;
+			exeElement.usefulTime = (*ia).second.usefulTime;
 			exeElement.sumActs    = (*ia).second.sumActs;
 			exeElement.sumTime    = (*ia).second.sumTime;
 			exeActiv[(*ia).second.exe] = exeElement;
 		} else {
-			(*iterExe).second.usefulActs += usefulActs;
-			(*iterExe).second.usefulTime += usefulTime;
+			(*iterExe).second.usefulActs += (*ia).second.usefulActs;
+			(*iterExe).second.usefulTime += (*ia).second.usefulTime;
 			(*iterExe).second.sumActs    += (*ia).second.sumActs;
 			(*iterExe).second.sumTime    += (*ia).second.sumTime;
 		}
@@ -926,19 +954,19 @@ void CEactivityDlg::CalculateUsefulTimeAndActs(activ &allActiv, activ_exe &exeAc
 		if (iterHour == activHours.end())
 		{
 			ActivityExe hourElement;
-			hourElement.usefulActs = usefulActs;
-			hourElement.usefulTime = usefulTime;
+			hourElement.usefulActs = (*ia).second.usefulActs;
+			hourElement.usefulTime = (*ia).second.usefulTime;
 			hourElement.sumActs    = (*ia).second.sumActs;
 			hourElement.sumTime    = (*ia).second.sumTime;
 			activHours[(*ia).second.hour] = hourElement;
 		} else {
-			(*iterHour).second.usefulActs += usefulActs;
-			(*iterHour).second.usefulTime += usefulTime;
+			(*iterHour).second.usefulActs += (*ia).second.usefulActs;
+			(*iterHour).second.usefulTime += (*ia).second.usefulTime;
 			(*iterHour).second.sumActs    += (*ia).second.sumActs;
 			(*iterHour).second.sumTime    += (*ia).second.sumTime;
 		}
-		hour25.usefulTime+=usefulTime;
-		hour25.usefulActs+=usefulActs;
+		hour25.usefulTime+=(*ia).second.usefulTime;
+		hour25.usefulActs+=(*ia).second.usefulActs;
 		hour25.sumTime+=(*ia).second.sumTime;
 		hour25.sumActs+=(*ia).second.sumActs;
 	}
@@ -996,6 +1024,7 @@ void CEactivityDlg::AddExeCaptToTable(string exe, activ &forLoad1, int &sumCapt)
 		table_exe_capt.SetItemText(ii, 5, ch);
 		sprintf_s(ch, "%d", (*iv).usefulActs);
 		table_exe_capt.SetItemText(ii, 4, (*iv).usefulActs ? ch : "-" );
+		table_exe_capt.SetItemText(ii, 6, (*iv).comment.c_str() );
 		coun++;
 	}
 }
@@ -1213,6 +1242,7 @@ void CEactivityDlg::OnTimer(UINT nIDEvent)
 				Activity tmpForLoad;
 				tmpForLoad.capt="";
 				tmpForLoad.exe="";
+				tmpForLoad.comment="";
 				tmpForLoad.hwChil=0;
 				tmpForLoad.hwMain=0;
 				tmpForLoad.sumActs=0;
@@ -1230,6 +1260,7 @@ void CEactivityDlg::OnTimer(UINT nIDEvent)
 				Activity tmpForLoad;
 				tmpForLoad.capt="";
 				tmpForLoad.exe="";
+				tmpForLoad.comment="";
 				tmpForLoad.hwChil=0;
 				tmpForLoad.hwMain=0;
 				tmpForLoad.sumActs=0;
@@ -1782,20 +1813,44 @@ bool CEactivityDlg::LoadFileDay(string fname, activ &forLoad1)
 		ifstr.get();
 		ifstr>>tmpForSave.sumTime;
 		tmpForSave2.sumTime=tmpForSave.sumTime;
+		if (ver>=0.3)
+		{
+			ifstr.get();
+			ifstr>>tmpForSave.usefulTime;
+			tmpForSave2.usefulTime=tmpForSave.usefulTime;
+		}
 		ifstr.get();
 		int tmpint2;
+		bool manual_add=false;
 		if (ver<0.2)
 		{
 			ifstr>>tmpint2;
 		} else {
 			ifstr.getline(ch, 1024, '\t');
-			tmpForSave2.hour=tmpForSave.hour=atoi(ch);
+			if (strlen(ch)>0 && ch[0]=='m')
+			{	//вырезаем первый символ
+				manual_add = true;
+				CString sCh = ch;
+				tmpForSave2.hour=tmpForSave.hour=atoi(sCh.Mid(1));
+			} else {
+				tmpForSave2.hour=tmpForSave.hour=atoi(ch);
+			}
 		}
 		ifstr.getline(ch, 1024, '\t');
 		tmpForSave2.exe=tmpForSave.exe=ch;
-		ifstr.getline(ch, 1024);
-		tmpForSave.capt=ch;
-		sprintf_s(ch, "%d\t", tmpForSave.hour);
+		if (ver>=0.4)
+		{
+			ifstr.getline(ch, 1024, '\t');
+			tmpForSave.capt=ch;
+			ifstr.getline(ch, 1024);
+			tmpForSave.comment=ch;
+		} else {
+			ifstr.getline(ch, 1024);
+			tmpForSave.capt=ch;
+		}
+		if (manual_add)
+			 sprintf_s(ch, "m%d\t", tmpForSave.hour);
+		else sprintf_s(ch, "%d\t", tmpForSave.hour);
 		forLoad1[ch + tmpForSave.exe + '\t' + tmpForSave.capt] = tmpForSave;
 		if (!ifstr)
 			break;
@@ -1943,29 +1998,19 @@ void CEactivityDlg::SaveYear()
 	}
 	ofstr.close();
 }
-void CEactivityDlg::SaveCurDay(bool smena) 
-{
-	char date[27];
-	if (smena)
-	{
-		strcpy_s(date, curDayFileName.c_str());
-	} else {
-		SYSTEMTIME st;
-		GetLocalTime(&st);
-		GetDateFormat(LOCALE_USER_DEFAULT, LOCALE_USE_CP_ACP, &st, "activ_user_yyyy_MM_dd.a", date, 25);
-	}
 
-	string strf=path_actuser+date;
-	ofstream ofstr(strf.c_str());
-	WriteJournal("Save to file file = %s", strf.c_str());
+void CEactivityDlg::SaveDay(string fileName, activ& Activ) 
+{
+	ofstream ofstr(fileName.c_str());
+	WriteJournal("Save to file file = %s", fileName.c_str());
 	if (ofstr==NULL) {
-		WriteJournal("!!! Save is failed !!! file = %s", strf.c_str());
+		WriteJournal("!!! Save is failed !!! file = %s", fileName.c_str());
 		return;
 	}
-	char ch[]="ver=0.2\n";
+	char ch[]="ver=0.4\n";
 	ofstr<<ch;
-	for (activ::iterator it_activ=ActivToday.begin(); it_activ!=ActivToday.end(); it_activ++)
- 	{
+	for (activ::iterator it_activ=Activ.begin(); it_activ!=Activ.end(); it_activ++)
+	{
 		Activity tmpForSave=(*it_activ).second;
 		ofstr<<tmpForSave.hwMain;
 		ofstr<<'\t';
@@ -1977,16 +2022,36 @@ void CEactivityDlg::SaveCurDay(bool smena)
 		ofstr<<'\t';
 		ofstr<<tmpForSave.sumTime;
 		ofstr<<'\t';
+		ofstr<<tmpForSave.usefulTime;
+		ofstr<<'\t';
 		ofstr<<(*it_activ).first;
+		ofstr<<'\t';
+		ofstr<<tmpForSave.comment;
 		ofstr<<'\n';
 	}
 	ofstr.close();
-	if (smena)
+}
+
+void CEactivityDlg::SaveCurDay(bool dayChanged) 
+{
+	char date[27];
+	if (dayChanged)
+	{
+		strcpy_s(date, curDayFileName.c_str());
+	} else {
+		SYSTEMTIME st;
+		GetLocalTime(&st);
+		GetDateFormat(LOCALE_USER_DEFAULT, LOCALE_USE_CP_ACP, &st, "activ_user_yyyy_MM_dd.a", date, 25);
+	}
+
+	string fileName=path_actuser+date;
+	SaveDay(fileName, ActivToday);
+
+	if (dayChanged)
 	{
 		SendReportOfDayOnMail(curDayFileName.substr(curDayFileName.length()-12, 10));
 		ActivToday.clear();
 	}
-
 }
 
 void CEactivityDlg::SendReportOfDayOnMail(string dateToday) 
@@ -2065,10 +2130,19 @@ void CEactivityDlg::UpdateExeCapt(activ_hours &activHours, bool showInfoTable)
 		{
 			date = table_period.GetItemText(sel, 0)+"h.";
 			hour = atoi(date.c_str());
+			if (currentExeTableDate.size()==10)
+			{
+				currentExeTableDate+=":";
+				currentExeTableDate+=date;
+			} else {
+				currentExeTableDate = currentExeTableDate.substr(0, 10)+":"+date;
+			}
 		} else {
 			date = SelectedDay=="" ? curDayFileName.substr(curDayFileName.length()-12, 10) : 
 				SelectedDay;
+			currentExeTableDate = date;
 		}
+		GetDlgItem(IDOK)->SetWindowText(currentExeTableDate.c_str());
 	}
 	UpdateTableExeCapt((SelectedDay == "" || !showInfoTable) ? ActivToday : aSelDayView, 
 		activHours, sumTime, sumUsefulTime, sumActs, sumUsefulActs, hour, showInfoTable);
@@ -2162,7 +2236,11 @@ void CEactivityDlg::OnDblclkListDays(NMHDR* pNMHDR, LRESULT* pResult)
 		}
 		if (!LoadFileDay(fname, aSelDayView))
 		{
-			AfxMessageBox(trif.GetIds(IDS_STRING1573));
+			CString sMes;
+			sMes.LoadString(trif.GetIds(IDS_STRING1573));
+			char allmes[5000];
+			sprintf_s(allmes, sMes, fname);
+			AfxMessageBox(allmes);
 			return;
 		}
 		SelectedDay=date;
@@ -2183,7 +2261,11 @@ void CEactivityDlg::OnDblclkListDays(NMHDR* pNMHDR, LRESULT* pResult)
 		int sumActs=0, sumUsefulActs=0;
 		if (!statsF.LoadFileMonth(fname, aSelMon, sumTime, sumUsefulTime, sumActs, sumUsefulActs))
 		{
-			AfxMessageBox(trif.GetIds(IDS_STRING1573));
+			CString sMes;
+			sMes.LoadString(trif.GetIds(IDS_STRING1573));
+			char allmes[5000];
+			sprintf_s(allmes, sMes, fname);
+			AfxMessageBox(allmes);
 			return;
 		}
 		SelectedMon=date;
@@ -2273,7 +2355,7 @@ string CEactivityDlg::GetExeFromTable(int sel)
 {
 	for (int ii=sel; sel>=0; sel--)
 	{	//идем вверх по таблице пока не наткнемся на имя экзешника
-		string exe=table_exe_capt.GetItemText(sel, 6);
+		string exe=table_exe_capt.GetItemText(sel, 7);
 		if (exe.length())
 			return exe;
 	}
@@ -2400,6 +2482,271 @@ void CEactivityDlg::OnActivityShowAllCapts()
 	menuExeCapt.ModifyODMenu(str, ID_ACTIVITY_EXE);
 	activ_hours activHours;
 	UpdateExeCapt(activHours);
+}
+
+//добавить чисто ручной ввод (новуз запись в справочник активностей)
+void CEactivityDlg::OnActivityFullManualAdd()
+{
+	CAddManualInput dialAddManual;
+	int selHour = 0;
+	if (currentExeTableDate.size()>10)
+		selHour = atoi(currentExeTableDate.substr(11).c_str());
+	if (dialAddManual.DoModal()!=IDOK)
+		return;
+	bool bToday = false;
+	if (currentExeTableDate.substr(0, 10)==curDayFileName.substr(curDayFileName.length()-12, 10))
+		bToday = true;
+	AddManualInput(bToday ? ActivToday : aSelDayView, dialAddManual.sExe, dialAddManual.sCapt,
+		dialAddManual.sComment, selHour, dialAddManual.SumTime, dialAddManual.UsefullTime);
+	if (!bToday)
+	{	// для прошедшего дня
+		CString sDate = currentExeTableDate.substr(0, 10).c_str();
+		char fname[2048];
+		sprintf_s(fname, "%sactiv_user_%s.a", path_actuser.c_str(), sDate);
+		SaveDay(fname, aSelDayView);
+	}
+	OnRefresh();
+}
+void CEactivityDlg::AddManualInput(activ &Activ, CString &sExe, CString &sCapt, 
+		CString sComment, int selHour, float SumTime, float UsefulTime)
+{
+	char chi[512];
+	sprintf_s(chi, "m%d\t", selHour);
+	string exeCapt = chi + sExe + '\t' + sCapt;
+	int iNumAdd=1;
+	Activity tmpA;
+	tmpA.capt = sCapt;
+	tmpA.comment = sComment;
+	tmpA.exe = sExe;
+	tmpA.hour = selHour;
+	tmpA.sumActs = 0;
+	tmpA.sumTime = SumTime;
+	tmpA.usefulActs = 0;
+	tmpA.usefulTime = UsefulTime;
+	while (Activ.find(exeCapt)!=Activ.end())
+	{
+		char ich[100];
+		sprintf_s(ich, "_(%d)", iNumAdd);
+		if (Activ.find(exeCapt+ich) == Activ.end())
+		{
+			exeCapt += ich;
+			tmpA.capt += ich;
+			break;
+		}
+		iNumAdd++;
+	}
+	Activ[exeCapt] = tmpA;
+}
+
+void CEactivityDlg::OnActivityManualAdd()
+{
+	POSITION pos=table_exe_capt.GetFirstSelectedItemPosition();
+	int sel=(int)pos-1;
+	if (sel<0)
+		return;
+
+	CSetKoefManual dialAddManual;
+	CUIntArray bManualInput;
+	dialAddManual.sExeOld = GetExeFromTable(sel).c_str();
+	dialAddManual.dCoef=1.00;
+	dialAddManual.bMultiSel = table_exe_capt.GetSelectedCount() > 1 ? true : false;
+	while (pos)
+	{
+		int nextItem = table_exe_capt.GetNextSelectedItem(pos);
+		TRACE(_T("Item %d was selected!\n"), nextItem);
+		dialAddManual.sCaptOld.Add(table_exe_capt.GetItemText(nextItem, 1));
+		bManualInput.Add(table_exe_capt.GetItemText(nextItem, 6).GetLength() ? true : false);
+	}
+
+	if (dialAddManual.DoModal()!=IDOK)
+		return;
+	int selHour = -1;
+	bool bToday = false;
+	if (currentExeTableDate.substr(0, 10)==curDayFileName.substr(curDayFileName.length()-12, 10))
+		bToday = true;
+	if (currentExeTableDate.size()>10)
+		selHour = atoi(currentExeTableDate.substr(11).c_str());
+	BOOL bReplaced = ReplaceActivityRecord(bToday ? ActivToday : aSelDayView, 
+		dialAddManual.sExeOld, dialAddManual.sExeNew, dialAddManual.sCaptOld, 
+		dialAddManual.sCaptNew, dialAddManual.sComment, dialAddManual.dCoef, 
+		selHour, bManualInput, dialAddManual.bUnit);
+	if (bReplaced && !bToday)
+	{	// для прошедшего дня
+		CString sDate = currentExeTableDate.substr(0, 10).c_str();
+		char fname[2048];
+		sprintf_s(fname, "%sactiv_user_%s.a", path_actuser.c_str(), sDate);
+		SaveDay(fname, aSelDayView);
+	}
+	if (bReplaced)
+		OnRefresh();
+}
+
+void CEactivityDlg::OnDeleteRecordFromExeCapt()
+{
+	POSITION pos=table_exe_capt.GetFirstSelectedItemPosition();
+	int sel=(int)pos-1;
+	if (sel<0)
+		return;
+	int selHour = -1;
+	bool bToday = false;
+	if (currentExeTableDate.substr(0, 10)==curDayFileName.substr(curDayFileName.length()-12, 10))
+		bToday = true;
+	if (currentExeTableDate.size()>10)
+		selHour = atoi(currentExeTableDate.substr(11).c_str());
+	CStringArray sExe;
+	CStringArray sCapt;
+	CUIntArray bManualInput;
+	while (pos)
+	{
+		int nextItem = table_exe_capt.GetNextSelectedItem(pos);
+		TRACE(_T("Item %d was selected!\n"), nextItem);
+		sExe.Add(GetExeFromTable(nextItem).c_str());
+		sCapt.Add(table_exe_capt.GetItemText(nextItem, 1));
+		bManualInput.Add(table_exe_capt.GetItemText(nextItem, 6).GetLength() ? true : false);
+	}
+	bool bReplaced = RemoveActivityRecord(bToday ? ActivToday : aSelDayView, 
+		sExe, sCapt, selHour, bManualInput);
+	if (bReplaced && !bToday)
+	{	// для прошедшего дня
+		CString sDate = currentExeTableDate.substr(0, 10).c_str();
+		char fname[2048];
+		sprintf_s(fname, "%sactiv_user_%s.a", path_actuser.c_str(), sDate);
+		SaveDay(fname, aSelDayView);
+	}
+	if (bReplaced)
+		OnRefresh();
+}
+
+//удаление строчек в активности с заданным exe и заголовком
+bool CEactivityDlg::RemoveActivityRecord(activ &Activ, CStringArray &sExe, CStringArray &sCapt, 
+										 int selHour, CUIntArray &manualInput)
+{
+	for (int jj=0; jj<sExe.GetSize(); jj++)
+	{
+		bool bFindCapt=false; //если ни одного заголовка не найдено, то выводим предупреждение
+		for (int ii=0; ii<24; ii++)
+		{
+			if (selHour>-1 && ii!=selHour)
+				continue;
+			char chi[512];
+			if (manualInput[jj])
+				sprintf_s(chi, "m%d\t", ii);
+			else
+				sprintf_s(chi, "%d\t", ii);
+			string exeCapt = chi + sExe[jj] + '\t' + sCapt[jj];
+			activ::iterator it_activ = Activ.find(exeCapt);
+			if (it_activ==Activ.end())
+				continue;
+			Activ.erase(it_activ);
+			bFindCapt=true;
+		}
+		if (!bFindCapt)
+		{
+			AfxMessageBox(trif.GetIds(IDS_STRING1691));
+			return false;
+		}
+	}
+	return true;
+}
+
+//замена строчек в активности на ручной ввод с произвольным комментарием
+BOOL CEactivityDlg::ReplaceActivityRecord(activ &Activ, CString sExeOld, CString sExeNew, 
+										  CStringArray& sCaptOld, CString sCaptNew, 
+										  CString sComment, double dCoef, 
+										  int selHour, CUIntArray& manualInput, bool bUnit)
+{
+	Activity tmpA;
+	if (bUnit)
+	{
+		tmpA.capt = sCaptNew;
+		tmpA.hour = -1;
+		tmpA.sumActs = 0;
+		tmpA.sumTime = 0;
+		tmpA.usefulActs = 0;
+		tmpA.usefulTime = 0;
+		tmpA.comment = sComment;
+		tmpA.exe = sExeNew;
+	}
+	char chi[512];string exeCapt;
+	for (int jj=0; jj<sCaptOld.GetSize(); jj++)
+	{
+		BOOL bFindCapt=false; //если ни одного заголовка не найдено, то выводим предупреждение
+		for (int ii=0; ii<24; ii++)
+		{
+			if (selHour>-1 && ii!=selHour)
+				continue;
+			if (manualInput[jj])
+				sprintf_s(chi, "m%d\t", ii);
+			else
+				sprintf_s(chi, "%d\t", ii);
+			exeCapt = chi + sExeOld + '\t' + sCaptOld[jj];
+			activ::iterator it_activ = Activ.find(exeCapt);
+			if (it_activ==Activ.end())
+				continue;
+			if (bUnit)
+			{
+				if (tmpA.hour==-1)
+					tmpA.hour = (*it_activ).second.hour;
+				tmpA.sumTime += (*it_activ).second.sumTime;
+				tmpA.sumActs += (*it_activ).second.sumActs;
+				tmpA.usefulTime += (*it_activ).second.sumTime*(float)dCoef;
+				tmpA.usefulActs += (int)((*it_activ).second.sumActs*dCoef);
+			} else {
+				tmpA=(*it_activ).second;
+				tmpA.usefulActs=(int)(tmpA.sumActs*dCoef);
+				tmpA.usefulTime=tmpA.sumTime*(float)dCoef;
+				tmpA.capt = sCaptOld[jj];
+				tmpA.comment = sComment;
+				tmpA.exe = sExeNew;
+			}
+			Activ.erase(it_activ);
+			if (!bUnit)
+			{
+				sprintf_s(chi, "m%d\t", ii);
+				exeCapt = chi + sExeNew + '\t' + sCaptOld[jj];
+				int iNumAdd=1;
+				while (Activ.find(exeCapt)!=Activ.end())
+				{
+					char ich[100];
+					sprintf_s(ich, "_(%d)", iNumAdd);
+					if (Activ.find(exeCapt+ich) == Activ.end())
+					{
+						exeCapt += ich;
+						tmpA.capt += ich;
+						break;
+					}
+					iNumAdd++;
+				}
+				Activ[exeCapt] = tmpA;
+			}
+			bFindCapt++;
+		}
+		if (!bFindCapt)
+		{
+			AfxMessageBox(trif.GetIds(IDS_STRING1691));
+			return false;
+		}
+	}
+	if (bUnit)
+	{
+		sprintf_s(chi, "m%d\t", tmpA.hour);
+		exeCapt = chi + sExeNew + '\t' + sCaptNew;
+		int iNumAdd=1;
+		while (Activ.find(exeCapt)!=Activ.end())
+		{
+			char ich[100];
+			sprintf_s(ich, "_(%d)", iNumAdd);
+			if (Activ.find(exeCapt+ich) == Activ.end())
+			{
+				exeCapt+=ich;
+				tmpA.capt += ich;
+				break;
+			}
+			iNumAdd++;
+		}
+		Activ[exeCapt] = tmpA;
+	}
+	return 1;
 }
 
 void CEactivityDlg::OnDblclkListCurDay(NMHDR* pNMHDR, LRESULT* pResult) 

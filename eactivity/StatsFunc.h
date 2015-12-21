@@ -15,6 +15,7 @@ struct Activity
 	HWND hwChil;
 	string exe;
 	string capt;
+	string comment;
 	int sumActs;		// суммарное количество кликов/нажатий клавиатуры
 	int usefulActs;		// клики/нажатия клавиатуры засчитанные как полезные
 	int hour;

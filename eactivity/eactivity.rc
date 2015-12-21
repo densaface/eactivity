@@ -94,7 +94,7 @@ EXSTYLE WS_EX_APPWINDOW
 CAPTION "ActivateMe"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    DEFPUSHBUTTON   "test",IDOK,503,229,50,14
+    DEFPUSHBUTTON   "test",IDOK,471,229,82,14
     PUSHBUTTON      "Выход",IDCANCEL,558,229,50,14
     DEFPUSHBUTTON   "Refresh",IDOK2,468,137,50,14
     CONTROL         "",IDC_LIST2,"SysListView32",LVS_REPORT | LVS_SHOWSELALWAYS | WS_BORDER | WS_GROUP | WS_TABSTOP,7,173,452,127
@@ -164,8 +164,8 @@ BEGIN
     LTEXT           "Caption:",IDC_STATIC,7,36,27,8
     EDITTEXT        IDC_EDIT5,7,77,68,14,ES_AUTOHSCROLL
     LTEXT           "Коэффициент (for examp 1.50, -3.00, 0.33):",IDC_STATIC_coef,7,66,140,8
-    COMBOBOX        IDC_COMBO1,122,77,133,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Совпадение заголовка:",IDC_STATIC_sovp,163,66,92,8
+    COMBOBOX        IDC_COMBO1,122,77,133,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 END
 
 IDD_ReportTwoPeriods DIALOGEX 0, 0, 415, 254
@@ -273,6 +273,45 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,7,235,10
 END
 
+IDD_SetKoefManual DIALOGEX 0, 0, 262, 144
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Dialog"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,55,123,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,205,123,50,14
+    EDITTEXT        IDC_EDIT1,7,18,248,14,ES_AUTOHSCROLL
+    LTEXT           "Exe:",IDC_STATIC,7,7,15,8
+    EDITTEXT        IDC_EDIT3,7,47,248,14,ES_AUTOHSCROLL
+    LTEXT           "Caption:",IDC_STATIC,7,36,27,8
+    EDITTEXT        IDC_EDIT5,7,77,68,14,ES_AUTOHSCROLL
+    LTEXT           "Коэффициент (for examp 1.50, -3.00, 0.33):",IDC_STATIC_coef,7,66,140,8
+    EDITTEXT        IDC_EDIT7,7,105,248,14,ES_AUTOHSCROLL
+    LTEXT           "Комментарий:",IDC_STATIC,7,94,50,8
+    CONTROL         "Объединить все заголовки в 1",IDC_CHECKUNIT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,107,35,148,10
+END
+
+IDD_SetKoefManual1 DIALOGEX 0, 0, 262, 144
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Dialog"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,55,123,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,205,123,50,14
+    EDITTEXT        IDC_EDIT1,7,18,248,14,ES_AUTOHSCROLL
+    LTEXT           "Exe:",IDC_STATIC,7,7,15,8
+    EDITTEXT        IDC_EDIT3,7,47,248,14,ES_AUTOHSCROLL
+    LTEXT           "Caption:",IDC_STATIC,7,36,27,8
+    EDITTEXT        IDC_EDIT5,7,77,68,14,ES_AUTOHSCROLL
+    LTEXT           "Затраченное время",IDC_STATIC_coef,7,66,68,8
+    EDITTEXT        IDC_EDIT7,7,105,248,14,ES_AUTOHSCROLL
+    LTEXT           "Комментарий:",IDC_STATIC,7,94,50,8
+    COMBOBOX        IDC_COMBO1,81,79,38,50,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_EDIT8,127,77,68,14,ES_AUTOHSCROLL
+    LTEXT           "Полезное время",IDC_STATIC_coef2,127,66,98,8
+    COMBOBOX        IDC_COMBO2,201,79,38,48,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -369,6 +408,22 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 150
     END
+
+    IDD_SetKoefManual, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 255
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 137
+    END
+
+    IDD_SetKoefManual1, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 255
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 137
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -463,6 +518,9 @@ BEGIN
         MENUITEM "Установить коэффициент для выделенного EXE файла", ID_ACTIVITY_SETKOEFEXE
         MENUITEM "Установить коэффициент для выделенного заголовка", ID_ACTIVITY_SETKOEF
         MENUITEM "Показать все заголовки для выделенного EXE файла", ID_ACTIVITY_EXE
+        MENUITEM "Добавить ручной ввод",        ID_IDR_32792
+        MENUITEM "Сконвертировать в ручной ввод", ID_IDR_32790
+        MENUITEM "Удалить",                     ID_IDR_32791
     END
 END
 
@@ -493,8 +551,8 @@ BEGIN
     IDS_STRING1570          "Activity"
     IDS_STRING1571          "Активность для <b>%s</b>: полезного времени <b>%s</b> из %s, полезных действий <b>%d</b> из %d"
     IDS_STRING1572          "Activity for <b>%s</b>: useful time <b>%s</b> from %s, useful actions <b>%d</b> from %d"
-    IDS_STRING1573          "Не найден соответствующий файл статистики"
-    IDS_STRING1574          "The respective statistics file was not found"
+    IDS_STRING1573          "Не найден файл статистики ""%s"""
+    IDS_STRING1574          "Statistics file ""%s"" was not found"
     IDS_STRING1575          "Активность <b>СЕГОДНЯ</b>: полезного времени <b>%s</b> из %s, полезных действий <b>%d</b> из %d"
     IDS_STRING1576          "Activity for <b>TODAY</b>: useful time <b>%s</b> from %s, useful actions <b>%d</b> from %d"
     IDS_STRING1577          "К заголовку и к EXE"
@@ -639,6 +697,20 @@ BEGIN
     IDS_STRING1688          "__"
     IDS_STRING1689          "Задайте эмейл адрес в настройках программы"
     IDS_STRING1690          "__"
+    IDS_STRING1691          "Не найден заголовок"
+    IDS_STRING1692          "__"
+    IDS_STRING1693          "Ручной ввод"
+    IDS_STRING1694          "__"
+    IDS_STRING1695          "Секунды"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_STRING1696          "Seconds"
+    IDS_STRING1697          "Минуты"
+    IDS_STRING1698          "Minutes"
+    IDS_STRING1699          "Часы"
+    IDS_STRING1700          "Hours"
 END
 
 #endif    // Russian resources

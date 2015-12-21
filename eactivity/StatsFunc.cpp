@@ -43,6 +43,7 @@ bool StatsFunc::LoadFileMonth(string fname, activ &forLoad1, float &sumTime, flo
 
 		Activity tmpForLoad;
 		tmpForLoad.capt="";
+		tmpForLoad.comment="";
 		tmpForLoad.exe="";
 		tmpForLoad.hwChil=0;
 		tmpForLoad.hwMain=0;
@@ -109,6 +110,7 @@ void StatsFunc::SumDayStat(activ &forLoad1, string fname, float &sumTime,
 	tmpActiv.usefulActs=0;
 	tmpActiv.capt="";
 	tmpActiv.exe="";
+	tmpActiv.comment="";
 	tmpActiv.hwChil=0;
 	tmpActiv.hwMain=0;
 
@@ -168,6 +170,7 @@ void StatsFunc::LoadYear(activ &aCurYear, string fname)
 		Activity tmpForLoad;
 		tmpForLoad.capt="";
 		tmpForLoad.exe="";
+		tmpForLoad.comment="";
 		tmpForLoad.hwChil=0;
 		tmpForLoad.hwMain=0;
 		while (ifstr)
@@ -229,6 +232,7 @@ void StatsFunc::SumMonStat(activ &aCurYear, string fname, float &sumTime, int &s
 	tmpActiv.usefulActs=0;
 	tmpActiv.capt="";
 	tmpActiv.exe="";
+	tmpActiv.comment="";
 	tmpActiv.hwChil=0;
 	tmpActiv.hwMain=0;
 

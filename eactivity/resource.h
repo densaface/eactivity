@@ -25,6 +25,8 @@
 #define IDD_ALWAYS_TOP                  143
 #define IDD_OptionTab2                  145
 #define IDD_OptionTabMail               146
+#define IDD_SetKoefManual               147
+#define IDD_SetKoefManual1              148
 #define IDC_MSCHART1                    1000
 #define IDC_CHARTCTRL                   1000
 #define IDC_BUTTON1                     1001
@@ -48,8 +50,10 @@
 #define IDC_DATETIMEPICKER4             1008
 #define IDC_CHECK4                      1008
 #define IDC_RADIO6                      1009
+#define IDC_EDIT7                       1009
 #define IDC_RADIO22                     1010
 #define IDC_RADIO7                      1010
+#define IDC_EDIT8                       1010
 #define IDC_RADIO5                      1011
 #define IDC_CHECK2                      1011
 #define IDC_LIST18                      1011
@@ -57,6 +61,7 @@
 #define IDC_EDIT2                       1012
 #define IDC_EDIT4                       1013
 #define IDC_EDIT6                       1014
+#define IDC_CHECKUNIT                   1014
 #define IDC_LIST2                       1027
 #define IDC_LIST3                       1028
 #define IDC_EDITr17                     1029
@@ -69,6 +74,7 @@
 #define IDC_STATIC_percent_day          1187
 #define IDC_STATIC_sovp                 1188
 #define IDC_STATIC_percent_day2         1188
+#define IDC_STATIC_coef2                1188
 #define IDC_STATIC_percent_hour         1189
 #define IDC_STATIC_percent_hour2        1190
 #define IDC_STATIC_percent_hour3        1191
@@ -197,6 +203,16 @@
 #define IDS_STRING1688                  1688
 #define IDS_STRING1689                  1689
 #define IDS_STRING1690                  1690
+#define IDS_STRING1691                  1691
+#define IDS_STRING1692                  1692
+#define IDS_STRING1693                  1693
+#define IDS_STRING1694                  1694
+#define IDS_STRING1695                  1695
+#define IDS_STRING1696                  1696
+#define IDS_STRING1697                  1697
+#define IDS_STRING1698                  1698
+#define IDS_STRING1699                  1699
+#define IDS_STRING1700                  1700
 #define ID_IDR_SDSD                     32771
 #define ID_ACTIVITY_SETKOEFEXE          32772
 #define ID_IDR_SDSD32773                32773
@@ -216,14 +232,17 @@
 #define ID_FILE                         32787
 #define ID_FILE_EXIT                    32788
 #define ID_REPORTS_32789                32789
+#define ID_IDR_32790                    32790
+#define ID_IDR_32791                    32791
+#define ID_IDR_32792                    32792
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        144
-#define _APS_NEXT_COMMAND_VALUE         32790
-#define _APS_NEXT_CONTROL_VALUE         1014
+#define _APS_NEXT_COMMAND_VALUE         32793
+#define _APS_NEXT_CONTROL_VALUE         1015
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

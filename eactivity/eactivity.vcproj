@@ -271,6 +271,10 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath=".\AddManualInput.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\AlwaysTop.cpp"
 				>
 			</File>
@@ -312,6 +316,10 @@
 			</File>
 			<File
 				RelativePath=".\ReportTwoPeriods.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\SetKoefManual.cpp"
 				>
 			</File>
 			<File
@@ -861,6 +869,10 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
+				RelativePath=".\AddManualInput.h"
+				>
+			</File>
+			<File
 				RelativePath=".\AlwaysTop.h"
 				>
 			</File>
@@ -882,6 +894,10 @@
 			</File>
 			<File
 				RelativePath=".\Resource.h"
+				>
+			</File>
+			<File
+				RelativePath=".\SetKoefManual.h"
 				>
 			</File>
 			<File

@@ -1,10 +1,11 @@
 //#include "externals/ppToolTip/PPTooltip.h"
 #include "old_my_src/winwork.h"
 #include "koeff.h"
+#include "setkoefmanual.h"
+#include "AddManualInput.h"
 #include "ReportOption.h"
 #include "ReportTwoPeriods.h"
 #include "externals\newmenu.h"
-//#include "Option1.h"
 #include "Optiontab.h"
 #include "TabOption.h"
 #include "ViewRules.h"
@@ -17,7 +18,6 @@
 #include <fstream>
 #include <vector>
 #include <algorithm>
-//#include "externals/XHTMLStatic.h"
 #include "statsfunc.h"
 #include "externals\graph\ChartCtrl.h"
 #include "externals\graph\ChartLineSerie.h"
@@ -100,6 +100,8 @@ public:
 	activ ActivToday;	//группировка активности ПО EXE И ЗАГОЛОВКУ
 	//для выделенного дня (не сегодняшнего)
 	string SelectedDay; // содержит дату не текущего дня в формате 2015_11_23
+	string currentExeTableDate; //содержит период времени, который на данным момент отображается в 
+						// таблице детализации
 	activ aSelDayView;
 	activ aCurYear;	//статистика по МЕСЯЦАМ для текущего показа в ТЗПВ
 	activ aCurMon;	//статистика по дням для текущего показа в ТЗПВ, 
@@ -114,11 +116,20 @@ public:
 		// в случае если не достаточно дней для выборки
 
 	void SaveCurDay(bool smena=false);
+	void SaveDay(string fileName, activ& Activ);
 	void LoadCurDay();
 	void SendReportOfDayOnMail(string dateToday);
 	bool LoadFileDay(string fname, activ &forLoad1);
 	string curDayFileName;//содержит дату текущего дня "activ_user_2015_11_26.a"
-	
+	BOOL ReplaceActivityRecord(activ &Activ, CString sExeOld, CString sExeNew, 
+		CStringArray& sCaptOld, CString sCaptNew, 
+		CString sComment, double dCoef, int selHour, CUIntArray& manualInput,
+		bool bUnit=false);
+	bool RemoveActivityRecord(activ &Activ, CStringArray &sExe, CStringArray &sCapt, 
+		int selHour, CUIntArray &manualInput);
+	void AddManualInput(activ &Activ, CString &sExe, CString &sCapt, 
+		CString sComment, int selHour, float SumTime, float UsefulTime);
+
 	void SaveCurMonth(bool smena=false);
 	void LoadCurMonth();
 	string curMonFileName;
@@ -183,6 +194,9 @@ protected:
 	afx_msg void OnActivitySetkoefeExe();
 	afx_msg void OnChangeEDITcapts();
 	afx_msg void OnActivityShowAllCapts();
+	afx_msg void OnActivityManualAdd();
+	afx_msg void OnActivityFullManualAdd();
+	afx_msg void OnDeleteRecordFromExeCapt();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 //public:
