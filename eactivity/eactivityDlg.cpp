@@ -1239,6 +1239,7 @@ void CEactivityDlg::OnTimer(UINT nIDEvent)
 			if (strcmp(date, curMonFileName.c_str())!=0)
 			{
 				SaveCurMonth(true);//переходим на новый месяц
+				curMonFileName=date;
 				Activity tmpForLoad;
 				tmpForLoad.capt="";
 				tmpForLoad.exe="";
@@ -1250,13 +1251,13 @@ void CEactivityDlg::OnTimer(UINT nIDEvent)
 				tmpForLoad.usefulActs=0;
 				tmpForLoad.usefulTime=0;
 				aCurYear[curMonFileName.substr(11, 7)]=tmpForLoad;
-				curMonFileName=date;
 			}
 
 			GetDateFormat(LOCALE_USER_DEFAULT, LOCALE_USE_CP_ACP, &st, "activ_user_yyyy_MM_dd.a", date, 25);
 			if (strcmp(date, curDayFileName.c_str())!=0)
 			{
 				SaveCurDay(true);//переходим на новый день
+				curDayFileName=date;
 				Activity tmpForLoad;
 				tmpForLoad.capt="";
 				tmpForLoad.exe="";
@@ -1268,7 +1269,6 @@ void CEactivityDlg::OnTimer(UINT nIDEvent)
 				tmpForLoad.usefulActs=0;
 				tmpForLoad.usefulTime=0;
 				aCurMon[curDayFileName.substr(curDayFileName.length()-12, 10)]=tmpForLoad;
-				curDayFileName=date;
 			}
 			dialInfo->curHour=st.wHour;
 		}
