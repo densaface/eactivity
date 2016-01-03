@@ -5,11 +5,13 @@
 #include "AddManualInput.h"
 #include "ReportOption.h"
 #include "ReportTwoPeriods.h"
+#include "GoWorkUntilPause.h"
 #include "externals\newmenu.h"
 #include "Optiontab.h"
 #include "TabOption.h"
 #include "ViewRules.h"
 #include "AlwaysTop.h"
+#include "endwork.h"
 #include <string>
 #include <map>
 #include <iostream>
@@ -131,10 +133,12 @@ public:
 		CString sComment, int selHour, float SumTime, float UsefulTime);
 
 	void SaveCurMonth(bool smena=false);
+	void SaveMonth(string strf, activ& aMon);
 	void LoadCurMonth();
 	string curMonFileName;
 	
 	void SaveYear();
+	void SaveAllYear();
 	
 	rulSpis RULES;
 	void SaveRules();
@@ -148,9 +152,11 @@ public:
 	void UpdatePeriodTable(activ &CurView);
 	rulSpis::iterator ownFind(string capt);
 	string GetExeFromTable(int sel);
+	void endWork();
 	string showAllCaptsForExe;//показывать все заголовки для определенного EXE
 	void SizingWins();
 	CAlwaysTop* dialInfo;//диалоговое окно поверх всех с инфой
+	CEndWork* dialEndWork;
 
 // Dialog Data
 	//{{AFX_DATA(CEactivityDlg)
@@ -223,6 +229,9 @@ protected:
 	CButton check_infopanel;
 	afx_msg void OnBnClickedCheckInfoPanel();
 	afx_msg LRESULT OnCloseInfoPanel(WPARAM wParam, LPARAM lParam);
+public:
+	afx_msg void OnBnClickedButtonstart();
+	afx_msg void OnOptionsEditshortactions();
 };
 
 //{{AFX_INSERT_LOCATION}}

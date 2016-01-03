@@ -10,10 +10,27 @@
 
 IMPLEMENT_DYNAMIC(CAlwaysTop, CDialog)
 
+float WorkPeriod::getUsefulPar()
+{
+	switch (typeUsefulPar)
+	{
+	case 1:
+		return (float)currentUsefulActs;
+	case 2:
+		return (float)currentUsefulTime/1000;
+	case 3:
+		return (float)(GetTickCount()-startProgressTime)/1000;
+	}
+	ASSERT(0);
+	return 0;
+}
+
 CAlwaysTop::CAlwaysTop(CWnd* pParent /*=NULL*/)
 	: CDialog(CAlwaysTop::IDD, pParent)
 {
 	RR=GG=0;
+	workPeriod.maxUsefulPar = -1;
+	workPeriod.typeUsefulPar = 0;
 }
 
 CAlwaysTop::~CAlwaysTop()
@@ -27,11 +44,14 @@ void CAlwaysTop::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_STATIC_percent_hour2, stat_hour_adv);
 	DDX_Control(pDX, IDC_STATIC_percent_hour, stat_hour_description);
 	DDX_Control(pDX, IDC_STATIC_percent_day2, stat_day_description);
+	DDX_Control(pDX, IDC_PROGRESS1, progress_useful);
+	DDX_Control(pDX, IDC_STATICProgress, static_progress);
 }
 
 
 BEGIN_MESSAGE_MAP(CAlwaysTop, CDialog)
 	ON_WM_TIMER()
+	ON_NOTIFY(NM_CUSTOMDRAW, IDC_PROGRESS1, &CAlwaysTop::OnNMCustomdrawProgress1)
 END_MESSAGE_MAP()
 
 BOOL CAlwaysTop::OnInitDialog() 
@@ -86,11 +106,46 @@ void CAlwaysTop::StartShow()
 	SetTimer(55556, 200 ,0);
 }
 
+//стартовать показ прогресс бара с показом, сколько осталось до выполнения объема 
+// полезного параметра
+void CAlwaysTop::StartProgress(float UsefulActs, float UsefulTime, float UsualTime)
+{
+	switch (workPeriod.typeUsefulPar)
+	{
+	case 1:
+		workPeriod.maxUsefulPar = UsefulActs;
+		break;
+	case 2:
+		workPeriod.maxUsefulPar = UsefulTime/1000;
+		break;
+	case 3:
+		workPeriod.maxUsefulPar = UsualTime/1000;
+		break;
+	default:
+		ASSERT(0); // некорректное значение typeUsefulPar
+	}
+	workPeriod.currentUsefulTime = 0.0;
+	workPeriod.currentUsefulActs = 0;
+	workPeriod.pauses = 0;
+	if (!m_hWnd)
+		return; //инфопанель находится в скрытом виде
+	progress_useful.SetRange(0, (short)workPeriod.maxUsefulPar);
+	progress_useful.SetPos(0);
+	progress_useful.ShowWindow(SW_SHOW);
+	//SetTimer(33336, 500 ,0);
+}
+
 void CAlwaysTop::OnTimer(UINT nIDEvent) 
 {
-	ShowWindow(SW_SHOWNA);
-	SetWindowPos(&CWnd::wndTopMost, 0, 0, 0, 0,
-		SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_FRAMECHANGED | WS_EX_TOPMOST);
+	if (nIDEvent==55556)
+	{
+		ShowWindow(SW_SHOWNA);
+		SetWindowPos(&CWnd::wndTopMost, 0, 0, 0, 0,
+			SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_FRAMECHANGED | WS_EX_TOPMOST);
+	}
+// 	else {
+// 		progress_useful.SetPos((int)currentUsefulTime);
+// 	}
 	CDialog::OnTimer(nIDEvent);
 }
 
@@ -125,15 +180,61 @@ CString CAlwaysTop::CalculateDayNorm(activ_hours &lastAverageHoursGraph,
 	}
 	char fmtSecs[100];
 	char res[300];
+	char fmtText[300];
 	statsF.FormatSeconds(fmtSecs, (float)perc_coef);
 	if (stat_day_adv.m_hWnd)
 	{ //для инфопанели форматируем текст в уменьшенном размере
 		statsF.ApplyFont((float)perc_coef, NULL, sizefont, bold, hidedescription, "", 
 			stat_day_adv, stat_hour_adv, stat_day_description, stat_hour_description, 
-			m_hWnd, RR, GG, resizeWins);
-// 		sprintf_s(res, "<b><CENTER><font COLOR=\"%d,%d,0\" size=\"+10\">%s%s</font></CENTER></b>", 
-// 			RR, GG, perc_coef>=0 ? "+" : "", fmtSecs);
-// 		stat_day_adv.SetWindowText(res);
+			(workPeriod.typeUsefulPar>0), m_hWnd, RR, GG, resizeWins);
+		if (workPeriod.typeUsefulPar)
+		{
+			progress_useful.SetPos((int)workPeriod.getUsefulPar());
+			int secsRest;
+			char chRestPar[100];
+			switch (workPeriod.typeUsefulPar)
+			{
+			case 1:
+				{
+					CString patt;
+					patt.LoadString(trif.GetIds(IDS_STRING1729));
+					sprintf_s(chRestPar, patt, 
+						(int)(workPeriod.maxUsefulPar-workPeriod.currentUsefulActs));
+					break;
+				}
+			case 2:
+				{
+					secsRest = (int)(workPeriod.maxUsefulPar - 
+						workPeriod.currentUsefulTime/1000);
+					break;
+				}
+			case 3:
+				{
+					secsRest = (int)workPeriod.maxUsefulPar - 
+						(GetTickCount()-workPeriod.startProgressTime)/1000;
+					break;
+				}
+			}
+			if (workPeriod.typeUsefulPar==2 || workPeriod.typeUsefulPar==3)
+			{
+				statsF.FormatSeconds(chRestPar, (float)secsRest);
+			}
+			CString description_rest_stat="";
+			if (!hidedescription)
+				description_rest_stat.LoadString(trif.GetIds(IDS_STRING1731));
+			sprintf_s(fmtText, "%s%s%s<font SIZE=\"+%d\" COLOR=\"7,92,177\">%s</font>%s%s", 
+				description_rest_stat, bold ? "<b>" : "", 
+				hidedescription ? "<center>" : "",
+				sizefont, 
+				chRestPar,
+				hidedescription ? "</center>" : "",
+				bold ? "</b>" : "");
+			static_progress.SetWindowText(fmtText);
+		}
+		if (isEndWork())
+		{
+			setEndWork();
+		}
 	}
 	sprintf_s(res, "<b><CENTER><font COLOR=\"%d,%d,0\" size=\"+18\">%s%s</font></CENTER></b>", 
 		RR, GG, perc_coef>=0 ? "+" : "", fmtSecs);
@@ -144,6 +245,40 @@ CString CAlwaysTop::CalculateDayNorm(activ_hours &lastAverageHoursGraph,
 	}
 	static2.LoadString(trif.GetIds(IDS_STRING1651+(perc_coef>=0 ? 0 : 2)));
 	return res;
+}
+
+//отражаем в интерфейсе завершение рабочего промежутка времени
+void CAlwaysTop::setEndWork()
+{
+	if (!m_hWnd)
+		return;
+	progress_useful.SetPos((int)workPeriod.maxUsefulPar);
+	CString sBreak;
+	char fmtText[300];
+	sBreak.LoadString(trif.GetIds(IDS_STRING1735));
+	sprintf_s(fmtText, "%s<center><font SIZE=\"+%d\" COLOR=\"0,255,0\">%s</font></center>%s", 
+		bold ? "<b>" : "", 
+		sizefont, 
+		sBreak,
+		bold ? "</b>" : "");
+	static_progress.SetWindowText(fmtText);
+}
+
+bool CAlwaysTop::isEndWork()
+{
+	switch (workPeriod.typeUsefulPar)
+	{
+	case 0:
+		return 0;
+	case 1:
+		return workPeriod.currentUsefulActs >= workPeriod.maxUsefulPar;
+	case 2:
+		return workPeriod.currentUsefulTime/1000 >= workPeriod.maxUsefulPar;
+	case 3:
+		return GetTickCount() >= workPeriod.startProgressTime + workPeriod.maxUsefulPar*1000;
+	}
+	ASSERT(0); // некорректное значение typeUsefulPar
+	return 0;
 }
 
 CString CAlwaysTop::CalculateHourNorm(activ_hours &lastAverageHoursGraph,
@@ -189,12 +324,15 @@ CString CAlwaysTop::CalculateHourNorm(activ_hours &lastAverageHoursGraph,
 	{	//для инфопанели форматируем текст в уменьшенном размере
 		statsF.ApplyFont(NULL, secs, sizefont, bold, hidedescription, "", 
 			stat_day_adv, stat_hour_adv, stat_day_description, stat_hour_description, 
-			m_hWnd, rr, gg, resizeWins);
-		if (resizeWins)
+			(workPeriod.typeUsefulPar>0), m_hWnd, rr, gg, resizeWins);
+		if (resizeWins) 
+		{
 			resizeWins = false;
-//		sprintf_s(res, "<b><CENTER><font COLOR=\"%d,%d,0\" size=\"+10\">%s%s</font></CENTER></b>", 
-//			rr, gg, perc_coef>=0 ? "+" : "", fmtSecs);
-//		stat_hour_adv.SetWindowText(res);
+			ResizeOtherWins();
+			CRect rec_desk;//перерисовываем экран, чтобы артефакты ресайза убрать
+			::GetWindowRect(GetDesktopWindow()->GetSafeHwnd(), rec_desk);
+			::RedrawWindow(0, rec_desk, 0, RDW_FRAME|RDW_INVALIDATE|RDW_ALLCHILDREN|RDW_NOINTERNALPAINT);
+		}
 	}
 	sprintf_s(res, "<b><CENTER><font COLOR=\"%d,%d,0\" size=\"+18\">%s%s</font></CENTER></b>", 
 		rr, gg, perc_coef>=0 ? "+" : "", fmtSecs);
@@ -205,4 +343,38 @@ CString CAlwaysTop::CalculateHourNorm(activ_hours &lastAverageHoursGraph,
 	}
 	static2.LoadString(trif.GetIds(IDS_STRING1647+(perc_coef>=0 ? 0 : 2)));
 	return res;
+}
+
+void CAlwaysTop::ResizeOtherWins()
+{
+	if (!workPeriod.typeUsefulPar)
+		return;
+	CRect hourRect;
+	stat_hour_adv.GetWindowRect(hourRect);
+	CRect statProgressRect;
+	statProgressRect = hourRect;
+	statProgressRect += CPoint(0, hourRect.Height());
+	CRect progrRect;
+	progress_useful.GetWindowRect(progrRect);
+	CRect infoPanelRect;
+	GetWindowRect(infoPanelRect);
+	statProgressRect.left = infoPanelRect.left + 8;
+	statProgressRect.right = infoPanelRect.right - 8;
+	progrRect -= CPoint(0, progrRect.top - statProgressRect.bottom);
+	int gap = 4;
+	progrRect.left = infoPanelRect.left + gap;
+	progrRect.right = infoPanelRect.right - gap;
+	infoPanelRect.bottom = progrRect.bottom + gap;
+	ScreenToClient(statProgressRect);		
+	static_progress.MoveWindow(statProgressRect);
+	ScreenToClient(progrRect);		
+	progress_useful.MoveWindow(progrRect);
+	progrRect.bottom+=1;
+	MoveWindow(infoPanelRect);
+}
+
+void CAlwaysTop::OnNMCustomdrawProgress1(NMHDR *pNMHDR, LRESULT *pResult)
+{
+	LPNMCUSTOMDRAW pNMCD = reinterpret_cast<LPNMCUSTOMDRAW>(pNMHDR);
+	*pResult = 0;
 }

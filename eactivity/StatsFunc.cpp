@@ -8,6 +8,20 @@ StatsFunc::~StatsFunc(void)
 {
 }
 
+void Activity::clearItem()
+{
+	hwMain=0;
+	hwChil=0;
+	exe="";
+	capt="";
+	comment="";
+	sumActs=0;		// суммарное количество кликов/нажатий клавиатуры
+	usefulActs=0;		// клики/нажатия клавиатуры засчитанные как полезные
+	hour=0;
+	sumTime=0; //время, уделенное какой-либо программе, в мс 
+	usefulTime=0; //время, засчитанное как полезное с учетом пользовательских коэффициентов
+}
+
 void StatsFunc::FormatSeconds(char (&ch)[100], float secs) 
 {
 	int abs_secs=abs((int)secs);
@@ -42,11 +56,7 @@ bool StatsFunc::LoadFileMonth(string fname, activ &forLoad1, float &sumTime, flo
 		ifstr.getline(ch, 100);
 
 		Activity tmpForLoad;
-		tmpForLoad.capt="";
-		tmpForLoad.comment="";
-		tmpForLoad.exe="";
-		tmpForLoad.hwChil=0;
-		tmpForLoad.hwMain=0;
+		tmpForLoad.clearItem();
 		while (ifstr)
 		{
 			string sdate;
@@ -144,6 +154,35 @@ void StatsFunc::SumDayStat(activ &forLoad1, string fname, float &sumTime,
 	sumAct+=tmpActiv.sumActs;
 	sumUsefulActs+=tmpActiv.usefulActs;
 	forLoad1[fname.substr(fname.length()-12, 10)]=tmpActiv;
+}
+
+void StatsFunc::LoadAllYears(activ &aCurYear) 
+{
+	string strf=path_actuser+"activ_user_all_months.ayr";
+	float sumTime=0, sumUsefulTime=0;
+	int sumActs=0, sumUsefulActs=0;
+	LoadFileMonth(strf, aCurYear, sumTime, sumUsefulTime, sumActs, sumUsefulActs);
+	WIN32_FIND_DATA FFData;
+	string filePattern = path_actuser+"activ_user_*.am";
+	HANDLE hFind = FindFirstFile(filePattern.c_str(), &FFData);
+	//подгружаем указатели на статистики, файлы которых присутствуют
+	if (hFind != INVALID_HANDLE_VALUE)
+	{
+		do 
+		{
+			string foundFileDate = FFData.cFileName;
+			if (foundFileDate.size()!=21)
+				continue;
+			foundFileDate = foundFileDate.substr(11, 7);
+			if (aCurYear.find(foundFileDate)==aCurYear.end())
+			{
+				Activity tmpMonActiv;
+				tmpMonActiv.clearItem();
+				aCurYear[foundFileDate] = tmpMonActiv;
+			}
+		} while(FindNextFile(hFind, &FFData));
+		FindClose(hFind);
+	}
 }
 
 void StatsFunc::LoadYear(activ &aCurYear, string fname) 
@@ -269,6 +308,7 @@ void StatsFunc::ApplyFont(float secs1, float secs2, int font_size,
 	BOOL bold, BOOL hide_description, 
 	CString faceFont, CXHTMLStatic &stat_day_adv, CXHTMLStatic &stat_hour_adv,
 	CStatic &stat_day_description, CStatic &stat_hour_description, 
+	bool showProgress, 
 	HWND hwndParent, int RR, int GG, bool resizeWins)
 {
 	char fmtSecs[100];
@@ -305,9 +345,9 @@ void StatsFunc::ApplyFont(float secs1, float secs2, int font_size,
 	stat_hour_adv.GetWindowRect(hourRect);
 	stat_day_description .GetWindowRect(dayDescRect);
 	stat_hour_description.GetWindowRect(hourDescRect);
+	CRect infoPanelRect;
 	if (resizeWins && secs1==NULL)
 	{	//изменяем размер инфопанели
-		CRect infoPanelRect;
 		GetWindowRect(hwndParent, infoPanelRect);
 		int newWidth  = (hide_description ? 80 : 140) + 
 			(int)((hide_description ? 3.8 : 1.7)*font_size);
@@ -316,28 +356,28 @@ void StatsFunc::ApplyFont(float secs1, float secs2, int font_size,
 			(int)((hide_description ? 3 : 2.1)*font_size);
 		int delta_y = (newHeight-infoPanelRect.Height())/2;
 		infoPanelRect.right=infoPanelRect.left + newWidth;
-		infoPanelRect.bottom=infoPanelRect.top + newHeight;
+		infoPanelRect.bottom=infoPanelRect.top + newHeight;// + (showProgress ? 50 : 0)
  		dayRect+=CPoint(delta_x, 0);
  		hourRect+=CPoint(delta_x, 0);
  		dayDescRect+=CPoint(delta_x, 0);
  		hourDescRect+=CPoint(delta_x, 0);
-		MoveWindow(hwndParent, infoPanelRect.left, infoPanelRect.top, 
-			infoPanelRect.Width(), infoPanelRect.Height(), FALSE);
 	}
 	//ужимаем контрол с учетом изменившегося размера шрифта
-	double coef=1.3;
-	switch (font_size)
-	{
-	case 2:
-		coef = 1.5;
-		break;
-	case 6:
-	case 3:
-		coef = 1.4;
-		break;
-	}
-	int gap = 1;//расстояние между контролами
-	dayRect.bottom = dayRect.top + 17 + (LONG)(coef*font_size);
+	double coef=1.1;
+	if (font_size>5)
+		coef = 1.2;
+// 	switch (font_size)
+// 	{
+// 	case 2:
+// 		coef = 1.5;
+// 		break;
+// 	case 6:
+// 	case 3:
+// 		coef = 1.4;
+// 		break;
+// 	}
+	int gap = 0;//расстояние между контролами
+	dayRect.bottom = dayRect.top + 14 + (LONG)(coef*font_size);
 	if (hide_description)
 	{	//скрываем статики описания
 		dayRect.bottom = dayDescRect.top+dayRect.Height();
@@ -353,13 +393,13 @@ void StatsFunc::ApplyFont(float secs1, float secs2, int font_size,
 		hourRect.top = dayRect.bottom + 2*gap + hourDescRect.Height();
 	}
 	hourRect.bottom = hourRect.top + dayRect.Height();
+	infoPanelRect.bottom = hourRect.bottom + 2;
 
 	CPoint cp1=dayRect.TopLeft();
 	CPoint cp2=dayRect.BottomRight();
 	ScreenToClient(hwndParent, &cp1);
 	ScreenToClient(hwndParent, &cp2);
 	dayRect=CRect(cp1, cp2);
-	//ScreenToClient(hwndParent, dayRect);
 	stat_day_adv.MoveWindow(dayRect);
 
 	cp1=hourDescRect.TopLeft();
@@ -367,7 +407,6 @@ void StatsFunc::ApplyFont(float secs1, float secs2, int font_size,
 	ScreenToClient(hwndParent, &cp1);
 	ScreenToClient(hwndParent, &cp2);
 	hourDescRect=CRect(cp1, cp2);
-	//ScreenToClient(hwndParent, hourDescRect);
 	stat_hour_description.MoveWindow(hourDescRect);
 
 	cp1=hourRect.TopLeft();
@@ -375,7 +414,6 @@ void StatsFunc::ApplyFont(float secs1, float secs2, int font_size,
 	ScreenToClient(hwndParent, &cp1);
 	ScreenToClient(hwndParent, &cp2);
 	hourRect=CRect(cp1, cp2);
-	//ScreenToClient(hwndParent, hourRect);
 	stat_hour_adv.MoveWindow(hourRect);
 
 	cp1=dayDescRect.TopLeft();
@@ -383,11 +421,14 @@ void StatsFunc::ApplyFont(float secs1, float secs2, int font_size,
 	ScreenToClient(hwndParent, &cp1);
 	ScreenToClient(hwndParent, &cp2);
 	dayDescRect=CRect(cp1, cp2);
-	//ScreenToClient(hwndParent, hourRect);
 	stat_day_description.MoveWindow(dayDescRect);
 
 	stat_hour_description.ShowWindow(hide_description ? SW_HIDE : SW_SHOW);
 	stat_day_description .ShowWindow(hide_description ? SW_HIDE : SW_SHOW);
+
+	if (resizeWins && secs1==NULL)
+		MoveWindow(hwndParent, infoPanelRect.left, infoPanelRect.top, 
+			infoPanelRect.Width(), infoPanelRect.Height(), FALSE);
 }
 
 BOOL StatsFunc::SendMailMessage(LPCTSTR szServer,

@@ -200,7 +200,7 @@ void COptionTab2::OnApplyFont()
 	statsF.ApplyFont(3238, 541, atoi(edit_size), 
 		check_bold.GetCheck(), check_hide_description.GetCheck(), faceFont,
 		stat_day_adv, stat_hour_adv, stat_day_description, stat_hour_description, 
-		m_hWnd, 0, 100, true);
+		false, m_hWnd, 0, 100, true);
 	return;
 }
 

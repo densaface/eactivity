@@ -17,6 +17,7 @@ static char THIS_FILE[] = __FILE__;
 #define BYDAYS 1
 #define BYMONTHS 2
 #define AUTOREFRESHINFOPANEL 1200
+//#define REFRESHPROGRESSBAR 1212
 
 class CAboutDlg : public CDialog
 {
@@ -77,6 +78,8 @@ CEactivityDlg::CEactivityDlg(CWnd* pParent /*=NULL*/)
 	SelectedMon="";
 	SelectedDay="";
 	forTimeNoActiv=GetTickCount();	
+	dialEndWork = NULL;
+	dialInfo = NULL;
 }
 
 void CEactivityDlg::DoDataExchange(CDataExchange* pDX)
@@ -139,6 +142,8 @@ BEGIN_MESSAGE_MAP(CEactivityDlg, CDialog)
 	ON_COMMAND(ID_OPTIONS_OPTIONS, &CEactivityDlg::OnOptionsOptions)
 	ON_BN_CLICKED(IDC_CHECK2, &CEactivityDlg::OnBnClickedCheckInfoPanel)
 	ON_MESSAGE(WM_INFO_CLOSE, OnCloseInfoPanel)
+	ON_BN_CLICKED(IDC_BUTTONSTART, &CEactivityDlg::OnBnClickedButtonstart)
+	ON_COMMAND(ID_OPTIONS_EDITSHORTACTIONS, &CEactivityDlg::OnOptionsEditshortactions)
 END_MESSAGE_MAP()
 
 LRESULT CEactivityDlg::OnCloseInfoPanel(WPARAM wParam, LPARAM lParam) 
@@ -168,7 +173,6 @@ LRESULT CEactivityDlg::OnIcon(WPARAM wp, LPARAM lp)
 
 BOOL CEactivityDlg::OnInitDialog()
 {
-	WriteJournal("OnInitDialog 0\n");
 	CDialog::OnInitDialog();
 	SetToTray(IDR_MAINFRAME);
 	if (trif.GetNumLan()==1)
@@ -186,6 +190,8 @@ BOOL CEactivityDlg::OnInitDialog()
 	dialInfo->bold = AfxGetApp()->GetProfileInt("App", "InfoPanel.bold", 1);
 	dialInfo->hidedescription = AfxGetApp()->GetProfileInt("App", "InfoPanel.hidedescription", 1);
 	dialInfo->resizeWins = true;
+	dialInfo->workPeriod.pauses = 0;
+	dialInfo->workPeriod.paused = false;
 
 	chart.CreateStandardAxis(CChartCtrl::BottomAxis);
 	chart.CreateStandardAxis(CChartCtrl::LeftAxis);
@@ -338,7 +344,8 @@ BOOL CEactivityDlg::OnInitDialog()
 	UpdateExeCapt(activHours);
 
 	LoadCurMonth();
-	statsF.LoadYear(aCurYear);
+	//statsF.LoadYear(aCurYear);
+	statsF.LoadAllYears(aCurYear);
 	sprintf_s(ch, "%d", AfxGetApp()->GetProfileInt("App", "CounShowCapt", 4));
 	edit_capts.SetWindowText(ch);
 	switch (combo_group.GetCurSel())
@@ -1179,7 +1186,16 @@ void CEactivityDlg::OnTimer(UINT nIDEvent)
 	switch(nIDEvent)
 	{
 	case 1500:
-		{	//суммирования времени нахождения окна в фокусе
+		{	
+			if (dialInfo->workPeriod.typeShowBreak == 2 &&
+				dialInfo->workPeriod.typeUsefulPar && dialInfo->isEndWork())
+			{
+				dialInfo->setEndWork();
+				dialInfo->workPeriod.typeUsefulPar = 0;
+				endWork();
+			}
+			
+			//суммирования времени нахождения окна в фокусе
 			HWND hw=::GetForegroundWindow();
 			if (!IsWindow(hw))
 				return;
@@ -1206,6 +1222,18 @@ void CEactivityDlg::OnTimer(UINT nIDEvent)
 			} else
 			if (GetTickCount()-forTimeNoActiv > sleepPeriod*1000)
 			{
+				if (!dialInfo->workPeriod.paused)
+				{
+					dialInfo->workPeriod.paused = true;
+					dialInfo->workPeriod.pauses++;
+					if (dialInfo->workPeriod.typeShowBreak == 1 &&
+						dialInfo->workPeriod.typeUsefulPar && dialInfo->isEndWork())
+					{
+						dialInfo->setEndWork();
+						dialInfo->workPeriod.typeUsefulPar = 0;
+						endWork();
+					}
+				}
 				curTime=GetTickCount();
 				break;
 			}
@@ -1225,6 +1253,13 @@ void CEactivityDlg::OnTimer(UINT nIDEvent)
 					perekl=false;
 					if (checkAutoUpdate.GetCheck())
 						OnRefresh(); //автообновление таблиц
+				}
+				//если начала перерыва, то показываем диалог перерыва
+				if (dialInfo->workPeriod.typeUsefulPar && dialInfo->isEndWork())
+				{
+					dialInfo->setEndWork();
+					dialInfo->workPeriod.typeUsefulPar = 0;
+					endWork();
 				}
 			} else perekl=true;
 		}
@@ -1277,7 +1312,7 @@ void CEactivityDlg::OnTimer(UINT nIDEvent)
 		{
 			SaveCurDay();
 			SaveCurMonth();
-			SaveYear();
+			SaveAllYear();
 			SaveRules();
 			__SetHook__(FALSE);//перезагрузка хука, чтобы избегать его зависания
 			__SetHook__(TRUE);
@@ -1289,7 +1324,33 @@ void CEactivityDlg::OnTimer(UINT nIDEvent)
 			{
 				activ_hours activHours;
 				UpdateExeCapt(activHours, false);
+				activ_exe tmp;
+				activ_hours tmpH;
+				CalculateUsefulTimeAndActs(ActivToday, tmp, tmpH);
+				if (tmpH[25].usefulTime - dialInfo->workPeriod.firstUsefulTime > 
+					dialInfo->workPeriod.currentUsefulTime)
+					dialInfo->workPeriod.paused = false;
+				dialInfo->workPeriod.currentUsefulTime = tmpH[25].usefulTime - 
+					dialInfo->workPeriod.firstUsefulTime;
+				dialInfo->workPeriod.currentUsefulActs = tmpH[25].usefulActs - 
+					dialInfo->workPeriod.firstUsefulActs;
 				UpdatePeriodTableViewByHours(activHours, false);
+			} else {
+				if (dialInfo->workPeriod.typeUsefulPar)
+				{
+					activ_hours activHours;
+					UpdateExeCapt(activHours, false);
+					activ_exe tmp;
+					activ_hours tmpH;
+					CalculateUsefulTimeAndActs(ActivToday, tmp, tmpH);
+					if (tmpH[25].usefulTime - dialInfo->workPeriod.firstUsefulTime > 
+						dialInfo->workPeriod.currentUsefulTime)
+						dialInfo->workPeriod.paused = false;
+					dialInfo->workPeriod.currentUsefulTime = tmpH[25].usefulTime - 
+						dialInfo->workPeriod.firstUsefulTime;
+					dialInfo->workPeriod.currentUsefulActs = tmpH[25].usefulActs - 
+						dialInfo->workPeriod.firstUsefulActs;
+				}
 			}
 		}
 		break;
@@ -1485,7 +1546,7 @@ void CEactivityDlg::UpdatePeriodTableViewByHours(activ_hours &activHours, bool s
 		}
 	}
 
-	//обновляем статики с прогрессом/отставанием в работе
+	//обновляем статики с прогрессом/отставанием в работе на главном окне
 	CString str;
 	if (standardHoursForLastWeek.size()>2 && (SelectedDay=="" || !showInfoTable))
 	{//вычисляем процент выполняемой нормы для текущего часа
@@ -1521,10 +1582,32 @@ void CEactivityDlg::UpdatePeriodTableViewByHours(activ_hours &activHours, bool s
 				aCurMon[date].sumActs=sumActs;
 				aCurMon[date].usefulActs=sumUsefulActs;
 			} else {
-				aSelMon[date].usefulTime=sumUsefulSec;
-				aSelMon[date].sumTime=sumSec;
-				aSelMon[date].sumActs=sumActs;
-				aSelMon[date].usefulActs=sumUsefulActs;
+				bool changedMon = false;
+				if (aSelMon[date].usefulTime != sumUsefulSec)
+				{
+					aSelMon[date].usefulTime = sumUsefulSec;
+					changedMon = true;
+				}
+				if (aSelMon[date].sumTime != sumSec)
+				{
+					aSelMon[date].sumTime = sumSec;
+					changedMon = true;
+				}
+				if (aSelMon[date].sumActs != sumActs)
+				{
+					aSelMon[date].sumActs = sumActs;
+					changedMon = true;
+				}
+				if (aSelMon[date].usefulActs != sumUsefulActs)
+				{
+					aSelMon[date].usefulActs = sumUsefulActs;
+					changedMon = true;
+				}
+				if (changedMon)
+				{
+					string fileName=path_actuser+"activ_user_"+date.substr(0, 7)+".am";
+					SaveMonth(fileName, aSelMon);
+				}
 			}
 		}
 		break;
@@ -1771,7 +1854,7 @@ void CEactivityDlg::Exit()
 	KillTimer(1500);
 	SaveCurDay();
 	SaveCurMonth();
-	SaveYear();
+	SaveAllYear();
 	SaveRules();
 	char ch[100];
 	edit_capts.GetWindowText(ch, 100);
@@ -1783,7 +1866,10 @@ void CEactivityDlg::Exit()
 	__SetHook__(FALSE);
 	dialInfo->SavePosition();
 	DelIconTray();
-	delete dialInfo;
+	if (dialInfo)
+		delete dialInfo;
+	if (dialEndWork)
+		delete dialEndWork;
 	CDialog::OnCancel();
 }
 
@@ -1937,28 +2023,14 @@ void CEactivityDlg::LoadRules()
 	ifstr.close();
 }
 
-void CEactivityDlg::SaveCurMonth(bool smena)
+void CEactivityDlg::SaveMonth(string strf, activ& aMon)
 {
-	char date[27];
-
-	if (smena)
-	{
-		strcpy_s(date, curMonFileName.c_str());
-		curMonFileName=date;
-	} else {
-		SYSTEMTIME st;
-		GetLocalTime(&st);
-		GetDateFormat(LOCALE_USER_DEFAULT, LOCALE_USE_CP_ACP, &st, "activ_user_yyyy_MM.am", date, 25);
-	}
-
-
-	string strf=path_actuser+date;
 	ofstream ofstr(strf.c_str());
 	if (ofstr==NULL)
 		return;
 	char ch[]="ver=0.2\n";
 	ofstr<<ch;
-	for (activ::iterator it_activ=aCurMon.begin(); it_activ!=aCurMon.end(); it_activ++)
+	for (activ::iterator it_activ=aMon.begin(); it_activ!=aMon.end(); it_activ++)
 	{
 		Activity tmpForSave=(*it_activ).second;
 		ofstr<<(*it_activ).first;
@@ -1973,6 +2045,22 @@ void CEactivityDlg::SaveCurMonth(bool smena)
 		ofstr<<'\n';
 	}
 	ofstr.close();
+}
+
+void CEactivityDlg::SaveCurMonth(bool smena)
+{
+	char date[27];
+	if (smena)
+	{
+		strcpy_s(date, curMonFileName.c_str());
+		curMonFileName=date;
+	} else {
+		SYSTEMTIME st;
+		GetLocalTime(&st);
+		GetDateFormat(LOCALE_USER_DEFAULT, LOCALE_USE_CP_ACP, &st, "activ_user_yyyy_MM.am", date, 25);
+	}
+	string strf=path_actuser+date;
+	SaveMonth(strf, aCurMon);
 	if (smena)
 	{
 		aCurMon.clear();
@@ -1988,6 +2076,31 @@ void CEactivityDlg::SaveYear()
 	strcat_s(date, ".ayr");
 	
 	string strf=path_actuser+date;
+	ofstream ofstr(strf.c_str());
+	if (ofstr==NULL)
+		return;
+	char ch[]="ver=0.2\n";
+	ofstr<<ch;
+	for (activ::iterator it_activ=aCurYear.begin(); it_activ!=aCurYear.end(); it_activ++)
+	{
+		Activity tmpForSave=(*it_activ).second;
+		ofstr<<(*it_activ).first;
+		ofstr<<'\t';
+		ofstr<<tmpForSave.sumActs;
+		ofstr<<'\t';
+		ofstr<<tmpForSave.usefulActs;
+		ofstr<<'\t';
+		ofstr<<tmpForSave.sumTime;
+		ofstr<<'\t';
+		ofstr<<tmpForSave.usefulTime;
+		ofstr<<'\n';
+	}
+	ofstr.close();
+}
+
+void CEactivityDlg::SaveAllYear()
+{
+	string strf=path_actuser+"activ_user_all_months.ayr";
 	ofstream ofstr(strf.c_str());
 	if (ofstr==NULL)
 		return;
@@ -2272,6 +2385,7 @@ void CEactivityDlg::OnDblclkListDays(NMHDR* pNMHDR, LRESULT* pResult)
 		}
 		float sumTime=0, sumUsefulTime=0;
 		int sumActs=0, sumUsefulActs=0;
+		aSelMon.clear();
 		if (!statsF.LoadFileMonth(fname, aSelMon, sumTime, sumUsefulTime, sumActs, sumUsefulActs))
 		{
 			CString sMes;
@@ -2772,8 +2886,8 @@ void CEactivityDlg::OnDblclkListCurDay(NMHDR* pNMHDR, LRESULT* pResult)
 //			группировки данных в ТЗПВ
 void CEactivityDlg::OnSelchangeComboDownTable() 
 {
-	if (combo_group.GetCurSel()>0)
-		SelectedMon="";
+	//if (combo_group.GetCurSel()>0)
+		//SelectedMon="";
 	LVCOLUMN lvCol;
 	::ZeroMemory((void *)&lvCol, sizeof(LVCOLUMN));
 	lvCol.mask=LVCF_TEXT;
@@ -2791,7 +2905,7 @@ void CEactivityDlg::OnSelchangeComboDownTable()
 		break;
 	case BYDAYS:
 		str.LoadString(trif.GetIds(IDS_STRING1641));
-		UpdatePeriodTable(aCurMon);
+		UpdatePeriodTable(SelectedMon=="" ? aCurMon : aSelMon);
 		break;
 	case BYMONTHS:
 		str.LoadString(trif.GetIds(IDS_STRING1643));
@@ -2804,8 +2918,7 @@ void CEactivityDlg::OnSelchangeComboDownTable()
 
 void CEactivityDlg::OnBnClickedOk()
 {
-	__SetHook__(FALSE);
-	__SetHook__(TRUE);
+	endWork();
 }
 
 bool CEactivityDlg::WriteJournal(LPCTSTR lpszFormat, ...)
@@ -2848,9 +2961,9 @@ int CEactivityDlg::CalculateAverageUsefulParameter(int lastDays, activ_hours& av
 	::SetCursor(AfxGetApp()->LoadStandardCursor(IDC_WAIT));
 	// дата сегодняшнего дня
 	string date=curDayFileName.substr(curDayFileName.length()-12, 10);
-	int day = atoi(date.substr(date.length()-2, 2).c_str())-1;
+	CTime ctDateForLoad=CTime::GetCurrentTime(); //от текущего дня отнимаем сутки и берем дату
+	ctDateForLoad -= 60*60*24;
 	int skippedDays=0;//сколько дней не удалось загрузить
-	string yearMon = date.substr(0, 7);
 	int sumHandledDays=0;//количество обработанных рабочих дней
 	ActivityExe alldays; //суммарная статистика по всем дням, чтобы потом показать усредненную по дням
 	alldays.sumActs=0; alldays.sumTime=0; alldays.usefulActs=0; alldays.usefulTime=0;
@@ -2859,18 +2972,11 @@ int CEactivityDlg::CalculateAverageUsefulParameter(int lastDays, activ_hours& av
 	str.LoadString(trif.GetIds(IDS_STRING1669));
 	stat_periodTable.SetWindowText(str);
 	char ch[100];
-	if (!day)
-	{	//для первого числа сразу переходим в предыщущий месяц
-		int mon = atoi(yearMon.substr(yearMon.length()-2, 2).c_str());
-		mon--;
-		sprintf_s(ch, "%s_%d", yearMon.substr(0, 4).c_str(), mon);
-		yearMon = ch;
-		day=31;
-	}
-	while (day>0)
+	while (1)
 	{
 		char fname[2048];
-		sprintf_s(fname, "%sactiv_user_%s_%02d.a", path_actuser.c_str(), yearMon.c_str(), day);
+		sprintf_s(fname, "%sactiv_user_%d_%02d_%02d.a", path_actuser.c_str(), 
+			ctDateForLoad.GetYear(), ctDateForLoad.GetMonth(), ctDateForLoad.GetDay());
 		activ aDayActiv;
 		if (!LoadFileDay(fname, aDayActiv))
 		{
@@ -2881,21 +2987,14 @@ int CEactivityDlg::CalculateAverageUsefulParameter(int lastDays, activ_hours& av
 				::SetCursor(AfxGetApp()->LoadStandardCursor(IDC_ARROW));
 				return sumHandledDays;
 			}
-			day--;//переходим к статистике предыдущего дня
-			if (!day)
-			{
-				int mon = atoi(yearMon.substr(yearMon.length()-2, 2).c_str());
-				mon--;
-				sprintf_s(ch, "%s_%d", yearMon.substr(0, 4).c_str(), mon);
-				yearMon = ch;
-				day=31;
-			}
+			ctDateForLoad -= 60*60*24;//переходим к статистике предыдущего дня
 			continue;
 		}
 		activ_exe activExe; 
 		activ_hours activHours;
 		activ_hours activHours2;
-		sprintf_s(ch, "%s_%02d", yearMon.c_str(), day);
+		sprintf_s(ch, "%d_%02d_%02d", ctDateForLoad.GetYear(), 
+			ctDateForLoad.GetMonth(), ctDateForLoad.GetDay());
 		int row=table_period.InsertItem(0, ch);
 		CalculateUsefulTimeAndActs(aDayActiv, activExe, activHours);
 		activHours2=activHours;
@@ -2939,15 +3038,7 @@ int CEactivityDlg::CalculateAverageUsefulParameter(int lastDays, activ_hours& av
 
 		if (lastDays==sumHandledDays)
 			break;//обработали достаточное для выборки количество дней
-		day--;//переходим к статистике предыдущего дня
-		if (!day)
-		{
-			int mon = atoi(yearMon.substr(yearMon.length()-2, 2).c_str());
-			mon--;
-			sprintf_s(ch, "%s_%02d", yearMon.substr(0, 4).c_str(), mon);
-			yearMon = ch;
-			day=31;
-		}
+		ctDateForLoad -= 60*60*24;//переходим к статистике предыдущего дня
 	}
 	int row=table_period.InsertItem(0, "Average");
 	float sec = alldays.usefulTime/1000/sumHandledDays;
@@ -3710,4 +3801,49 @@ void CEactivityDlg::OnBnClickedCheckInfoPanel()
 	} else {
 		dialInfo->OnCancel();
 	}
+}
+
+void CEactivityDlg::OnBnClickedButtonstart()
+{
+	CGoWorkUntilPause dialGoWork;
+	dialGoWork.path_actuser = path_actuser;
+	if (dialGoWork.DoModal()!=IDOK)
+		return;
+	dialInfo->workPeriod.typeUsefulPar = dialGoWork.typeUsefulPar;
+	dialInfo->workPeriod.textMes = dialGoWork.textMes;
+	dialInfo->workPeriod.shortTodo = dialGoWork.shortTodo;
+	dialInfo->workPeriod.typeShowBreak = dialGoWork.typeShowBreak;
+	activ_exe tmp;
+	activ_hours tmpH;
+	CalculateUsefulTimeAndActs(ActivToday, tmp, tmpH);
+	dialInfo->workPeriod.startProgressTime = GetTickCount();
+	dialInfo->workPeriod.firstUsefulActs = tmpH[25].usefulActs;
+	dialInfo->workPeriod.firstUsefulTime = tmpH[25].usefulTime;
+	dialInfo->StartProgress(dialGoWork.UsefulActs, dialGoWork.UsefulTime, dialGoWork.UsualTime);
+	dialInfo->resizeWins = true;
+}
+
+void CEactivityDlg::endWork()
+{
+	if (dialEndWork && !dialEndWork->m_hWnd)
+		delete dialEndWork;
+	dialInfo->resizeWins = true;
+	dialEndWork = new CEndWork;
+	dialEndWork->usefulTime = dialInfo->workPeriod.currentUsefulTime;
+	dialEndWork->usefulActs = dialInfo->workPeriod.currentUsefulActs;
+	dialEndWork->summonTime = GetTickCount() - dialInfo->workPeriod.startProgressTime;
+	dialEndWork->pauseCount = dialInfo->workPeriod.pauses;
+	dialEndWork->path_actuser = path_actuser;
+	dialEndWork->textMes = dialInfo->workPeriod.textMes;
+	dialEndWork->shortTodo = dialInfo->workPeriod.shortTodo;
+	dialEndWork->Create(IDD_END_WORK, this);
+	dialEndWork->ShowWindow(SW_SHOW);
+}
+
+//меню: редактировать список коротких действий
+void CEactivityDlg::OnOptionsEditshortactions()
+{
+	CListShortTodo dialShortTodo;
+	dialShortTodo.path_actuser = path_actuser;
+	dialShortTodo.DoModal();
 }
