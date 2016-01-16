@@ -12,6 +12,7 @@
 #include "ViewRules.h"
 #include "AlwaysTop.h"
 #include "endwork.h"
+#include "OnlineAdvices.h"
 #include <string>
 #include <map>
 #include <iostream>
@@ -28,6 +29,7 @@
 #include "externals\ListCtrl\CGridListCtrlEx\CGridListCtrlEx.h"
 #include "ReportSelectedPeriod.h"
 #include "afxwin.h"
+#include "AddOnlineAdvice.h"
 #define WM_USER30 WM_USER + 30
 #define USEFULTIME 1
 #define USEFULACTS 2
@@ -164,7 +166,7 @@ public:
 	CComboBox	combo_group;
 	CSpinButtonCtrl	spin_edit;
 	CEdit	edit_capts;
-	CGridListCtrlEx	table_period;//таблица задания периода времени ТЗПВ
+	CGridListCtrlEx	table_period;  //таблица задания периода времени ТЗПВ
 	CGridListCtrlEx	table_exe_capt;//таблица детализации
 	CComboBox	combo_sort;
 	//}}AFX_DATA
@@ -229,9 +231,11 @@ protected:
 	CButton check_infopanel;
 	afx_msg void OnBnClickedCheckInfoPanel();
 	afx_msg LRESULT OnCloseInfoPanel(WPARAM wParam, LPARAM lParam);
-public:
 	afx_msg void OnBnClickedButtonstart();
 	afx_msg void OnOptionsEditshortactions();
+	afx_msg void OnOptions32800();
+	afx_msg void OnHistoryOnlineAdvices();
+	afx_msg void OnHistoryShortTodo();
 };
 
 //{{AFX_INSERT_LOCATION}}

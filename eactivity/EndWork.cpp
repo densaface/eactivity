@@ -121,7 +121,10 @@ BOOL CEndWork::OnInitDialog()
 		GetDlgItem(IDC_BUTTON2)->ShowWindow(SW_HIDE);
 	}
 	if (textMes!="")
-		AfxMessageBox(textMes);
+		MessageBox(textMes, NULL, MB_SYSTEMMODAL);
+	if (onlineAdvice)
+	{
+	}
 	SetForegroundWindow();
 	return TRUE;
 }
@@ -268,7 +271,7 @@ void CEndWork::WriteStatisticWorkPeriod()
 	sfLog.WriteString(formattedText);
 	sprintf_s(formattedText, "Useful acts = %d\n", usefulActs);
 	sfLog.WriteString(formattedText);
-	sprintf_s(formattedText, "Entire time = %d seconds\n", (int)summonTime/1000.0);
+	sprintf_s(formattedText, "Entire time = %d seconds\n", (int)summonTime/1000);
 	sfLog.WriteString(formattedText);
 	if (summonTime!=0)
 	{
@@ -300,7 +303,7 @@ void CEndWork::OnBnClickedButton2()
 	sfLog.SeekToEnd();
 	char ch[1024];
 	CTime ct=CTime::GetCurrentTime();
-	sprintf_s(ch, "\n%02d.%02d.%02d    %02d:%02d:%02d\t%s (Group: %s) (uniq=%d) - done", 
+	sprintf_s(ch, "%02d.%02d.%02d    %02d:%02d:%02d\t%s (Group: %s) (uniq=%d) - done\n", 
 		ct.GetYear(), ct.GetMonth(), ct.GetDay(),
 		ct.GetHour(), ct.GetMinute(), ct.GetSecond(), sAction, sGroup, uniq);
 	sfLog.WriteString(ch);

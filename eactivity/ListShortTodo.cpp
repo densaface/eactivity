@@ -187,6 +187,8 @@ void CListShortTodo::LoadListTodo(bool interFace)
 			break;
 		}
 		ifstr.getline(ch, 1024, '\t');
+		if (!IsRowAction(row, interFace))
+			ch[0] = '\0'; //стираем ch, чтобы в группах не было никаких процентов
 		if (ch[0]=='-')
 		{	//отрицательные числа превращаем в 0
 			if (interFace)
@@ -199,15 +201,12 @@ void CListShortTodo::LoadListTodo(bool interFace)
 			else 
 				colomn2.InsertAt(row, ch);
 		}
+		ifstr.getline(ch, 1024, ver>0.2 ? '\t' : '\n');
+		interFace ? list_todo.SetItemText(row, 3, ch) : colomn3.InsertAt(row, ch);
 		if (ver>0.2)
 		{
-			ifstr.getline(ch, 1024, '\t');
-			interFace ? list_todo.SetItemText(row, 3, ch) : colomn3.InsertAt(row, ch);
 			ifstr.getline(ch, 1024, '\n');
 			uniqNums[row] = atoi(ch);
-		} else {
-			ifstr.getline(ch, 1024, '\n');
-			interFace ? list_todo.SetItemText(row, 3, ch) : colomn3.InsertAt(row, ch);
 		}
 		if (interFace && list_todo.GetItemText(row, 0) == "" && 
 			list_todo.GetItemText(row, 1) == "")
@@ -252,7 +251,7 @@ void CListShortTodo::OnLvnItemchangedList3(NMHDR *pNMHDR, LRESULT *pResult)
 	edit_name.SetSel(0, -1);
 	CString debs = list_todo.GetItemText(sel, 2);
 	edit_percent.SetWindowText(list_todo.GetItemText(sel, 2));
-	edit_name.SetForegroundWindow();
+	edit_name.SetActiveWindow();
 
 	str = getLink(sel);
 	edit_link.SetWindowText(str);
@@ -276,6 +275,8 @@ void CListShortTodo::OnLvnItemchangedList3(NMHDR *pNMHDR, LRESULT *pResult)
 		check_no_often.SetCheck(FALSE);
 	}
 	check_no_often.EnableWindow(bAction);
+	edit_percent.EnableWindow(bAction);
+	GetDlgItem(IDC_SPIN2)->EnableWindow(bAction);
 	OnBnClickedCheck1();
 
 	str = getProgram(sel);
@@ -309,7 +310,6 @@ void CListShortTodo::OnContextAddnewitem()
 	str.LoadString(IDS_STRING1711);
 	int row = list_todo.InsertItem(list_todo.GetItemCount(), str);
 	uniqNums.InsertAt(row, GetUniqNum());
-	list_todo.SetItemText(row, 2, "0.00");
 	int sel = (int)list_todo.GetFirstSelectedItemPosition()-1;
 	if (sel!=-1)
 		list_todo.SetItemState(sel, 0, LVIS_FOCUSED|LVIS_SELECTED);
@@ -433,13 +433,13 @@ void CListShortTodo::OnDeltaposSpin2(NMHDR *pNMHDR, LRESULT *pResult)
 {
 	LPNMUPDOWN pNMUpDown = reinterpret_cast<LPNMUPDOWN>(pNMHDR);
 	changedViaSpin=true;
-	percentDistribution((double)pNMUpDown->iDelta);
+	percentDistribution((double)pNMUpDown->iDelta, true);
 	changedViaSpin=false;
 	*pResult = 0;
 }
 
 //распределение процентов между Ќ≈ пустыми группами
-void CListShortTodo::percentDistribution(double delta)
+void CListShortTodo::percentDistribution(double delta, bool fromSpin)
 {
 	int sel = (int)list_todo.GetFirstSelectedItemPosition()-1;
 	if (sel==-1)
@@ -448,20 +448,33 @@ void CListShortTodo::percentDistribution(double delta)
 		return;//дл€ пустых групп запрещаем измен€ть проценты
 	double oldPercent = atof(list_todo.GetItemText(sel, 2));
 	double newPercent = oldPercent - delta;
+	if (fromSpin)
+	{	//при изменении через спин в первый раз округл€ем старое значение, чтобы новое получилось 
+		//		круглым процентом, как бы добранным из старого дробного
+		if ((int)(oldPercent * 100) % 100 != 0)
+		{
+			oldPercent = (int)oldPercent;
+			if (delta > 0)
+				 newPercent = oldPercent;
+			else newPercent = oldPercent - delta;
+		}
+	}
 	if (newPercent<0)
 		return; //отрицательные проценты недопустимы
 	char ch[500];
 	sprintf_s(ch, "%0.2f", newPercent);
 	list_todo.SetItemText(sel, 2, ch);
 	edit_percent.SetWindowText(ch);
-	if (IsRowGroup(sel))
-		NormPercForOneGroup(sel, newPercent, oldPercent);
-	if (IsRowAction(sel))
-	{
-		int rowGroup = GetSelectedGroup(sel);
-		double groupPercent = atof(list_todo.GetItemText(rowGroup, 2));
-		NormPercForOneGroup(rowGroup, groupPercent, groupPercent, sel);
-	}
+	//отключил автоматическое перенормирование процентов в группе и в других действи€х
+		//на практике это никакого удобства не добавл€ет, только запутывает
+// 	if (IsRowGroup(sel))
+// 		NormPercForOneGroup(sel, newPercent, oldPercent);
+// 	if (IsRowAction(sel))
+// 	{
+// 		int rowGroup = GetSelectedGroup(sel);
+// 		double groupPercent = atof(list_todo.GetItemText(rowGroup, 2));
+// 		NormPercForOneGroup(rowGroup, groupPercent, groupPercent, sel);
+// 	}
 }
 
 //явл€етс€ ли строчка группой
@@ -470,10 +483,10 @@ bool CListShortTodo::IsRowGroup(int row)
 	return list_todo.GetItemText(row, 0) != "";
 }
 
-//явл€етс€ ли строчка элементарным действием
-bool CListShortTodo::IsRowAction(int row)
+//€вл€етс€ ли строчка элементарным действием
+bool CListShortTodo::IsRowAction(int row, bool interFace)
 {
-	return list_todo.GetItemText(row, 1) != "";
+	return (interFace ? list_todo.GetItemText(row, 1) != "" : colomn1[row] != "");
 }
 
 int CListShortTodo::getActionCountInGroup(int rowGroup)
@@ -944,6 +957,8 @@ void CListShortTodo::OnBnClickedButton1()
 	char ch[100];
 	for (int ii=0; ii<list_todo.GetItemCount(); ii++)
 	{
+		if (!IsRowAction(ii))
+			continue;
 		sprintf_s(ch, "%0.2f", atof(list_todo.GetItemText(ii, 2))/coefNorm);
 		list_todo.SetItemText(ii, 2, ch);
 	}

@@ -30,12 +30,12 @@ public:
 	int SetPercentForNewGroup(int rowNewGroup);
 	void SetPercentForNewAction(int rowNewGroup, int rowNewAction);
 	int GetNoEmptyGroupCount();
-	void percentDistribution(double delta);
+	void percentDistribution(double delta, bool fromSpin = false);
 	void normAllGroupsAndActions();
 	void NormPercForOneGroup(int rowGroup, double newPercent, double oldPercent, int unChangedRow=-1);
 	double getSumPercFromOneGroup(int rowGroup);
 	bool IsRowGroup(int row);
-	bool IsRowAction(int row);
+	bool IsRowAction(int row, bool interFace=true);
 	int getActionCountInGroup(int rowGroup);
 	CString getRandomShortAction(CString& sGroup, CString& sLink, CString& sProg, UINT& uniq);
 	CString findLastTimeMakingShortTodo(int uniqNum);

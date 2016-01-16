@@ -250,7 +250,7 @@ END
 
 IDD_OptionTab2 DIALOGEX 0, 0, 301, 152
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Настройки информационной панели"
+CAPTION "Информационная панель"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     LTEXT           "Размер шрифта",IDC_STATIC,169,7,62,10
@@ -263,7 +263,14 @@ BEGIN
     GROUPBOX        "Example",IDC_STATIC,7,44,151,101
     CTEXT           "--",IDC_STATIC_percent_day,11,70,143,27
     CTEXT           "--",IDC_STATIC_percent_day2,11,56,143,8
-    CONTROL         "Скрывать поясняющие\n надписи",IDC_CHECK3,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,169,67,125,10
+    CONTROL         "Скрывать поясняющие\n надписи",IDC_CHECK3,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,169,62,125,10
+    CONTROL         "Автоматические перерывы",IDC_CHECK4,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,169,103,125,10
+    LTEXT           "Автостарт через ",IDC_STATIC,181,120,62,10
+    EDITTEXT        IDC_EDITHOLIDAY2,247,118,22,12,ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "мин.",IDC_STATIC,278,120,16,8
+    LTEXT           "Рабочий период",IDC_STATIC,181,134,62,10
+    EDITTEXT        IDC_EDITHOLIDAY3,247,133,22,12,ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "мин.",IDC_STATIC,278,135,16,8
 END
 
 IDD_OptionTabMail DIALOGEX 0, 0, 249, 157
@@ -331,7 +338,7 @@ BEGIN
     COMBOBOX        IDC_COMBO2,157,30,51,48,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
     EDITTEXT        IDC_EDIT5,7,29,95,14,ES_AUTOHSCROLL
     PUSHBUTTON      "Редактировать список",IDC_BUTTON1,19,110,108,14
-    CONTROL         "Один из лучших онлайн советов",IDC_CHECK1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,130,251,10
+    CONTROL         "Лучшие онлайн советы",IDC_CHECK1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,130,251,10
     CONTROL         "По окончании выводить текстовое сообщение",IDC_CHECK2,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,63,175,10
     CONTROL         "Предлагать сделать короткое действие из списка",IDC_CHECK3,
@@ -365,7 +372,8 @@ BEGIN
 END
 
 IDD_END_WORK DIALOGEX 0, 0, 316, 183
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+STYLE DS_SYSMODAL | DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_APPWINDOW
 CAPTION "Короткий перерыв"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
@@ -396,6 +404,62 @@ BEGIN
     PUSHBUTTON      "Сделано",IDC_BUTTON2,72,60,40,12
     PUSHBUTTON      "Показать другое",IDC_BUTTON3,123,60,71,12
     PUSHBUTTON      "Редактировать",IDC_BUTTON4,205,60,68,12
+END
+
+IDD_OnlineAdvice DIALOGEX 0, 0, 330, 247
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Лучшие онлайн советы"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    CONTROL         "",IDC_SLIDER3,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,115,166,100,15
+    PUSHBUTTON      "Закрыть",IDCANCEL,272,226,50,14
+    CONTROL         "",IDC_SLIDER1,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,7,166,100,15
+    CONTROL         "",IDC_SLIDER2,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,223,166,100,15
+    PUSHBUTTON      "Предложить свой жизненный совет / афоризм",IDC_BUTTON1,7,226,201,14
+    LTEXT           "Static",IDC_STATIC_rate,7,93,316,17
+    CONTROL         "Подробнее",IDC_CHECK1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,80,96,10
+    CONTROL         "",IDC_SLIDER4,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,115,132,100,15
+    CTEXT           "Веселое (?)",IDC_STATIC2,7,188,100,8
+    CTEXT           "Вдохновляющее (?)",IDC_STATIC3,115,188,100,8
+    CTEXT           "Смысловое (?)",IDC_STATIC4,223,188,100,8
+    CTEXT           "Общая оценка (?)",IDC_STATIC1,115,153,100,8
+    LTEXT           "(?) - отказ от участия в голосовании по указанному критерию",IDC_STATIC10,7,210,263,8
+    CTEXT           "Оцените приведенное высказывание",IDC_STATIC7,94,118,141,8
+    EDITTEXT        IDC_EDIT1,7,7,316,70,ES_MULTILINE | ES_READONLY | WS_VSCROLL
+    PUSHBUTTON      "История",IDC_BUTTON2,215,226,50,14
+END
+
+IDD_OnlineAdviceAdd DIALOGEX 0, 0, 316, 119
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Предложить свой жизненный совет / афоризм"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "Закрыть",IDOK,259,98,50,14
+    EDITTEXT        IDC_EDIT1,122,71,109,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT3,7,71,109,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT5,7,7,302,46,ES_MULTILINE | WS_VSCROLL
+    LTEXT           "Автор изречения",IDC_STATIC,7,59,59,8
+    LTEXT           "Ваш ник",IDC_STATIC,122,60,28,8
+    RTEXT           "Осталось символов:",IDC_STATIC,203,57,71,8
+    EDITTEXT        IDC_EDIT2,279,55,30,14,ES_AUTOHSCROLL
+    PUSHBUTTON      "Отправить",IDC_BUTTON1,7,98,50,14
+END
+
+IDD_OnlineAdviceModerate DIALOGEX 0, 0, 330, 235
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Оцените следующие высказывания"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "Следующее",IDOK2,147,214,62,14
+    PUSHBUTTON      "Проголосовать",IDOK,251,214,72,14
+    CONTROL         "",IDC_SLIDER3,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,115,76,100,15
+    CONTROL         "",IDC_SLIDER1,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,7,76,100,15
+    CONTROL         "",IDC_SLIDER2,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,223,76,100,15
+    CTEXT           "Вдохновляющее (?)",IDC_STATIC2,7,98,100,8
+    CTEXT           "Умное (?)",IDC_STATIC3,115,98,100,8
+    CTEXT           "Интересное (?)",IDC_STATIC4,223,98,100,8
+    EDITTEXT        IDC_EDIT1,7,7,316,64,ES_MULTILINE | ES_READONLY | WS_VSCROLL
+    DEFPUSHBUTTON   "Предыдущее",IDOK3,79,214,62,14
 END
 
 
@@ -534,6 +598,30 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 176
     END
+
+    IDD_OnlineAdvice, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 323
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 240
+    END
+
+    IDD_OnlineAdviceAdd, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 309
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 112
+    END
+
+    IDD_OnlineAdviceModerate, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 323
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 228
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -599,17 +687,21 @@ BEGIN
     BEGIN
         MENUITEM "Exit",                        ID_FILE_EXIT
     END
-    POPUP "Reports"
+    POPUP "Отчеты"
     BEGIN
         MENUITEM "Отчет за определенный период времени", ID_REPORTS_32784
         MENUITEM "Отчет по выбранному в таблице периоду времени", ID_REPORTS_USEFULPARAMETERFROMSELECTEDPERIOD
         MENUITEM "Отчет: Сравнение двух заданных периодов времени", ID_REPORTS_32785
         MENUITEM "Отправить содержимое сводной таблицы по почте", ID_REPORTS_32789
+        MENUITEM SEPARATOR
+        MENUITEM "История онлайн афоризмов",    ID_32801
+        MENUITEM "История коротких перерывов",  ID_32802
     END
-    POPUP "Options"
+    POPUP "Настройки"
     BEGIN
-        MENUITEM "Options",                     ID_OPTIONS_OPTIONS
-        MENUITEM "Edit Short Actions",          ID_OPTIONS_EDITSHORTACTIONS
+        MENUITEM "Настройки",                   ID_OPTIONS_OPTIONS
+        MENUITEM "Редактировать список коротких действий для отдыха", ID_OPTIONS_EDITSHORTACTIONS
+        MENUITEM "Предложить свой жизненный совет / афоризм", ID_OPTIONS_32800
     END
 END
 
@@ -872,7 +964,7 @@ BEGIN
     IDS_STRING1730          "%d acts"
     IDS_STRING1731          "До перерыва: "
     IDS_STRING1732          "--"
-    IDS_STRING1733          "Малое дело не помечено как выполненное. Продолжить?"
+    IDS_STRING1733          "Действие не помечено как выполненное. Продолжить?"
     IDS_STRING1734          "--"
     IDS_STRING1735          "Перерыв!"
     IDS_STRING1736          "Break!"
@@ -900,6 +992,128 @@ BEGIN
     IDS_STRING1754          "--"
     IDS_STRING1755          "Выводить диалог сразу в начале перерыва"
     IDS_STRING1756          "--"
+    IDS_STRING1757          "Общая оценка пользователей: <b><font COLOR=""7,92,177"">%0.2f</font></b> (смешное <b><font COLOR=""7,92,177"">%0.2f</font></b>, вдохновляющее <b><font COLOR=""7,92,177"">%0.2f</font></b>, умное <b><font COLOR=""7,92,177"">%0.2f</font></b>)"
+    IDS_STRING1758          "--"
+    IDS_STRING1759          "Общая оценка: <b><font COLOR=""7,92,177"">%0.2f</font></b>"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_STRING1760          "--"
+    IDS_STRING1761          "Общая оценка (%d)"
+    IDS_STRING1762          "--"
+    IDS_STRING1763          "Смешное (?)"
+    IDS_STRING1764          "--"
+    IDS_STRING1765          "Грустное (1)"
+    IDS_STRING1766          "--"
+    IDS_STRING1767          "Не веселое (2)"
+    IDS_STRING1768          "--"
+    IDS_STRING1769          "Веселое (3)"
+    IDS_STRING1770          "--"
+    IDS_STRING1771          "Смешное (4)"
+    IDS_STRING1772          "--"
+    IDS_STRING1773          "Очень смешное (5)"
+    IDS_STRING1774          "--"
+    IDS_STRING1775          "Вдохновляющее (?)"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_STRING1776          "--"
+    IDS_STRING1777          "Демотивирующее (1)"
+    IDS_STRING1778          "--"
+    IDS_STRING1779          "Не вдохновляющее (2)"
+    IDS_STRING1780          "--"
+    IDS_STRING1781          "Слабо вдохновляющее (3)"
+    IDS_STRING1782          "--"
+    IDS_STRING1783          "Вдохновляющее (4)"
+    IDS_STRING1784          "--"
+    IDS_STRING1785          "Очень вдохновляющее (5)"
+    IDS_STRING1786          "--"
+    IDS_STRING1787          "Смысловое (?)"
+    IDS_STRING1788          "--"
+    IDS_STRING1789          "Лживое (1)"
+    IDS_STRING1790          "--"
+    IDS_STRING1791          "Искажающее правду (2)"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_STRING1792          "--"
+    IDS_STRING1793          "Что-то есть от правды (3)"
+    IDS_STRING1794          "--"
+    IDS_STRING1795          "Правдивое (4)"
+    IDS_STRING1796          "--"
+    IDS_STRING1797          "С большим смыслом (5)"
+    IDS_STRING1798          "--"
+    IDS_STRING1799          "Поставьте хотя бы одну оценку"
+    IDS_STRING1800          "--"
+    IDS_STRING1801          "Длина сообщения превышает допустимый лимит!"
+    IDS_STRING1802          "--"
+    IDS_STRING1803          "Укажите свой никнейм"
+    IDS_STRING1804          "--"
+    IDS_STRING1805          "Длина Вашего никнейма превышает допустимый лимит (20 символов)!"
+    IDS_STRING1806          "--"
+    IDS_STRING1807          "Длина имени автора превышает допустимый лимит (20 символов)!"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_STRING1808          "--"
+    IDS_STRING1809          "Укажите имя автора"
+    IDS_STRING1810          "--"
+    IDS_STRING1811          "Введите текст сообщения"
+    IDS_STRING1812          "--"
+    IDS_STRING1813          "Сообщение успешно отправлено, спасибо за Ваше участие!"
+    IDS_STRING1814          "--"
+    IDS_STRING1815          "Проблема при отправке сообщения, попробуйте еще раз"
+    IDS_STRING1816          "--"
+    IDS_STRING1817          "Спасибо за Вашу готовность поделиться интересными мыслями с пользователями программы. Перед тем как отправить Ваше сообщение на модерацию необходимо оценить %d сообщение(я) других пользователей. Вы согласны продолжить?"
+    IDS_STRING1818          "--"
+    IDS_STRING1819          "Оцените высказывание (%d из %d)"
+    IDS_STRING1820          "--"
+    IDS_STRING1821          "Умное (?)"
+    IDS_STRING1822          "--"
+    IDS_STRING1823          "Глупое (1)"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_STRING1824          "--"
+    IDS_STRING1825          "Ничего умного (2)"
+    IDS_STRING1826          "--"
+    IDS_STRING1827          "Слегка умное (3)"
+    IDS_STRING1828          "--"
+    IDS_STRING1829          "Умное (4)"
+    IDS_STRING1830          "--"
+    IDS_STRING1831          "Гениальное (5)"
+    IDS_STRING1832          "--"
+    IDS_STRING1833          "Интересное (?)"
+    IDS_STRING1834          "--"
+    IDS_STRING1835          "Скушное (1)"
+    IDS_STRING1836          "--"
+    IDS_STRING1837          "Нудное (2)"
+    IDS_STRING1838          "--"
+    IDS_STRING1839          "Не интересное (3)"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_STRING1840          "--"
+    IDS_STRING1841          "Интересное (4)"
+    IDS_STRING1842          "--"
+    IDS_STRING1843          "Очень интересное (5)"
+    IDS_STRING1844          "--"
+    IDS_STRING1845          "Поставьте хотя бы 2 оценки каждому изречению"
+    IDS_STRING1846          "--"
+    IDS_STRING1847          "Изречение не отправлено. Все равно закрыть диалог?"
+    IDS_STRING1848          "--"
+    IDS_STRING1849          "%s\r\n                      %s  (прислал %s)"
+    IDS_STRING1850          "--"
+    IDS_STRING1851          "Вы хотите отменить обратный отсчет для запущенного текущего рабочего промежутка времени?"
+    IDS_STRING1852          "--"
+    IDS_STRING1853          "Отключение информационной панели приведет к отлючению автоматических перерывов. Продолжить?"
+    IDS_STRING1854          "--"
 END
 
 #endif    // Russian resources

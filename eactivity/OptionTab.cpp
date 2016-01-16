@@ -140,7 +140,10 @@ void COptionTab2::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_STATIC_percent_hour2, stat_hour_adv);
 	DDX_Control(pDX, IDC_EDITHOLIDAY, edit_size_font);
 	DDX_Control(pDX, IDC_EDIT1, edit_frequpdate);
+	DDX_Control(pDX, IDC_EDITHOLIDAY2, edit_autostart_break);
+	DDX_Control(pDX, IDC_EDITHOLIDAY3, edit_work_period);
 	DDX_Control(pDX, IDC_CHECK1, check_bold);
+	DDX_Control(pDX, IDC_CHECK4, check_auto_break);
 	DDX_Control(pDX, IDC_CHECK3, check_hide_description);
 	DDX_Control(pDX, IDC_STATIC_percent_hour, stat_hour_description);
 	DDX_Control(pDX, IDC_STATIC_percent_day2, stat_day_description);
@@ -152,6 +155,7 @@ BEGIN_MESSAGE_MAP(COptionTab2, CPropertyPage)
 	ON_BN_CLICKED(IDC_CHECK1, &COptionTab2::OnBnClickedCheck3)
 	ON_EN_CHANGE(IDC_EDITHOLIDAY, &COptionTab2::OnBnClickedCheck3)
 	ON_EN_CHANGE(IDC_EDIT1, &COptionTab2::OnBnClickedCheck3)
+	ON_BN_CLICKED(IDC_CHECK4, &COptionTab2::OnBnClickedCheck4)
 END_MESSAGE_MAP()
 
 BOOL COptionTab2::OnInitDialog()
@@ -161,13 +165,25 @@ BOOL COptionTab2::OnInitDialog()
 	int regValue = AfxGetApp()->GetProfileInt("App", "InfoPanel.sizefont", 10);
 	str.Format("%d", regValue);
 	edit_size_font.SetWindowText(str);
+
 	regValue = AfxGetApp()->GetProfileInt("App", "InfoPanel.frequpdate", 5);
 	str.Format("%d", regValue);
 	edit_frequpdate.SetWindowText(str);
+
+	regValue = AfxGetApp()->GetProfileInt("App", "InfoPanel.autostart_break", 2);
+	str.Format("%d", regValue);
+	edit_autostart_break.SetWindowText(str);
+
+	regValue = AfxGetApp()->GetProfileInt("App", "InfoPanel.work_period", 45);
+	str.Format("%d", regValue);
+	edit_work_period.SetWindowText(str);
+
 	regValue = AfxGetApp()->GetProfileInt("App", "InfoPanel.bold", 1);
 	check_bold.SetCheck(regValue);
 	regValue = AfxGetApp()->GetProfileInt("App", "InfoPanel.hidedescription", 0);
 	check_hide_description.SetCheck(regValue);
+	regValue = AfxGetApp()->GetProfileInt("App", "InfoPanel.auto_break", 1);
+	check_auto_break.SetCheck(regValue);
 
 	str.LoadString(trif.GetIds(IDS_STRING1675));
 	stat_hour_description.SetWindowText(str);
@@ -183,9 +199,18 @@ BOOL COptionTab2::OnApply()
 	CString str;
 	edit_frequpdate.GetWindowText(str);
 	AfxGetApp()->WriteProfileInt("App", "InfoPanel.frequpdate", atoi(str));
+
+	edit_work_period.GetWindowText(str);
+	AfxGetApp()->WriteProfileInt("App", "InfoPanel.work_period", atoi(str));
+
+	edit_autostart_break.GetWindowText(str);
+	AfxGetApp()->WriteProfileInt("App", "InfoPanel.autostart_break", atoi(str));
+
 	edit_size_font.GetWindowText(str);
 	AfxGetApp()->WriteProfileInt("App", "InfoPanel.sizefont", atoi(str));
 	AfxGetApp()->WriteProfileInt("App", "InfoPanel.bold", check_bold.GetCheck());
+	AfxGetApp()->WriteProfileInt("App", "InfoPanel.auto_break", 
+		check_auto_break.GetCheck());
 	AfxGetApp()->WriteProfileInt("App", "InfoPanel.hidedescription", 
 		check_hide_description.GetCheck());
 
@@ -290,4 +315,11 @@ void COptionTabMail::OnBnClickedCheckEmail()
 {
 	BOOL email_check = check_email.GetCheck();
 	edit_email.EnableWindow(email_check);
+}
+
+void COptionTab2::OnBnClickedCheck4()
+{
+	BOOL bCheck = check_auto_break.GetCheck();
+	edit_autostart_break.EnableWindow(bCheck);
+	edit_work_period.EnableWindow(bCheck);
 }

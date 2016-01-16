@@ -144,6 +144,9 @@ BEGIN_MESSAGE_MAP(CEactivityDlg, CDialog)
 	ON_MESSAGE(WM_INFO_CLOSE, OnCloseInfoPanel)
 	ON_BN_CLICKED(IDC_BUTTONSTART, &CEactivityDlg::OnBnClickedButtonstart)
 	ON_COMMAND(ID_OPTIONS_EDITSHORTACTIONS, &CEactivityDlg::OnOptionsEditshortactions)
+	ON_COMMAND(ID_OPTIONS_32800, &CEactivityDlg::OnOptions32800)
+	ON_COMMAND(ID_32801, &CEactivityDlg::OnHistoryOnlineAdvices)
+	ON_COMMAND(ID_32802, &CEactivityDlg::OnHistoryShortTodo)
 END_MESSAGE_MAP()
 
 LRESULT CEactivityDlg::OnCloseInfoPanel(WPARAM wParam, LPARAM lParam) 
@@ -192,6 +195,7 @@ BOOL CEactivityDlg::OnInitDialog()
 	dialInfo->resizeWins = true;
 	dialInfo->workPeriod.pauses = 0;
 	dialInfo->workPeriod.paused = false;
+	dialInfo->preWork.firstUsefulTime = 0;
 
 	chart.CreateStandardAxis(CChartCtrl::BottomAxis);
 	chart.CreateStandardAxis(CChartCtrl::LeftAxis);
@@ -1192,6 +1196,7 @@ void CEactivityDlg::OnTimer(UINT nIDEvent)
 			{
 				dialInfo->setEndWork();
 				dialInfo->workPeriod.typeUsefulPar = 0;
+				SetForegroundWindow();
 				endWork();
 			}
 			
@@ -1222,6 +1227,7 @@ void CEactivityDlg::OnTimer(UINT nIDEvent)
 			} else
 			if (GetTickCount()-forTimeNoActiv > sleepPeriod*1000)
 			{
+				dialInfo->preWork.firstUsefulTime = 0;
 				if (!dialInfo->workPeriod.paused)
 				{
 					dialInfo->workPeriod.paused = true;
@@ -1335,7 +1341,33 @@ void CEactivityDlg::OnTimer(UINT nIDEvent)
 				dialInfo->workPeriod.currentUsefulActs = tmpH[25].usefulActs - 
 					dialInfo->workPeriod.firstUsefulActs;
 				UpdatePeriodTableViewByHours(activHours, false);
+				if (!dialInfo->workPeriod.typeUsefulPar && 
+					AfxGetApp()->GetProfileInt("App", "InfoPanel.auto_break", 1))
+				{	//если рабочий промежуток не запущен, то считаем прибавку 
+					//	рабочего времени, чтобы запустить его автоматом
+					if (dialInfo->preWork.firstUsefulTime == 0.0)
+						dialInfo->preWork.firstUsefulTime = tmpH[25].usefulTime;
+					else if (tmpH[25].usefulTime - 
+						dialInfo->preWork.firstUsefulTime > 
+						AfxGetApp()->GetProfileInt("App", 
+						"InfoPanel.autostart_break", 2)*60*1000)
+					{
+						dialInfo->workPeriod.typeUsefulPar = 3;
+						dialInfo->workPeriod.textMes = "";
+						dialInfo->workPeriod.shortTodo = 1;
+						dialInfo->workPeriod.onlineAdvice = 1;
+						dialInfo->workPeriod.typeShowBreak = 3;
+						dialInfo->workPeriod.startProgressTime = GetTickCount();
+						dialInfo->workPeriod.firstUsefulActs = tmpH[25].usefulActs;
+						dialInfo->workPeriod.firstUsefulTime = tmpH[25].usefulTime;
+						dialInfo->StartProgress(0, 0, 
+							(float)AfxGetApp()->GetProfileInt("App", 
+							"InfoPanel.work_period", 45)*60*1000);
+						dialInfo->resizeWins = true;
+					}
+				}
 			} else {
+				//идет рабочий промежуток без показа инфопанели
 				if (dialInfo->workPeriod.typeUsefulPar)
 				{
 					activ_hours activHours;
@@ -2918,7 +2950,10 @@ void CEactivityDlg::OnSelchangeComboDownTable()
 
 void CEactivityDlg::OnBnClickedOk()
 {
-	endWork();
+	COnlineAdvices dialOnlineAdv;
+	dialOnlineAdv.path_actuser = path_actuser;
+	dialOnlineAdv.DoModal();
+	//endWork();
 }
 
 bool CEactivityDlg::WriteJournal(LPCTSTR lpszFormat, ...)
@@ -3074,13 +3109,22 @@ int CEactivityDlg::CalculateAverageUsefulParameter(int lastDays, activ_hours& av
 	pPntsAverage->SetColor(pLineAverage->GetColor());
 	if (hoursNormLine > 0 && sumHandledDays)
 		coefIncNorm = alldays.usefulTime/(hoursNormLine*sumHandledDays)/1000/3600;
-	for (activ_hours::iterator iter=averageHoursGraph.begin(); iter!=averageHoursGraph.end(); iter++)
+	for (int ii=0; ii<24; ii++)
 	{
+		activ_hours::iterator iter = averageHoursGraph.find(ii);
+		if (iter == averageHoursGraph.end())
+		{
+			ActivityExe hourElement;
+			hourElement.usefulActs = 0;
+			hourElement.usefulTime = 0;
+			hourElement.sumActs    = 0;
+			hourElement.sumTime    = 0;
+			averageHoursGraph[ii] = hourElement;
+			iter = averageHoursGraph.find(ii);
+		}
 		//усредняем время с почасовым разбиением
 		(*iter).second.usefulTime = (*iter).second.usefulTime / sumHandledDays;
 		(*iter).second.usefulActs = (*iter).second.usefulActs / sumHandledDays;
-		if (iter->first==25)
-			continue;
 		double chartValue = radioTime.GetCheck() ? 
 			(*iter).second.usefulTime/60/1000/coefIncNorm : 
 			(*iter).second.usefulActs;
@@ -3799,12 +3843,32 @@ void CEactivityDlg::OnBnClickedCheckInfoPanel()
 		dialInfo->StartShow();
 		OnTimer(AUTOREFRESHINFOPANEL);
 	} else {
+		if (AfxGetApp()->GetProfileInt("App", "InfoPanel.auto_break", 1))
+		{
+			CString str;
+			str.LoadString(trif.GetIds(IDS_STRING1853));
+			if (MessageBox(str, NULL, MB_SYSTEMMODAL|MB_YESNO)!=IDYES)
+			{
+				check_infopanel.SetCheck(TRUE);
+				return;
+			}
+		}
+		dialInfo->ShowWarnMessageBox = false;
 		dialInfo->OnCancel();
+		dialInfo->ShowWarnMessageBox = true;
 	}
 }
 
 void CEactivityDlg::OnBnClickedButtonstart()
 {
+	if (dialInfo->workPeriod.typeUsefulPar)
+	{
+		if (AfxMessageBox(trif.GetIds(IDS_STRING1851), MB_YESNO)==IDYES)
+		{	//предлагаем отменить текущий рабочий промежуток времени
+			dialInfo->workPeriod.typeUsefulPar = 0;
+			dialInfo->resizeWins = true;
+		}
+	}
 	CGoWorkUntilPause dialGoWork;
 	dialGoWork.path_actuser = path_actuser;
 	if (dialGoWork.DoModal()!=IDOK)
@@ -3812,6 +3876,7 @@ void CEactivityDlg::OnBnClickedButtonstart()
 	dialInfo->workPeriod.typeUsefulPar = dialGoWork.typeUsefulPar;
 	dialInfo->workPeriod.textMes = dialGoWork.textMes;
 	dialInfo->workPeriod.shortTodo = dialGoWork.shortTodo;
+	dialInfo->workPeriod.onlineAdvice = dialGoWork.onlineAdvice;
 	dialInfo->workPeriod.typeShowBreak = dialGoWork.typeShowBreak;
 	activ_exe tmp;
 	activ_hours tmpH;
@@ -3846,4 +3911,23 @@ void CEactivityDlg::OnOptionsEditshortactions()
 	CListShortTodo dialShortTodo;
 	dialShortTodo.path_actuser = path_actuser;
 	dialShortTodo.DoModal();
+}
+
+//Меню: Предложить свой жизненный совет / афоризм
+void CEactivityDlg::OnOptions32800()
+{
+	CAddOnlineAdvice dialAddAdvice;
+	dialAddAdvice.DoModal();
+}
+
+void CEactivityDlg::OnHistoryOnlineAdvices()
+{
+	string fileName = path_actuser + "journal_online_advices.txt";
+	ShellExecute(0,"open", "notepad.exe", fileName.c_str(), NULL,SW_MAXIMIZE); 
+}
+
+void CEactivityDlg::OnHistoryShortTodo()
+{
+	string fileName = path_actuser + "journal_short_todo.txt";
+	ShellExecute(0,"open", "notepad.exe", fileName.c_str(), NULL,SW_MAXIMIZE); 
 }

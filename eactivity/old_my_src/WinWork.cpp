@@ -1,13 +1,6 @@
-// WinWork.cpp: implementation of the CWinWork class.
-//
-//////////////////////////////////////////////////////////////////////
-
-#include "..\stdafx.h"
-//#include "eactivity.h"
+#include "../stdafx.h"
 #include "WinWork.h"
 #include <AFXINET.H> 
-//#include "Trifle1.h"
-//#include "appdlg.h"
 #include <winuser.h>
 #include <windows.h>
 #include <afxcoll.h>

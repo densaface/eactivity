@@ -20,6 +20,7 @@ public:
 	CString textMes;
 	BOOL shortTodo;
 	int typeShowBreak;
+	BOOL onlineAdvice;
 
 // Dialog Data
 	enum { IDD = IDD_START_WORK_UNTIL_PAUSE };
@@ -45,4 +46,6 @@ protected:
 	CButton radio_usual_time;
 	CEdit edit_usualtime;
 	CComboBox combo_show_break;
+public:
+	CButton check_online_advice;
 };

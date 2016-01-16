@@ -7,6 +7,12 @@
 
 #define WM_INFO_CLOSE WM_USER + 6
 
+struct PreWorkPeriod 
+{
+	float firstUsefulTime;
+	float currentUsefulTime;
+};
+
 struct WorkPeriod 
 {
 	float currentUsefulTime;
@@ -17,14 +23,18 @@ struct WorkPeriod
 	float maxUsefulPar;
 	int typeUsefulPar;  //1 - полезный параметр - кол-во полезных действий, 
 	//2 - полезный параметр - полезное время
-	//2 - полезный параметр - обычное время
-	//0 - не показывать прогрессбар
+	//3 - полезный параметр - обычное время
+	//0 - не показывать прогрессбар (рабочий промежуток не запущен)
 	float getUsefulPar();
 	int pauses;		//количество пауз
 	bool paused;		//признак паузы
 	CString textMes; //текстовое сообщение для перерыва
 	BOOL shortTodo; //предлагать ли короткое дело для перерыва
-	int typeShowBreak;
+	BOOL onlineAdvice; //показывать один из лучших онлайн советов
+	int typeShowBreak; //каким образом показывать диалог перерыва: 
+								//подсвечивать в инфопанели, 
+								//показывать во время нерабочей паузы 
+								//или сразу прерывать работу пользователя
 };
 
 class CAlwaysTop : public CDialog
@@ -54,6 +64,8 @@ public:
 	bool isEndWork();
 	void setEndWork();
 	WorkPeriod workPeriod;
+	PreWorkPeriod preWork;
+	bool ShowWarnMessageBox;
 
 // Dialog Data
 	enum { IDD = IDD_ALWAYS_TOP };

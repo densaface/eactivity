@@ -65,18 +65,20 @@ protected:
 	CStatic stat_day_description;
 	CEdit edit_size_font;
 	CEdit edit_frequpdate;
+	CEdit edit_autostart_break;
+	CEdit edit_work_period;
 	CButton check_bold;
+	CButton check_auto_break;
 	CButton check_hide_description;
 
 	DECLARE_MESSAGE_MAP()
 	virtual BOOL OnInitDialog();
 	virtual BOOL OnApply();
-private:
 	UINT m_nIconID;
 	HICON m_hIcon;
-public:
 	afx_msg void OnApplyFont();
 	afx_msg void OnBnClickedCheck3();
+	afx_msg void OnBnClickedCheck4();
 };
 #pragma once
 

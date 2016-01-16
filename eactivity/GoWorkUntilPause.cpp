@@ -35,6 +35,7 @@ void CGoWorkUntilPause::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_CHECK3, check_short_todo);
 	DDX_Control(pDX, IDC_EDIT9, edit_usualtime);
 	DDX_Control(pDX, IDC_COMBO1, combo_show_break);
+	DDX_Control(pDX, IDC_CHECK1, check_online_advice);
 }
 
 
@@ -178,7 +179,8 @@ void CGoWorkUntilPause::OnBnClickedOk()
 	{
 		edit_text_mes.GetWindowText(textMes);
 	}
-	shortTodo = check_short_todo.GetCheck();
+	shortTodo    = check_short_todo   .GetCheck();
+	onlineAdvice = check_online_advice.GetCheck();
 	OnOK();
 }
 

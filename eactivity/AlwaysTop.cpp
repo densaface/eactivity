@@ -31,6 +31,7 @@ CAlwaysTop::CAlwaysTop(CWnd* pParent /*=NULL*/)
 	RR=GG=0;
 	workPeriod.maxUsefulPar = -1;
 	workPeriod.typeUsefulPar = 0;
+	ShowWarnMessageBox = true;
 }
 
 CAlwaysTop::~CAlwaysTop()
@@ -90,6 +91,13 @@ void CAlwaysTop::SavePosition()
 
 void CAlwaysTop::OnCancel()
 {
+	if (ShowWarnMessageBox && AfxGetApp()->GetProfileInt("App", "InfoPanel.auto_break", 1))
+	{
+		CString str;
+		str.LoadString(trif.GetIds(IDS_STRING1853));
+		if (MessageBox(str, NULL, MB_SYSTEMMODAL|MB_YESNO)!=IDYES)
+			return;
+	}
 	KillTimer(55556);
 	ShowWindow(SW_HIDE);
 	::SendMessageTimeout(AfxGetMainWnd()->GetSafeHwnd(), WM_INFO_CLOSE, 2, 2, 

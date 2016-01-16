@@ -30,6 +30,7 @@ public:
 	UINT uniq;
 	CString textMes;
 	BOOL shortTodo;
+	BOOL onlineAdvice;
 	bool highLight;
 
 // Dialog Data
