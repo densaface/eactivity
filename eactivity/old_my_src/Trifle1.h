@@ -1,6 +1,7 @@
 //#include "app.h"
 #include "../externals/bmpext/Dib3.h"
 #include <string>
+#include "afxinet.h"
 using namespace std;
 //#include "appendHead.h"
 //#include "WinWork.h"
@@ -22,6 +23,7 @@ using namespace std;
 class CTrifle  
 {
 public:
+	CString getSqlIp(CString path_activity);
 	BOOL InvertRectLine(CDC *pDc, CPoint ptFrom, CPoint ptTo);
 	void BlinkRectangle(int x1, int y1, int x2, int y2, int SpeedReplay);
 	//–¿¡Œ“¿ — COMS

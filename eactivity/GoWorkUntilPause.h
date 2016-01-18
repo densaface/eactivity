@@ -46,6 +46,5 @@ protected:
 	CButton radio_usual_time;
 	CEdit edit_usualtime;
 	CComboBox combo_show_break;
-public:
 	CButton check_online_advice;
 };

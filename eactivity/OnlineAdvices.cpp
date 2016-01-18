@@ -67,10 +67,21 @@ BOOL COnlineAdvices::OnInitDialog()
 	slider_rate3.SetPos(6);
 	CString str;
 	str.LoadString(trif.GetIds(IDS_STRING1763));
-	//	mySql = new ConnWorkMySql("95.179.43.117", "eactivity_user", "djgvyetgjdbu", 
-//		"eactivity_text_messages", 3306);
-	mySql = new ConnWorkMySql("localhost", "eactivity_user", "djgvyetgjdbu", 
+	string ip = trif.getSqlIp(path_actuser.c_str());
+	if (ip == "")
+	{
+		abnormalExit("get_sql_ip_error!");
+		return FALSE;
+	}
+	mySql = new ConnWorkMySql(ip, "eactivity_user", "djgvyetgjdbu", 
 		"eactivity_text_messages", 3306);
+	if (mySql->connectError)
+	{
+		abnormalExit("sql_connect_error!");
+		return FALSE;
+	}
+//	mySql = new ConnWorkMySql("localhost", "eactivity_user", "djgvyetgjdbu", 
+//		"eactivity_text_messages", 3306);
 	mysql_row *myRows;
 	mySql->query("SET NAMES \'cp1251\'");
 	myRows = mySql->fetch(mySql->query(
@@ -141,6 +152,27 @@ BOOL COnlineAdvices::OnInitDialog()
 		GetDlgItem(IDC_SLIDER4)->ShowWindow(SW_HIDE);
 	}
 	delete myRows;
+	return TRUE;
+}
+
+// экстренный выход из диалога
+BOOL COnlineAdvices::abnormalExit(CString textError) 
+{
+	CStdioFile sfLog;
+	string fileName = path_actuser + "journal_online_advices.txt";
+	if (sfLog.Open(fileName.c_str(), CFile::modeWrite) ||
+		sfLog.Open(fileName.c_str(), CFile::modeWrite|CFile::modeCreate))
+	{
+		sfLog.SeekToEnd();
+		CTime ct=CTime::GetCurrentTime();
+		char ch[1024];
+		sprintf_s(ch, "%02d.%02d.%02d    %02d:%02d:%02d\t %s\n", 
+			ct.GetYear(), ct.GetMonth(), ct.GetDay(),
+			ct.GetHour(), ct.GetMinute(), ct.GetSecond(), textError);
+		sfLog.WriteString(ch);
+		sfLog.Close();
+	}
+	CDialog::OnCancel();
 	return TRUE;
 }
 
@@ -216,6 +248,7 @@ void COnlineAdvices::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 void COnlineAdvices::OnBnClickedButton1()
 {
 	CAddOnlineAdvice dialAddAdvice;
+	dialAddAdvice.path_actuser = path_actuser;
 	dialAddAdvice.DoModal();
 }
 

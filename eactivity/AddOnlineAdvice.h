@@ -22,6 +22,7 @@ class CAddOnlineAdvice : public CDialog
 public:
 	CAddOnlineAdvice(CWnd* pParent = NULL);   // standard constructor
 	virtual ~CAddOnlineAdvice();
+	string path_actuser;
 
 // Dialog Data
 	enum { IDD = IDD_OnlineAdviceAdd };

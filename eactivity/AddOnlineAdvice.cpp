@@ -211,11 +211,19 @@ void CAddOnlineAdvice::OnBnClickedButton1()
 		AfxMessageBox(trif.GetIds(IDS_STRING1807));
 		return;
 	}
-	//	mySql = new ConnWorkMySql("95.179.43.117", "eactivity_user", "djgvyetgjdbu", 
-	//		"eactivity_text_messages", 3306);
-	mySql = new ConnWorkMySql("localhost", "eactivity_user", "djgvyetgjdbu", 
+	string ip = trif.getSqlIp(path_actuser.c_str());
+	if (ip == "")
+	{
+		AfxMessageBox(trif.GetIds(IDS_STRING1855));
+		return;
+	}
+	mySql = new ConnWorkMySql(ip, "eactivity_user", "djgvyetgjdbu", 
 		"eactivity_text_messages", 3306);
-
+	if (mySql->connectError)
+	{
+		AfxMessageBox(trif.GetIds(IDS_STRING1855));
+		return;
+	}
 
 	//предмодерация сообщений других пользователей
 	mysql_row *myRows;

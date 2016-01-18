@@ -7,9 +7,8 @@
 #include <fstream>
 using namespace std;
 
-
-// CListShortTodo dialog
-
+//справка по работе класса
+//https://docs.google.com/document/d/1D93i7lIalJDyfmP_ZVkOAygviFBDpfx0g3Y_PT7Dtns/edit
 class CListShortTodo : public CDialog
 {
 	DECLARE_DYNAMIC(CListShortTodo)

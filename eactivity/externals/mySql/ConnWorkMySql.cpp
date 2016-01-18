@@ -28,13 +28,18 @@ ConnWorkMySql::ConnWorkMySql(const std::string &host, const std::string &user,
 {
 	if (!mysql_init(&this->mysql))
 	{
-		throw ConnWorkMySqlError(MYSQLE_INITIALIZATION_ERROR);
+		connectError = true;
+		return;
+		//throw ConnWorkMySqlError(MYSQLE_INITIALIZATION_ERROR);
 	}
 	
 	if (!mysql_real_connect(&this->mysql, host.c_str(), user.c_str(), password.c_str(), NULL, 0, NULL, 0)) 
 	{
-		throw ConnWorkMySqlError(MYSQLE_CONNECT_ERROR);
+		connectError = true;
+		return;
+		//throw ConnWorkMySqlError(MYSQLE_CONNECT_ERROR);
 	}
+	connectError = false;
 }
 
 ConnWorkMySql::ConnWorkMySql(const std::string &host, const std::string &user, 
@@ -42,13 +47,16 @@ ConnWorkMySql::ConnWorkMySql(const std::string &host, const std::string &user,
 {
 	if (!mysql_init(&this->mysql)) 
 	{
-		throw ConnWorkMySqlError(MYSQLE_INITIALIZATION_ERROR);
+		//throw ConnWorkMySqlError(MYSQLE_INITIALIZATION_ERROR);
+		connectError = true;
+		return;
 	}
 	if (!mysql_real_connect(&this->mysql, host.c_str(), user.c_str(), password.c_str(), dbname.c_str(), port, NULL, 0))
 	{
-		throw ConnWorkMySqlError(MYSQLE_CONNECT_ERROR);
+		connectError = true;
+		return;
 	}
-
+	connectError = false;
 }
 
 ConnWorkMySql::~ConnWorkMySql(void)

@@ -57,6 +57,7 @@ struct mysql_row{
 class ConnWorkMySql
 {
 public:
+	bool connectError;
 	//Конструктор - соединение с сервером
 	#pragma warning( disable : 4290 )
 	ConnWorkMySql(const std::string &host, const std::string &user, 

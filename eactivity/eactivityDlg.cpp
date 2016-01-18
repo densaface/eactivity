@@ -1354,8 +1354,10 @@ void CEactivityDlg::OnTimer(UINT nIDEvent)
 					{
 						dialInfo->workPeriod.typeUsefulPar = 3;
 						dialInfo->workPeriod.textMes = "";
-						dialInfo->workPeriod.shortTodo = 1;
-						dialInfo->workPeriod.onlineAdvice = 1;
+						dialInfo->workPeriod.shortTodo = 
+							AfxGetApp()->GetProfileInt("App", "check_short_todo", 1);
+						dialInfo->workPeriod.onlineAdvice = 
+							AfxGetApp()->GetProfileInt("App", "check_online_advice", 1);
 						dialInfo->workPeriod.typeShowBreak = 3;
 						dialInfo->workPeriod.startProgressTime = GetTickCount();
 						dialInfo->workPeriod.firstUsefulActs = tmpH[25].usefulActs;
@@ -2486,7 +2488,7 @@ void CEactivityDlg::SetToTray(int ResConst, bool modify)
 
 	nf.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP;
 	nf.uCallbackMessage = WM_MYICONNOTIFY;
-	strcpy_s(nf.szTip,"AutoClickExtreme");
+	strcpy_s(nf.szTip,"Eactivity");
 
 	HICON hIcon;//IDR_MAINFRAME
 	hIcon=AfxGetApp()->LoadIcon(ResConst);
@@ -3901,6 +3903,12 @@ void CEactivityDlg::endWork()
 	dialEndWork->path_actuser = path_actuser;
 	dialEndWork->textMes = dialInfo->workPeriod.textMes;
 	dialEndWork->shortTodo = dialInfo->workPeriod.shortTodo;
+	if (dialInfo->workPeriod.onlineAdvice)
+	{
+		COnlineAdvices dialOnlineAdv;
+		dialOnlineAdv.path_actuser = path_actuser;
+		dialOnlineAdv.DoModal();
+	}
 	dialEndWork->Create(IDD_END_WORK, this);
 	dialEndWork->ShowWindow(SW_SHOW);
 }
@@ -3917,6 +3925,7 @@ void CEactivityDlg::OnOptionsEditshortactions()
 void CEactivityDlg::OnOptions32800()
 {
 	CAddOnlineAdvice dialAddAdvice;
+	dialAddAdvice.path_actuser = path_actuser;
 	dialAddAdvice.DoModal();
 }
 

@@ -84,6 +84,66 @@ CTrifle::~CTrifle()
 {
 
 }
+CString CTrifle::getSqlIp(CString path_activity)
+{
+	CFtpConnection *m_pFtpConnection = NULL;
+	CInternetSession m_Session;
+
+	try
+	{
+		m_pFtpConnection = m_Session.GetFtpConnection("debug.autoclickextreme.com",
+			"autoclic-debug","thae7Sae",INTERNET_INVALID_PORT_NUMBER);
+	}
+	catch(CInternetException *pEx)
+	{
+		pEx->ReportError(MB_ICONEXCLAMATION);
+		m_pFtpConnection = NULL;
+		pEx->Delete();
+		return false;
+	}
+	m_pFtpConnection->SetCurrentDirectory("debug");
+	//CFileFind Finder;
+	//CString strFileName;
+
+	// 	if(Finder.FindFile("C:\\ace.log")==TRUE)
+	// 	{
+	// 		Finder.FindNextFile();
+	// 		strFileName = Finder.GetFileName();
+	// 		Finder.Close();
+	// 	}
+	// 	
+	CString fileName = path_activity + "sql_ip.txt\0";
+	DeleteFile(fileName);
+	CString strfile = path_activity + "sql_ip.txt";
+	BOOL bUploaded = m_pFtpConnection->GetFile(
+		"sql_ip.txt",
+		strfile, FALSE);
+
+	CString res;
+	if (!bUploaded) //чтение из файла
+	{
+		if(m_pFtpConnection!=NULL)
+			delete m_pFtpConnection;
+		return "";
+	}
+	CStdioFile sf;
+	if (!sf.Open(path_activity + "sql_ip.txt", CFile::modeRead))
+	{
+		if(m_pFtpConnection!=NULL)
+			delete m_pFtpConnection;
+		return "";
+	}
+	sf.ReadString(res);
+	sf.Close();
+
+	//m_Session.Close();
+	m_pFtpConnection->Close();
+
+	DeleteFile(fileName);
+	if(m_pFtpConnection!=NULL)
+		delete m_pFtpConnection;
+	return res;
+}
 
 void CTrifle::BlinkRectangle(int x1, int y1, int x2, int y2, int SpeedReplay)
 {

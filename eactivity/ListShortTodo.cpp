@@ -110,6 +110,7 @@ UINT CListShortTodo::GetUniqNum()
 	return maxN+1;
 }
 
+// сохранение списка
 void CListShortTodo::OnBnClickedOk()
 {
 	string strf = path_actuser + "listtodo.txt";

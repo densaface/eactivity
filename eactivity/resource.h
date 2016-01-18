@@ -407,6 +407,8 @@
 #define IDS_STRING1852                  1852
 #define IDS_STRING1853                  1853
 #define IDS_STRING1854                  1854
+#define IDS_STRING1855                  1855
+#define IDS_STRING1856                  1856
 #define ID_IDR_SDSD                     32771
 #define ID_ACTIVITY_SETKOEFEXE          32772
 #define ID_IDR_SDSD32773                32773

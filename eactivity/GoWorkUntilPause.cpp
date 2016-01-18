@@ -80,6 +80,7 @@ BOOL CGoWorkUntilPause::OnInitDialog()
 	regValue = AfxGetApp()->GetProfileString("App", "TextMes", "");
 	edit_text_mes.SetWindowText(regValue);
 	check_short_todo.SetCheck(AfxGetApp()->GetProfileInt("App", "check_short_todo", 1));
+	check_online_advice.SetCheck(AfxGetApp()->GetProfileInt("App", "check_online_advice", 1));
 
 	CString str;
 	str.LoadString(trif.GetIds(IDS_STRING1695));
@@ -173,6 +174,7 @@ void CGoWorkUntilPause::OnBnClickedOk()
 	edit_text_mes.GetWindowText(str);
 	AfxGetApp()->WriteProfileString("App", "TextMes", str);
 	AfxGetApp()->WriteProfileInt("App", "check_short_todo", check_short_todo.GetCheck());
+	AfxGetApp()->WriteProfileInt("App", "check_online_advice", check_online_advice.GetCheck());
 
 	textMes = "";
 	if (check_text_mes.GetCheck())

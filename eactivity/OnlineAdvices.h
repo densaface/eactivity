@@ -25,6 +25,7 @@ class COnlineAdvices : public CDialog
 	double dRate, dRate1, dRate2, dRate3;
 	bool noVote;//опция обозначающая что голосовали раньше и требовать снова голосование не стоит
 	string userSID;
+	BOOL abnormalExit(CString textError);
 
 public:
 	COnlineAdvices(CWnd* pParent = NULL);   // standard constructor
