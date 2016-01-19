@@ -35,6 +35,7 @@
 #define IDD_OnlineAdvice                152
 #define IDD_OnlineAdviceAdd             153
 #define IDD_OnlineAdviceModerate        154
+#define IDR_ACCELERATOR1                155
 #define IDC_MSCHART1                    1000
 #define IDC_CHARTCTRL                   1000
 #define IDC_BUTTON1                     1001
@@ -441,13 +442,17 @@
 #define ID_OPTIONS_32800                32800
 #define ID_32801                        32801
 #define ID_32802                        32802
+#define ID_TODOFILE                     32803
+#define ID_CONTEXT_32803                32803
+#define ID_ACCELERATOR32804             32804
+#define ID_CONTEXT_32806                32806
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        155
-#define _APS_NEXT_COMMAND_VALUE         32803
+#define _APS_NEXT_RESOURCE_VALUE        156
+#define _APS_NEXT_COMMAND_VALUE         32807
 #define _APS_NEXT_CONTROL_VALUE         1042
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

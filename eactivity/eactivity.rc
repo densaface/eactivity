@@ -74,6 +74,13 @@ IDR_MAINFRAME           ICON                    "res\\eactivity.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// RCDATA
+//
+
+ID_TODOFILE             RCDATA                  "res\\listtodo.txt"
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // Dialog
 //
 
@@ -734,7 +741,21 @@ BEGIN
         MENUITEM "Добавить группу действий в корень списка", ID_CONTEXT_ADDNEWITEM
         MENUITEM "Добавить новое действие в выбранную группу списка", ID_CONTEXT_32796
         MENUITEM "Удалить",                     ID_CONTEXT_32798
+        MENUITEM "Переместить вверх\tAlt+UP",   ID_CONTEXT_32803
+        MENUITEM "Переместить вниз\tAlt+DOWN",  ID_CONTEXT_32806
     END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Accelerator
+//
+
+IDR_ACCELERATOR1 ACCELERATORS 
+BEGIN
+    VK_UP,          ID_ACCELERATOR32804,    VIRTKEY, ALT, NOINVERT
+    VK_DOWN,        ID_CONTEXT_32806,       VIRTKEY, ALT, NOINVERT
 END
 
 

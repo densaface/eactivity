@@ -14,6 +14,7 @@ class CListShortTodo : public CDialog
 	DECLARE_DYNAMIC(CListShortTodo)
 	CMenu menuTree;
 	void LoadListTodo(bool interFace=true);
+	HACCEL hAccel;
 
 public:
 	CListShortTodo(CWnd* pParent = NULL);   // standard constructor
@@ -76,8 +77,10 @@ protected:
 	CEdit edit_how_often;
 	CComboBox combo_often;
 	afx_msg void OnDeltaposSpin3(NMHDR *pNMHDR, LRESULT *pResult);
-public:
 	afx_msg void OnCbnSelchangeCombo2();
 	afx_msg void OnEnChangeEditr18();
 	afx_msg void OnBnClickedButton1();
+	afx_msg void OnContextMoveUp();
+	afx_msg void OnContextMoveDown();
+	virtual BOOL PreTranslateMessage(MSG* pMsg);
 };

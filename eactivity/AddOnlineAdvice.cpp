@@ -269,6 +269,7 @@ void CAddOnlineAdvice::OnBnClickedButton1()
 	{
 		AfxMessageBox(trif.GetIds(IDS_STRING1813));
 		edit_advice.SetWindowText("");
+		isEnableSend();
 	} else {
 		AfxMessageBox(trif.GetIds(IDS_STRING1815));
 	}

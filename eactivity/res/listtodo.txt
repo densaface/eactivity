@@ -1,0 +1,18 @@
+ver=0.3
+ОФП				1
+	Приседания	12.00	StartInBrowser("http://www.aif.ru/health/secrets/lechebnaya_gimnastika_prisedaniya_dlya_trenirovki_sosudov"); MaxOften("8 hour(s)");	2
+	отжимания	3.00		3
+Ум				4
+	английский	2.00	MaxOften("1 day(s)");	29
+	люмосити	2.00	StartInBrowser("https://www.lumosity.com/");	5
+Глаза				6
+	Пальминг 10-12 вдохов	4.00		8
+	Зарядка для глаз	5.00		10
+Порядок				12
+	Переместить/удалить 2-3 файла	1.00	MaxOften("1 day(s)");	19
+	Убрать 2-3 предмета на рабочем месте	1.00		14
+Личная эффективность 				13
+	неподвижность с закрытыми глазами	1.00		15
+	Клавиатурный тренажер	1.00		18
+социальное				27
+	позвонить маме	0.52	MaxOften("1 month(s)");	16

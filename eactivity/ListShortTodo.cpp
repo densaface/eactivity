@@ -51,6 +51,9 @@ BEGIN_MESSAGE_MAP(CListShortTodo, CDialog)
 	ON_CBN_SELCHANGE(IDC_COMBO2, &CListShortTodo::OnCbnSelchangeCombo2)
 	ON_EN_CHANGE(IDC_EDITr18, &CListShortTodo::OnEnChangeEditr18)
 	ON_BN_CLICKED(IDC_BUTTON1, &CListShortTodo::OnBnClickedButton1)
+	ON_COMMAND(ID_CONTEXT_32803, &CListShortTodo::OnContextMoveUp)
+	ON_COMMAND(ID_ACCELERATOR32804, &CListShortTodo::OnContextMoveUp)
+	ON_COMMAND(ID_CONTEXT_32806, &CListShortTodo::OnContextMoveDown)
 END_MESSAGE_MAP()
 
 bool initDialog = false;
@@ -58,6 +61,8 @@ BOOL CListShortTodo::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 	menuTree.LoadMenu(IDR_CONTEXT_TREE_SHOURT_TODO);
+	hAccel = LoadAccelerators(AfxGetResourceHandle(), 
+		MAKEINTRESOURCE( IDR_ACCELERATOR1 ));
 
 	list_todo.SetExtendedStyle(LVS_EX_GRIDLINES | 
 		LVS_EX_FULLROWSELECT | list_todo.GetExtendedStyle());
@@ -97,6 +102,15 @@ BOOL CListShortTodo::OnInitDialog()
 	initDialog = true;
 	//normAllGroupsAndActions();
 	return TRUE;
+}
+
+BOOL CListShortTodo::PreTranslateMessage(MSG* pMsg) 
+{
+	if (TranslateAccelerator(m_hWnd, hAccel, pMsg )) 
+	{
+		return true;
+	}
+	return CDialog::PreTranslateMessage(pMsg);
 }
 
 UINT CListShortTodo::GetUniqNum()
@@ -146,7 +160,49 @@ void CListShortTodo::LoadListTodo(bool interFace)
 	string strf = path_actuser + "listtodo.txt";
 	ifstream ifstr(strf.c_str());
 	if (ifstr==NULL)
-		return;
+	{
+		HMODULE hMod=GetModuleHandle(NULL);
+		// если ресурс лежит в другом файле, то параметр для GetModuleHandle
+		// можно получить с помощью LoadLibrary(...);
+		if(!hMod) {
+			return;//Обработка ошибки
+		} 
+		//Получаем дескриптор информационного блока нашего ресурса 
+		HRSRC hRes=FindResource(hMod,MAKEINTRESOURCE(ID_TODOFILE),RT_RCDATA);
+		//Если ResurceName не было определено как число, то ResurceName 
+		//берется в кавычках. Иначе надо (LPSTR)ResurceName
+		//Если тип ресурса был задан как WAVE, то последний параметр должен
+		// быть "WAVE" - в кавычках!
+		if(!hRes){
+			return;//Обработка ошибки
+		}
+		//Теперь загружаем ресурс в память, получая дескриптор загру-
+		//женного блока памяти.
+		HGLOBAL hGlob=LoadResource(hMod,hRes);
+		//Опять же, для ресурса в "текущем" модуле, первым параметром можно
+		//передавать NULL
+		if(!hGlob) {
+			return;//Обработка ошибки
+		}
+		//И, наконец, последнее - получаем указатель на начало массива
+		BYTE *lpbArray=(BYTE*)LockResource(hGlob); 
+		if(!lpbArray) {
+			//Обработка ошибки
+		}		
+		
+		//Получаем размер массива (размер файла)
+		DWORD dwFileSize=SizeofResource(hMod,hRes);
+		if(!dwFileSize) {
+			//Обработка ошибки
+		}
+
+		ofstream ofstr(strf.c_str());
+		ofstr<<lpbArray;
+		ofstr.close();
+		ifstr.open (strf.c_str(), std::ifstream::in);
+		if (!ifstr.is_open())
+			return;
+	}
 	char ch[1024];
 	ifstr.getline(ch, 100);
 	float ver;
@@ -962,5 +1018,135 @@ void CListShortTodo::OnBnClickedButton1()
 			continue;
 		sprintf_s(ch, "%0.2f", atof(list_todo.GetItemText(ii, 2))/coefNorm);
 		list_todo.SetItemText(ii, 2, ch);
+	}
+}
+
+//меню: переместить наверх
+void CListShortTodo::OnContextMoveUp()
+{
+	int sel = (int)list_todo.GetFirstSelectedItemPosition()-1;
+	if (sel == -1 || sel == 0) //нулевую строчку вверх некуда двигать
+		return;
+	if (IsRowAction(sel))
+	{
+		CStringArray selRow;
+		for (int ii=0; ii<list_todo.GetColumnCount(); ii++)
+		{
+			selRow.Add(list_todo.GetItemText(sel, ii));
+		}
+		list_todo.DeleteItem(sel);
+		int newRow = list_todo.InsertItem(sel-1, selRow[0]);
+		for (int ii=1; ii<list_todo.GetColumnCount(); ii++)
+		{
+			list_todo.SetItemText(newRow, ii, selRow[ii]);
+		}
+		//перемещение в uniqNums
+		uniqNums.InsertAt(sel-1, uniqNums[sel]);
+		uniqNums.RemoveAt(sel+1);
+		list_todo.SetItemState(newRow, LVIS_FOCUSED|LVIS_SELECTED, LVIS_FOCUSED|LVIS_SELECTED);
+		if (list_todo.GetTopIndex() > newRow)
+		{
+			list_todo.Scroll(CSize(0, -10*3));
+		}
+	} else {
+		int rowPrevGroup = GetSelectedGroup(sel-1);
+		int lastRow=list_todo.GetItemCount()-1;
+		for (int ii=sel+1; ii<list_todo.GetItemCount(); ii++)
+		{
+			if (IsRowGroup(ii))
+			{
+				lastRow = ii-1;
+				break;
+			}
+		}
+		for (int ii=sel; ii<=lastRow; ii++)
+		{
+			int cur_row = list_todo.InsertItem(rowPrevGroup + (ii-sel), list_todo.GetItemText(ii, 0));
+			for (int jj=1; jj<list_todo.GetColumnCount(); jj++)
+			{
+				list_todo.SetItemText(cur_row, jj, list_todo.GetItemText(ii+1, jj));
+			}
+			uniqNums.InsertAt(rowPrevGroup, uniqNums[ii]);
+			uniqNums.RemoveAt(ii+1);
+			list_todo.DeleteItem(ii+1);
+			if (ii == sel)
+			{
+				list_todo.SetItemState(cur_row, LVIS_FOCUSED|LVIS_SELECTED, LVIS_FOCUSED|LVIS_SELECTED);
+				if (list_todo.GetTopIndex() > cur_row)
+				{
+					list_todo.Scroll(CSize(0, -10*(lastRow-sel+1)));
+				}
+			}
+		}
+	}
+}
+
+//меню: переместить вниз
+void CListShortTodo::OnContextMoveDown()
+{
+	int sel = (int)list_todo.GetFirstSelectedItemPosition()-1;
+	if (sel == -1 || sel == list_todo.GetItemCount()-1) 
+		return; //нижнюю строчку вниз некуда двигать
+	if (IsRowAction(sel))
+	{
+		CStringArray selRow;
+		for (int ii=0; ii<list_todo.GetColumnCount(); ii++)
+		{
+			selRow.Add(list_todo.GetItemText(sel, ii));
+		}
+		list_todo.DeleteItem(sel);
+		int newRow = list_todo.InsertItem(sel+1, selRow[0]);
+		for (int ii=1; ii<list_todo.GetColumnCount(); ii++)
+		{
+			list_todo.SetItemText(newRow, ii, selRow[ii]);
+		}
+		//перемещение в uniqNums
+		uniqNums.InsertAt(sel+1, uniqNums[sel]);
+		uniqNums.RemoveAt(sel);
+		list_todo.SetItemState(newRow, LVIS_FOCUSED|LVIS_SELECTED, LVIS_FOCUSED|LVIS_SELECTED);
+		if (list_todo.GetTopIndex()+list_todo.GetCountPerPage()<newRow)
+		{
+			list_todo.Scroll(CSize(0, 10*3));
+		}
+	} else {
+		int rowNextGroup = -1;
+		int lastRow=list_todo.GetItemCount()-1;
+		for (int ii=sel+1; ii<list_todo.GetItemCount(); ii++)
+		{
+			if (IsRowGroup(ii))
+			{
+				rowNextGroup = ii;
+				lastRow = ii-1;
+				break;
+			}
+		}
+		if (rowNextGroup == -1)
+			return; //выделена самая нижняя группа, передвигать вниз не имеет смысла
+		for (int ii=rowNextGroup+1; ii<list_todo.GetItemCount(); ii++)
+		{
+			rowNextGroup = ii;
+			if (IsRowGroup(ii))
+				break;
+		}
+		for (int ii = sel; ii <= lastRow; ii++)
+		{
+			int cur_row = list_todo.InsertItem(rowNextGroup/* + (ii-sel)*/, 
+				list_todo.GetItemText(sel, 0));
+			for (int jj=1; jj<list_todo.GetColumnCount(); jj++)
+			{
+				list_todo.SetItemText(cur_row, jj, list_todo.GetItemText(sel, jj));
+			}
+			if (ii == sel)
+			{
+				list_todo.SetItemState(cur_row, LVIS_FOCUSED|LVIS_SELECTED, LVIS_FOCUSED|LVIS_SELECTED);
+				if (list_todo.GetTopIndex()+list_todo.GetCountPerPage()<cur_row)
+				{
+					list_todo.Scroll(CSize(0, 10*(lastRow-sel+1)));
+				}
+			}
+			uniqNums.InsertAt(rowNextGroup, uniqNums[sel]);
+			uniqNums.RemoveAt(sel);
+			list_todo.DeleteItem(sel);
+		}
 	}
 }
