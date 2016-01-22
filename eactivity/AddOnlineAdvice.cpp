@@ -206,7 +206,7 @@ void CAddOnlineAdvice::OnBnClickedButton1()
 		AfxMessageBox(trif.GetIds(IDS_STRING1809));
 		return;
 	}
-	if (sAuthor.GetLength()>20)
+	if (sAuthor.GetLength()>40)
 	{
 		AfxMessageBox(trif.GetIds(IDS_STRING1807));
 		return;

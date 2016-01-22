@@ -147,6 +147,7 @@ void COptionTab2::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_CHECK3, check_hide_description);
 	DDX_Control(pDX, IDC_STATIC_percent_hour, stat_hour_description);
 	DDX_Control(pDX, IDC_STATIC_percent_day2, stat_day_description);
+	DDX_Control(pDX, IDC_COMBO1, combo_type_break);
 }
 
 
@@ -191,6 +192,15 @@ BOOL COptionTab2::OnInitDialog()
 	stat_day_description .SetWindowText(str);
 
 	OnApplyFont();
+	str.LoadString(trif.GetIds(IDS_STRING1857));
+	combo_type_break.AddString(str);
+	str.LoadString(trif.GetIds(IDS_STRING1859));
+	combo_type_break.AddString(str);
+	str.LoadString(trif.GetIds(IDS_STRING1861));
+	combo_type_break.AddString(str);
+	combo_type_break.SetCurSel(
+		AfxGetApp()->GetProfileInt("App", "InfoPanel.type_break", 0));
+	combo_type_break.SetDroppedWidth(120);
 	return TRUE;
 }
 
@@ -214,6 +224,8 @@ BOOL COptionTab2::OnApply()
 	AfxGetApp()->WriteProfileInt("App", "InfoPanel.hidedescription", 
 		check_hide_description.GetCheck());
 
+	AfxGetApp()->WriteProfileInt("App", "InfoPanel.type_break", 
+		combo_type_break.GetCurSel());
 	return TRUE;
 }
 

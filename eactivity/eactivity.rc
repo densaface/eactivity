@@ -255,7 +255,7 @@ BEGIN
     CTEXT           "Progress",IDC_STATICProgress,89,118,29,8
 END
 
-IDD_OptionTab2 DIALOGEX 0, 0, 301, 152
+IDD_OptionTab2 DIALOGEX 0, 0, 356, 152
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Информационная панель"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
@@ -272,12 +272,12 @@ BEGIN
     CTEXT           "--",IDC_STATIC_percent_day2,11,56,143,8
     CONTROL         "Скрывать поясняющие\n надписи",IDC_CHECK3,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,169,62,125,10
     CONTROL         "Автоматические перерывы",IDC_CHECK4,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,169,103,125,10
-    LTEXT           "Автостарт через ",IDC_STATIC,181,120,62,10
-    EDITTEXT        IDC_EDITHOLIDAY2,247,118,22,12,ES_AUTOHSCROLL | ES_NUMBER
-    LTEXT           "мин.",IDC_STATIC,278,120,16,8
-    LTEXT           "Рабочий период",IDC_STATIC,181,134,62,10
-    EDITTEXT        IDC_EDITHOLIDAY3,247,133,22,12,ES_AUTOHSCROLL | ES_NUMBER
-    LTEXT           "мин.",IDC_STATIC,278,135,16,8
+    LTEXT           "Автостарт через ",IDC_STATIC,164,120,59,10
+    EDITTEXT        IDC_EDITHOLIDAY2,225,118,22,12,ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "минут(ы) рабочего времени",IDC_STATIC,252,119,97,8
+    LTEXT           "Рабочий период",IDC_STATIC,164,134,58,10
+    EDITTEXT        IDC_EDITHOLIDAY3,225,133,22,12,ES_AUTOHSCROLL | ES_NUMBER
+    COMBOBOX        IDC_COMBO1,251,132,98,56,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
 END
 
 IDD_OptionTabMail DIALOGEX 0, 0, 249, 157
@@ -553,7 +553,7 @@ BEGIN
     IDD_OptionTab2, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 294
+        RIGHTMARGIN, 349
         TOPMARGIN, 7
         BOTTOMMARGIN, 145
     END
@@ -1141,6 +1141,12 @@ END
 STRINGTABLE 
 BEGIN
     IDS_STRING1856          "--"
+    IDS_STRING1857          "минут обычного времени"
+    IDS_STRING1858          "--"
+    IDS_STRING1859          "минут полезного времени"
+    IDS_STRING1860          "--"
+    IDS_STRING1861          "полезных действий"
+    IDS_STRING1862          "--"
 END
 
 #endif    // Russian resources

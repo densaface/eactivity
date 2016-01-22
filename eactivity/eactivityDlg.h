@@ -89,7 +89,8 @@ public:
 	int CalculateAverageUsefulParameter(int lastDays, activ_hours& averageHoursGraph, 
 		double thresholdHoliday, double hoursNormLine=0.0);
 	CString CompareTwoPeriodsOfDays(CStringArray& saDates1, CStringArray& saDates2, 
-		int accentParameter, int MinusDays=0, double thresholdHoliday=0.0);
+		int accentParameter, int MinusDays=0, double thresholdHoliday=0.0, 
+		bool turnOnTableRefresh=false);
 	void CompareTwoPeriodsOfMons(CStringArray& saDates1, CStringArray& saDates2);
 
 	void AddToExeCapt(char *capt, string &exe, HWND HChil, HWND hwMain, int sumActs, float sumTime);

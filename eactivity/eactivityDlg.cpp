@@ -1352,7 +1352,6 @@ void CEactivityDlg::OnTimer(UINT nIDEvent)
 						AfxGetApp()->GetProfileInt("App", 
 						"InfoPanel.autostart_break", 2)*60*1000)
 					{
-						dialInfo->workPeriod.typeUsefulPar = 3;
 						dialInfo->workPeriod.textMes = "";
 						dialInfo->workPeriod.shortTodo = 
 							AfxGetApp()->GetProfileInt("App", "check_short_todo", 1);
@@ -1362,9 +1361,28 @@ void CEactivityDlg::OnTimer(UINT nIDEvent)
 						dialInfo->workPeriod.startProgressTime = GetTickCount();
 						dialInfo->workPeriod.firstUsefulActs = tmpH[25].usefulActs;
 						dialInfo->workPeriod.firstUsefulTime = tmpH[25].usefulTime;
-						dialInfo->StartProgress(0, 0, 
-							(float)AfxGetApp()->GetProfileInt("App", 
-							"InfoPanel.work_period", 45)*60*1000);
+						switch (AfxGetApp()->GetProfileInt("App", 
+							"InfoPanel.type_break", 0))
+						{
+						case 0: //обычное время
+							dialInfo->workPeriod.typeUsefulPar = 3;
+							dialInfo->StartProgress(0, 0, 
+								(float)AfxGetApp()->GetProfileInt("App", 
+								"InfoPanel.work_period", 45)*60*1000);
+							break;
+						case 1: //полезное время
+							dialInfo->workPeriod.typeUsefulPar = 2;
+							dialInfo->StartProgress(0,  
+								(float)AfxGetApp()->GetProfileInt("App", 
+								"InfoPanel.work_period", 45)*60*1000, 0);
+							break;
+						case 2: //полезные действия
+							dialInfo->workPeriod.typeUsefulPar = 1;
+							dialInfo->StartProgress(
+								(float)AfxGetApp()->GetProfileInt("App", 
+								"InfoPanel.work_period", 45), 0, 0);
+							break;
+						}
 						dialInfo->resizeWins = true;
 					}
 				}
@@ -2214,6 +2232,7 @@ void CEactivityDlg::SaveCurDay(bool dayChanged)
 	}
 }
 
+//ночной отчет о вчерашнем дне (отправляется только ночью при смене дня)
 void CEactivityDlg::SendReportOfDayOnMail(string dateToday) 
 {
 	CStringArray saDates;
@@ -2222,7 +2241,7 @@ void CEactivityDlg::SendReportOfDayOnMail(string dateToday)
 	CTime ct=CTime::GetCurrentTime();
 	ct-=60*60*24*7;
 	while (ct.GetDayOfWeek()!=2)
-	{
+	{	//перематываем текущую неделю до понедельника, чтобы сравнивать с рабочими днями прошлой недели
 		ct-=60*60*24;
 	}
 	CString date;
@@ -2230,9 +2249,10 @@ void CEactivityDlg::SendReportOfDayOnMail(string dateToday)
 	{
 		date.Format("%d_%02d_%02d", ct.GetYear(), ct.GetMonth(), ct.GetDay());
 		saDates2.Add(date);
-		ct+=60*60*24;
+		ct-=60*60*24;
 	}
-	CString res = CompareTwoPeriodsOfDays(saDates, saDates2, radioTime.GetCheck(), 2);
+	CString res = CompareTwoPeriodsOfDays(saDates, saDates2, radioTime.GetCheck(), 
+		2, 0.0, true);
 	if (res!="" && AfxGetApp()->GetProfileInt("App", "email.enable", 0))
 	{
 		CStringArray saMessage;
@@ -2952,9 +2972,10 @@ void CEactivityDlg::OnSelchangeComboDownTable()
 
 void CEactivityDlg::OnBnClickedOk()
 {
-	COnlineAdvices dialOnlineAdv;
-	dialOnlineAdv.path_actuser = path_actuser;
-	dialOnlineAdv.DoModal();
+	SendReportOfDayOnMail("2016_01_17");
+// 	COnlineAdvices dialOnlineAdv;
+// 	dialOnlineAdv.path_actuser = path_actuser;
+// 	dialOnlineAdv.DoModal();
 	//endWork();
 }
 
@@ -3141,11 +3162,13 @@ int CEactivityDlg::CalculateAverageUsefulParameter(int lastDays, activ_hours& av
 //подсчет и сравнение среднего полезного времени/действий двух промежутков времени 
 //		на графике строятся 2 линии с посуточной разверткой
 // int MinusDays - сколько худших дней не учитывать во втором списке дат (исключаем выходные)
-CString CEactivityDlg::CompareTwoPeriodsOfDays(CStringArray& saDates1, CStringArray& saDates2, 
-						int accentParameter, int MinusDays, double thresholdHoliday)
+CString CEactivityDlg::CompareTwoPeriodsOfDays(CStringArray& saDates1, 
+		CStringArray& saDates2, int accentParameter, int MinusDays, 
+		double thresholdHoliday, bool turnOnTableRefresh)
 {
 	::SetCursor(AfxGetApp()->LoadStandardCursor(IDC_WAIT));
-	checkAutoUpdate.SetCheck(false);//отключаем автоматическое обновление
+	if (!turnOnTableRefresh)
+		checkAutoUpdate.SetCheck(false);//отключаем автоматическое обновление таблиц
 	ActivityExe firstPeriod; //суммарная статистика по первому периоду, чтобы потом показать усредненную по дням
 	firstPeriod.sumActs=0; firstPeriod.sumTime=0; firstPeriod.usefulActs=0; firstPeriod.usefulTime=0;
 	ActivityExe secondPeriod; //суммарная статистика по первому периоду, чтобы потом показать усредненную по дням
@@ -3207,7 +3230,7 @@ CString CEactivityDlg::CompareTwoPeriodsOfDays(CStringArray& saDates1, CStringAr
 		char fname[2048];
 		sprintf_s(fname, "%sactiv_user_%s.a", path_actuser.c_str(), saDates1[ii]);
 		activ aDayActiv;
-			if (!LoadFileDay(fname, aDayActiv))
+		if (!LoadFileDay(fname, aDayActiv))
 		{
 			CString str;
 			str.LoadString(trif.GetIds(IDS_STRING1655));

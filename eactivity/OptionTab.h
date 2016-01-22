@@ -79,6 +79,7 @@ protected:
 	afx_msg void OnApplyFont();
 	afx_msg void OnBnClickedCheck3();
 	afx_msg void OnBnClickedCheck4();
+	CComboBox combo_type_break;
 };
 #pragma once
 
