@@ -416,6 +416,40 @@
 #define IDS_STRING1860                  1860
 #define IDS_STRING1861                  1861
 #define IDS_STRING1862                  1862
+#define IDS_STRING1863                  1863
+#define IDS_STRING1864                  1864
+#define IDS_STRING1865                  1865
+#define IDS_STRING1866                  1866
+#define IDS_STRING1867                  1867
+#define IDS_STRING1868                  1868
+#define IDS_STRING1869                  1869
+#define IDS_STRING1870                  1870
+#define IDS_STRING1871                  1871
+#define IDS_STRING1872                  1872
+#define IDS_STRING1873                  1873
+#define IDS_STRING1874                  1874
+#define IDS_STRING1875                  1875
+#define IDS_STRING1876                  1876
+#define IDS_STRING1877                  1877
+#define IDS_STRING1878                  1878
+#define IDS_STRING1879                  1879
+#define IDS_STRING1880                  1880
+#define IDS_STRING1881                  1881
+#define IDS_STRING1882                  1882
+#define IDS_STRING1883                  1883
+#define IDS_STRING1884                  1884
+#define IDS_STRING1885                  1885
+#define IDS_STRING1886                  1886
+#define IDS_STRING1887                  1887
+#define IDS_STRING1888                  1888
+#define IDS_STRING1889                  1889
+#define IDS_STRING1890                  1890
+#define IDS_STRING1891                  1891
+#define IDS_STRING1892                  1892
+#define IDS_STRING1893                  1893
+#define IDS_STRING1894                  1894
+#define IDS_STRING1895                  1895
+#define IDS_STRING1896                  1896
 #define ID_IDR_SDSD                     32771
 #define ID_ACTIVITY_SETKOEFEXE          32772
 #define ID_IDR_SDSD32773                32773
@@ -452,13 +486,14 @@
 #define ID_CONTEXT_32803                32803
 #define ID_ACCELERATOR32804             32804
 #define ID_CONTEXT_32806                32806
+#define ID_32807                        32807
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        156
-#define _APS_NEXT_COMMAND_VALUE         32807
+#define _APS_NEXT_COMMAND_VALUE         32808
 #define _APS_NEXT_CONTROL_VALUE         1042
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

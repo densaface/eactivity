@@ -690,9 +690,9 @@ END
 
 IDR_MAIN_MENU_RU MENU 
 BEGIN
-    POPUP "File"
+    POPUP "Файл"
     BEGIN
-        MENUITEM "Exit",                        ID_FILE_EXIT
+        MENUITEM "Выход",                       ID_FILE_EXIT
     END
     POPUP "Отчеты"
     BEGIN
@@ -700,6 +700,7 @@ BEGIN
         MENUITEM "Отчет по выбранному в таблице периоду времени", ID_REPORTS_USEFULPARAMETERFROMSELECTEDPERIOD
         MENUITEM "Отчет: Сравнение двух заданных периодов времени", ID_REPORTS_32785
         MENUITEM "Отправить содержимое сводной таблицы по почте", ID_REPORTS_32789
+        MENUITEM "Отправить по почте статистику за вчерашний день", ID_32807
         MENUITEM SEPARATOR
         MENUITEM "История онлайн афоризмов",    ID_32801
         MENUITEM "История коротких перерывов",  ID_32802
@@ -821,7 +822,7 @@ END
 STRINGTABLE 
 BEGIN
     IDS_STRING1600          "Sort by EXE"
-    IDS_STRING1601          "Сортировать по баллам"
+    IDS_STRING1601          "Сортировать по полезным действиям"
     IDS_STRING1602          "Sort by useful actions"
     IDS_STRING1603          "Сортировать по времени"
     IDS_STRING1604          "Sort by time"
@@ -1147,6 +1148,48 @@ BEGIN
     IDS_STRING1860          "--"
     IDS_STRING1861          "полезных действий"
     IDS_STRING1862          "--"
+    IDS_STRING1863          "Превышение нормы"
+    IDS_STRING1864          "--"
+    IDS_STRING1865          "Отставание от нормы"
+    IDS_STRING1866          "--"
+    IDS_STRING1867          "Статистика успешно отправлена"
+    IDS_STRING1868          "--"
+    IDS_STRING1869          "Сбой при отправке статистики"
+    IDS_STRING1870          "--"
+    IDS_STRING1871          "полезное время"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_STRING1872          "useful time"
+    IDS_STRING1873          "общее время"
+    IDS_STRING1874          "total time"
+    IDS_STRING1875          "полезные действия"
+    IDS_STRING1876          "useful acts"
+    IDS_STRING1877          "всего действий"
+    IDS_STRING1878          "total acts"
+    IDS_STRING1879          "комментарий"
+    IDS_STRING1880          "comment"
+    IDS_STRING1881          "полный путь к exe файлу"
+    IDS_STRING1882          "full path to exe file"
+    IDS_STRING1883          "Заголовок"
+    IDS_STRING1884          "Caption"
+    IDS_STRING1885          "Обновить"
+    IDS_STRING1886          "Refresh"
+    IDS_STRING1887          "Минуты"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_STRING1888          "Minutes"
+    IDS_STRING1889          "Действия"
+    IDS_STRING1890          "Actions"
+    IDS_STRING1891          "Час"
+    IDS_STRING1892          "Hour"
+    IDS_STRING1893          "Часы"
+    IDS_STRING1894          "Hours"
+    IDS_STRING1895          "Сортировать по полезному времени"
+    IDS_STRING1896          "Sort by useful time"
 END
 
 #endif    // Russian resources

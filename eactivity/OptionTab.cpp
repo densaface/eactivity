@@ -183,7 +183,7 @@ BOOL COptionTab2::OnInitDialog()
 	check_bold.SetCheck(regValue);
 	regValue = AfxGetApp()->GetProfileInt("App", "InfoPanel.hidedescription", 0);
 	check_hide_description.SetCheck(regValue);
-	regValue = AfxGetApp()->GetProfileInt("App", "InfoPanel.auto_break", 1);
+	regValue = AfxGetApp()->GetProfileInt("App", "InfoPanel.auto_break", 0);
 	check_auto_break.SetCheck(regValue);
 
 	str.LoadString(trif.GetIds(IDS_STRING1675));

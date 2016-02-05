@@ -90,7 +90,7 @@ public:
 		double thresholdHoliday, double hoursNormLine=0.0);
 	CString CompareTwoPeriodsOfDays(CStringArray& saDates1, CStringArray& saDates2, 
 		int accentParameter, int MinusDays=0, double thresholdHoliday=0.0, 
-		bool turnOnTableRefresh=false);
+		bool mailReport=false);
 	void CompareTwoPeriodsOfMons(CStringArray& saDates1, CStringArray& saDates2);
 
 	void AddToExeCapt(char *capt, string &exe, HWND HChil, HWND hwMain, int sumActs, float sumTime);
@@ -123,7 +123,7 @@ public:
 	void SaveCurDay(bool smena=false);
 	void SaveDay(string fileName, activ& Activ);
 	void LoadCurDay();
-	void SendReportOfDayOnMail(string dateToday);
+	BOOL SendReportOfDayOnMail(string dateToday);
 	bool LoadFileDay(string fname, activ &forLoad1);
 	string curDayFileName;//содержит дату текущего дня "activ_user_2015_11_26.a"
 	BOOL ReplaceActivityRecord(activ &Activ, CString sExeOld, CString sExeNew, 
@@ -237,6 +237,7 @@ protected:
 	afx_msg void OnOptions32800();
 	afx_msg void OnHistoryOnlineAdvices();
 	afx_msg void OnHistoryShortTodo();
+	afx_msg void SendStatOnMail();
 };
 
 //{{AFX_INSERT_LOCATION}}

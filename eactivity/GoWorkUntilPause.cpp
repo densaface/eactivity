@@ -159,11 +159,14 @@ void CGoWorkUntilPause::OnBnClickedOk()
 			typeUsefulPar = 3;
 		}
 	}
+#ifndef _DEBUG
 	AfxGetApp()->WriteProfileInt("App", "PauseRadioUsefulPar", typeUsefulPar);
 	AfxGetApp()->WriteProfileInt("App", "EditUsefulTimeTimeType", combo_type_time.GetCurSel());
 	AfxGetApp()->WriteProfileInt("App", "TypeShowBreak", combo_show_break.GetCurSel());
+#endif
 	typeShowBreak = combo_show_break.GetCurSel();
 
+#ifndef _DEBUG
 	edit_usefultime.GetWindowText(str);
 	AfxGetApp()->WriteProfileString("App", "EditUsefulTimeBeforePause", str);
 	edit_usualtime.GetWindowText(str);
@@ -175,6 +178,7 @@ void CGoWorkUntilPause::OnBnClickedOk()
 	AfxGetApp()->WriteProfileString("App", "TextMes", str);
 	AfxGetApp()->WriteProfileInt("App", "check_short_todo", check_short_todo.GetCheck());
 	AfxGetApp()->WriteProfileInt("App", "check_online_advice", check_online_advice.GetCheck());
+#endif
 
 	textMes = "";
 	if (check_text_mes.GetCheck())

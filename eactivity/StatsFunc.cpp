@@ -463,7 +463,7 @@ BOOL StatsFunc::SendMailMessage(LPCTSTR szServer,
 		mail.SetSMTPServer("smtp.mail.ru",465);
 		mail.SetSecurityType(USE_SSL);
 		mail.SetLogin("denis_safonov_81@mail.ru");
-		mail.SetPassword("djfGNurnvusmv63^");
+		mail.SetPassword(szPas);
 		mail.SetSenderName("ActivateMe");
 		mail.SetSenderMail("denis_safonov_81@mail.ru");
 		mail.SetReplyTo("denis_safonov_81@mail.ru");

@@ -91,7 +91,7 @@ void CAlwaysTop::SavePosition()
 
 void CAlwaysTop::OnCancel()
 {
-	if (ShowWarnMessageBox && AfxGetApp()->GetProfileInt("App", "InfoPanel.auto_break", 1))
+	if (ShowWarnMessageBox && AfxGetApp()->GetProfileInt("App", "InfoPanel.auto_break", 0))
 	{
 		CString str;
 		str.LoadString(trif.GetIds(IDS_STRING1853));

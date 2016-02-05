@@ -232,7 +232,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="wininet.lib bmpextmd.lib"
+				AdditionalDependencies="wininet.lib"
 				LinkIncremental="1"
 				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames=""
@@ -1140,6 +1140,10 @@
 				>
 			</File>
 		</Filter>
+		<File
+			RelativePath=".\res\listtodo.txt"
+			>
+		</File>
 		<File
 			RelativePath=".\ReadMe.txt"
 			>
