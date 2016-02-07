@@ -1503,11 +1503,11 @@ void CEactivityDlg::UpdatePeriodTableViewByHours(activ_hours &activHours, bool s
 			chart.GetTopAxis()->SetVisible(false);
 		chart.CreateStandardAxis(CChartCtrl::BottomAxis);
 		CString str;
-		str.LoadString(trif.GetIds(IDS_STRING1887)); 
+		str.LoadString(IDS_STRING1888); 
 		chart.GetBottomAxis()->GetLabel()->SetText(str.GetBuffer(100));// "Hour"
 		CString str1, str2;
-		str1.LoadString(trif.GetIds(IDS_STRING1887)); // "Minutes"
-		str2.LoadString(trif.GetIds(IDS_STRING1889)); // "Actions"
+		str1.LoadString(IDS_STRING1888); // "Minutes"
+		str2.LoadString(IDS_STRING1890); // "Actions"
 		chart.GetLeftAxis()->GetLabel()->SetText(radioTime.GetCheck() ? 
 			str1.GetBuffer(100) : str2.GetBuffer(100));
 		chart.GetBottomAxis()->SetAutomatic(true);
@@ -1737,8 +1737,8 @@ void CEactivityDlg::UpdatePeriodTable(activ &CurView)
 	if (chart.GetTopAxis())
 		chart.GetTopAxis()->SetVisible(false);
 	CString str1, str2;
-	str1.LoadString(trif.GetIds(IDS_STRING1893)); // "Hours"
-	str2.LoadString(trif.GetIds(IDS_STRING1889)); // "Actions"
+	str1.LoadString(IDS_STRING1894); // "Hours"
+	str2.LoadString(IDS_STRING1890); // "Actions"
 	chart.GetLeftAxis()->GetLabel()->SetText(radioTime.GetCheck() ? 
 		str1.GetBuffer(100) : str2.GetBuffer(100));
 	CChartDateTimeAxis* axis;
@@ -3158,15 +3158,15 @@ int CEactivityDlg::CalculateAverageUsefulParameter(int lastDays, activ_hours& av
 
 	//построение графика
 	CString str1, str2;
-	str1.LoadString(trif.GetIds(IDS_STRING1887)); // "Minutes"
-	str2.LoadString(trif.GetIds(IDS_STRING1889)); // "Actions"
+	str1.LoadString(IDS_STRING1888); // "Minutes"
+	str2.LoadString(IDS_STRING1890); // "Actions"
 	chart.GetLeftAxis()->GetLabel()->SetText(radioTime.GetCheck() ? 
 		str1.GetBuffer(100) : str2.GetBuffer(100));
 	chart.RemoveAllSeries(); //чистка предыдущих кривых
 	if (chart.GetTopAxis())
 		chart.GetTopAxis()->SetVisible(false);
 	chart.CreateStandardAxis(CChartCtrl::BottomAxis);
-	str1.LoadString(trif.GetIds(IDS_STRING1891));
+	str1.LoadString(IDS_STRING1892);
 	chart.GetBottomAxis()->GetLabel()->SetText(str1.GetBuffer(100)); // "Hour"
 	chart.GetBottomAxis()->SetAutomatic(true);
 	CChartLineSerie* pLineAverage = chart.CreateLineSerie();
@@ -3246,8 +3246,8 @@ CString CEactivityDlg::CompareTwoPeriodsOfDays(CStringArray& saDates1,
 	}
 
 	CString str1, str2;
-	str1.LoadString(trif.GetIds(IDS_STRING1893)); // "Hours"
-	str2.LoadString(trif.GetIds(IDS_STRING1889)); // "Actions"
+	str1.LoadString(IDS_STRING1894); // "Hours"
+	str2.LoadString(IDS_STRING1890); // "Actions"
 	chart.GetLeftAxis()->GetLabel()->SetText(accentParameter ? 
 		str1.GetBuffer(100) : str2.GetBuffer(100));
 	pLinePeriod1 = chart.CreateLineSerie();
@@ -3543,8 +3543,8 @@ void CEactivityDlg::CompareTwoPeriodsOfMons(CStringArray& saDates1, CStringArray
 	chart.GetBottomAxis()->GetLabel()->SetText("Month");
 
 	CString str1, str2;
-	str1.LoadString(trif.GetIds(IDS_STRING1893)); // "Hours"
-	str2.LoadString(trif.GetIds(IDS_STRING1889)); // "Actions"
+	str1.LoadString(IDS_STRING1894); // "Hours"
+	str2.LoadString(IDS_STRING1890); // "Actions"
 	chart.GetLeftAxis()->GetLabel()->SetText(radioTime.GetCheck() ? 
 		str1.GetBuffer(100) : str2.GetBuffer(100));
 	pLinePeriod1 = chart.CreateLineSerie();
