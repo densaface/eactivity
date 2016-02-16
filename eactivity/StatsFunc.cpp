@@ -47,6 +47,313 @@ void StatsFunc::FormatSeconds(char (&ch)[100], float secs)
 		}
 }
 
+static BYTE PrivateKeyWithExponentOfOne[] =
+{
+	0x07, 0x02, 0x00, 0x00, 0x00, 0xA4, 0x00, 0x00,
+	0x52, 0x53, 0x41, 0x32, 0x00, 0x02, 0x00, 0x00,
+	0x01, 0x00, 0x00, 0x00, 0xAB, 0xEF, 0xFA, 0xC6,
+	0x7D, 0xE8, 0xDE, 0xFB, 0x68, 0x38, 0x09, 0x92,
+	0xD9, 0x42, 0x7E, 0x6B, 0x89, 0x9E, 0x21, 0xD7,
+	0x52, 0x1C, 0x99, 0x3C, 0x17, 0x48, 0x4E, 0x3A,
+	0x44, 0x02, 0xF2, 0xFA, 0x74, 0x57, 0xDA, 0xE4,
+	0xD3, 0xC0, 0x35, 0x67, 0xFA, 0x6E, 0xDF, 0x78,
+	0x4C, 0x75, 0x35, 0x1C, 0xA0, 0x74, 0x49, 0xE3,
+	0x20, 0x13, 0x71, 0x35, 0x65, 0xDF, 0x12, 0x20,
+	0xF5, 0xF5, 0xF5, 0xC1, 0xED, 0x5C, 0x91, 0x36,
+	0x75, 0xB0, 0xA9, 0x9C, 0x04, 0xDB, 0x0C, 0x8C,
+	0xBF, 0x99, 0x75, 0x13, 0x7E, 0x87, 0x80, 0x4B,
+	0x71, 0x94, 0xB8, 0x00, 0xA0, 0x7D, 0xB7, 0x53,
+	0xDD, 0x20, 0x63, 0xEE, 0xF7, 0x83, 0x41, 0xFE,
+	0x16, 0xA7, 0x6E, 0xDF, 0x21, 0x7D, 0x76, 0xC0,
+	0x85, 0xD5, 0x65, 0x7F, 0x00, 0x23, 0x57, 0x45,
+	0x52, 0x02, 0x9D, 0xEA, 0x69, 0xAC, 0x1F, 0xFD,
+	0x3F, 0x8C, 0x4A, 0xD0,
+
+	0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+
+	0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+
+	0x64, 0xD5, 0xAA, 0xB1,
+	0xA6, 0x03, 0x18, 0x92, 0x03, 0xAA, 0x31, 0x2E,
+	0x48, 0x4B, 0x65, 0x20, 0x99, 0xCD, 0xC6, 0x0C,
+	0x15, 0x0C, 0xBF, 0x3E, 0xFF, 0x78, 0x95, 0x67,
+	0xB1, 0x74, 0x5B, 0x60,
+
+	0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+};
+static BYTE pbBlob[] =
+{
+	0x01, 0x02, 0x00, 0x00, 0x01, 0x68, 0x00, 0x00, 
+	0x00, 0xA4, 0x00, 0x00, 0x9E, 0x41, 0x62, 0x32, 
+	0x35, 0x00, 0xBB, 0x2A, 0xAA, 0xCC, 0xE6, 0x81, 
+	0x6A, 0x35, 0x38, 0x37, 0xF9, 0x5D, 0xAE, 0x59, 
+	0x08, 0xDD, 0x56, 0x04, 0x96, 0x14, 0x29, 0x27, 
+	0x5D, 0x17, 0xB1, 0xE5, 0x05, 0xA8, 0xB6, 0x22, 
+	0x54, 0xC7, 0x1C, 0x4C, 0x17, 0xBC, 0xA8, 0x0F, 
+	0xEE, 0xD4, 0x90, 0x16, 0xDA, 0xCE, 0x27, 0x7A, 
+	0xF5, 0x13, 0x45, 0xCC, 0xCA, 0x6A, 0xD2, 0x02, 
+	0xA1, 0x85, 0x02, 0x00, 
+};
+long file_length(const char* filename)
+{
+	FILE *fp;
+	long fsize = 0;
+	errno_t err;
+	err = fopen_s(&fp, filename,"rb");
+	if (err == 0) {
+		fseek(fp,0L,SEEK_END);
+		fsize = ftell(fp);
+		fclose(fp);
+	}
+	return fsize;
+}
+
+bool StatsFunc::InitCrypt(CString keyFile)
+{
+	dwResult= 0;
+	hProv = 0;
+	hKey = 0;
+	hSessionKey = 0;
+	cbBlob = 76;
+
+	if (!CryptAcquireContext(&hProv, NULL, MS_DEF_PROV, PROV_RSA_FULL, 0))
+	{
+		dwResult = GetLastError();
+		if (dwResult == NTE_BAD_KEYSET)
+		{
+			if (!CryptAcquireContext(&hProv, NULL, MS_DEF_PROV, PROV_RSA_FULL, CRYPT_NEWKEYSET))
+			{
+				dwResult = GetLastError();
+				AfxMessageBox("Error [0x%x]: CryptAcquireContext() failed.");
+				return false;
+			}
+		} else {
+			dwResult = GetLastError();
+			return false;
+		}
+	}
+
+	if (pbBlob) {
+		if (!CryptImportKey(hProv, pbBlob, cbBlob, 0, 0, &hSessionKey))
+		{
+			dwResult = GetLastError();
+			AfxMessageBox("Error [0x%x]: CryptImportKey() failed.");
+			return false;
+		}
+	} else { 
+		if (!CryptImportKey(hProv, PrivateKeyWithExponentOfOne, 
+			sizeof(PrivateKeyWithExponentOfOne), 0, 0, &hKey))
+		{
+			dwResult = GetLastError();
+			AfxMessageBox("Error CryptImportKey() failed.");
+			return false;
+		}
+
+		if (!CryptGenKey(hProv, CALG_RC4, CRYPT_EXPORTABLE, &hSessionKey))
+		{
+			dwResult = GetLastError();
+			AfxMessageBox("Error CryptGenKey() failed.");
+			return false;
+		}	
+	}
+	return true;
+}
+
+//загрузка детализации активности дня в шифрованном формате (ver>=0.5)
+// пример одной порции записи
+//291516	291516		- через табулятор хэндлы окон
+//1	1	1014	1014	- время и действия (полезные и не полезные)
+//0	C:\Program Files (x86)\Microsoft Visual Studio 9.0\Common7\IDE\devenv.exe	- час, экзешник, заголовок через табуляторы
+//	- комментарий
+//3 перехода строки
+//другая порция
+// Зашифрованный файл полностью распаковывается в единственную строчку decriptStr и поскольку объем 
+// в 40 кб в среднем является весомым, то операции перераспределения памяти внутри строки 
+// (удаление символов в начале переменной) будут времязатратными, поэтому обход строчки идет с 
+// помощью локальных поисков границ для каждого кванта данных и их преобразование из строчного в нужный. 
+// Поиск границ идет методом чередования, от одной границы дальше по переменной и копирование этого 
+// кусочка переменной между границами
+bool StatsFunc::LoadFileDayCrypt(string fname, activ &forLoad1) 
+{
+	string decriptStr;
+	ifstream ifstr(fname.c_str());
+	if (ifstr==NULL)
+		return false;
+	if (forLoad1.size())
+		forLoad1.clear();
+	char ch[1024];
+	ifstr.getline(ch, 100);
+	float ver;
+	sscanf_s(ch, "ver=%f", &ver);
+	ifstr.close();
+	if (ver<0.5)
+	{
+		return LoadFileDayOld(fname, forLoad1);
+	}
+	decriptStr = DecryptFromFileToStr(fname, strlen(ch));
+	int fi1=-1, fi2=-1;
+	for (;;)
+	{
+		Activity tmpForSave;
+		ActivityExe tmpForSave2;
+		tmpForSave.usefulTime=0;
+		tmpForSave.hour=0;
+		tmpForSave2.usefulTime=0;
+		tmpForSave2.hour=0;
+
+		fi1 = decriptStr.find('\t', fi2+1);
+		if (fi1 == -1)
+			break;
+		//decriptStr.substr(0, fi1);
+		sscanf_s(decriptStr.substr(fi2+1, fi1-fi2-1).c_str(), "%x", &tmpForSave.hwMain);
+
+		fi2 = decriptStr.find('\n', fi1+1);
+		if (fi2 == -1)
+			break;
+		sscanf_s(decriptStr.substr(fi1+1, fi2-fi1-1).c_str(), "%x", &tmpForSave.hwChil);
+
+		fi1 = decriptStr.find('\t', fi2+1);
+		tmpForSave.sumActs = atoi(decriptStr.substr(fi2+1, fi1-fi2-1).c_str());
+		tmpForSave2.sumActs=tmpForSave.sumActs;
+
+		fi2 = decriptStr.find('\t', fi1+1);
+		tmpForSave.usefulActs = atoi(decriptStr.substr(fi1+1, fi2-fi1-1).c_str());
+		tmpForSave2.usefulActs=tmpForSave.usefulActs;
+
+		fi1 = decriptStr.find('\t', fi2+1);
+		tmpForSave .sumTime = (float)atof(decriptStr.substr(fi2+1, fi1-fi2-1).c_str());
+		tmpForSave2.sumTime = tmpForSave.sumTime;
+
+		fi2 = decriptStr.find('\n', fi1+1);
+		tmpForSave .usefulTime = (float)atof(decriptStr.substr(fi1+1, fi2-fi1-1).c_str());
+		tmpForSave2.usefulTime = tmpForSave.usefulTime;
+
+		bool manual_add=false;
+		fi1 = decriptStr.find('\t', fi2+1);
+		string sHour = decriptStr.substr(fi2+1, fi1-fi2-1).c_str();
+		if (sHour.length() && sHour[0]=='m')
+		{	//вырезаем первый символ - признак ручной вставки
+			manual_add = true;
+			CString sCh = sHour.substr(1).c_str();
+			tmpForSave2.hour=tmpForSave.hour=atoi(sHour.substr(1).c_str());//sCh.Mid(1)
+		} else {
+			tmpForSave2.hour=tmpForSave.hour=atoi(sHour.c_str());
+		}
+
+		fi2 = decriptStr.find('\t', fi1+1);
+		tmpForSave2.exe = tmpForSave.exe = decriptStr.substr(fi1+1, fi2-fi1-1);
+
+		fi1 = decriptStr.find('\n', fi2+1);
+		tmpForSave.capt = decriptStr.substr(fi2+1, fi1-fi2-1);
+
+		fi2 = decriptStr.find('\n', fi1+1);
+		tmpForSave.comment = decriptStr.substr(fi1+1, fi2-fi1-1);
+		fi2 = decriptStr.find("\n\n", fi2+1)+1;
+
+		if (manual_add)
+			sprintf_s(ch, "m%d\t", tmpForSave.hour);
+		else sprintf_s(ch, "%d\t", tmpForSave.hour);
+		forLoad1[ch + tmpForSave.exe + '\t' + tmpForSave.capt] = tmpForSave;
+	}
+	return true;
+}
+
+//загрузка детализации активности дня в старом формате (ver<0.5)
+bool StatsFunc::LoadFileDayOld(string fname, activ &forLoad1) 
+{
+	ifstream ifstr(fname.c_str());
+	if (ifstr==NULL)
+		return false;
+	if (forLoad1.size())
+		forLoad1.clear();
+	char ch[1024];
+	ifstr.getline(ch, 100);
+	float ver;
+	sscanf_s(ch, "ver=%f", &ver);
+	for (;;)
+	{
+		Activity tmpForSave;
+		ActivityExe tmpForSave2;
+		tmpForSave.usefulTime=0;
+		tmpForSave.hour=0;
+		tmpForSave2.usefulTime=0;
+		tmpForSave2.hour=0;
+		void* tmpint;
+		ifstr>>tmpint;
+		tmpForSave.hwMain=(HWND)tmpint;
+		ifstr.get();
+		ifstr>>tmpint;
+		tmpForSave.hwChil=(HWND)tmpint;
+		ifstr.get();
+		if (!ifstr)
+			break;
+		ifstr>>tmpForSave.sumActs;
+		tmpForSave2.sumActs=tmpForSave.sumActs;
+		ifstr.get();
+		ifstr>>tmpForSave.usefulActs;
+		tmpForSave2.usefulActs=tmpForSave.usefulActs;
+		ifstr.get();
+		ifstr>>tmpForSave.sumTime;
+		tmpForSave2.sumTime=tmpForSave.sumTime;
+		if (ver>=0.3)
+		{
+			ifstr.get();
+			ifstr>>tmpForSave.usefulTime;
+			tmpForSave2.usefulTime=tmpForSave.usefulTime;
+		}
+		ifstr.get();
+		int tmpint2;
+		bool manual_add=false;
+		if (ver<0.2)
+		{
+			ifstr>>tmpint2;
+		} else {
+			ifstr.getline(ch, 1024, '\t');
+			if (strlen(ch)>0 && ch[0]=='m')
+			{	//вырезаем первый символ
+				manual_add = true;
+				CString sCh = ch;
+				tmpForSave2.hour=tmpForSave.hour=atoi(sCh.Mid(1));
+			} else {
+				tmpForSave2.hour=tmpForSave.hour=atoi(ch);
+			}
+		}
+		ifstr.getline(ch, 1024, '\t');
+		tmpForSave2.exe=tmpForSave.exe=ch;
+		if (ver>=0.4)
+		{
+			ifstr.getline(ch, 1024, '\t');
+			tmpForSave.capt=ch;
+			ifstr.getline(ch, 1024);
+			tmpForSave.comment=ch;
+		} else {
+			ifstr.getline(ch, 1024);
+			tmpForSave.capt=ch;
+		}
+		if (manual_add)
+			sprintf_s(ch, "m%d\t", tmpForSave.hour);
+		else sprintf_s(ch, "%d\t", tmpForSave.hour);
+		forLoad1[ch + tmpForSave.exe + '\t' + tmpForSave.capt] = tmpForSave;
+		if (!ifstr)
+			break;
+	}
+	ifstr.close();
+	return true;
+}
+
 bool StatsFunc::LoadFileMonth(string fname, activ &forLoad1, float &sumTime, float &sumUsefulTime, int &sumActs, int &sumUsefulActs)
 {
 	ifstream ifstr(fname.c_str());
@@ -502,4 +809,177 @@ BOOL StatsFunc::SendMailMessage(LPCTSTR szServer,
 	//if(!bError)
 	//std::cout << "Mail was send successfully.\n";
 	return !bError;
+}
+
+//		int numSymbVer - количество символов в которых передается версия "ver=0.5"
+string StatsFunc::DecryptFromFileToStr(string fileName, int numSymbVer) 
+{
+
+//	if (Str == "")
+//		return "";
+	CFile sf;
+	if (!sf.Open(fileName.c_str(), CFile::modeRead))
+		return "";
+	unsigned long length = (unsigned long)sf.GetLength() - numSymbVer + 1;
+	unsigned char * cipherBlock = (unsigned char*)malloc(length);
+	memset(cipherBlock, 0, length);
+	sf.Read(cipherBlock, numSymbVer+1);
+	sf.Read(cipherBlock, length);
+	sf.Close();
+	if (!CryptDecrypt(hSessionKey, 0, TRUE, 0, cipherBlock, &length))
+	{
+		AfxMessageBox("Error: Decrypt() failed.");
+		return false;
+	}
+//	CStdioFile sf;
+// 	if (!sf.Open("C:\\2.txt", CFile::modeCreate|CFile::modeWrite))
+// 		return "";
+// 	sf.Write(cipherBlock, length);
+// 	sf.Close();
+
+	string ret = std::string(reinterpret_cast<const char*>(cipherBlock));
+	free(cipherBlock);
+//	int ideb = ret.length();
+	return ret;
+
+
+
+// 	unsigned long length = Str.length() + 1;
+// 	unsigned char * cipherBlock = (unsigned char*)malloc(length);
+// 	memset(cipherBlock, 0, length);
+// 	memcpy(cipherBlock, Str.c_str(), length -1);	
+// 
+// 	//string debs = EncryptStrToFile("e1a1a");
+// 	if (!CryptDecrypt(hSessionKey, 0, TRUE, 0, cipherBlock, &length))
+// 	{
+// 		AfxMessageBox("Error: Decrypt() failed.");
+// 		return false;
+// 	}
+// 	string ret = std::string(reinterpret_cast<const char*>(cipherBlock));
+// 	free(cipherBlock);
+// 	return ret;
+}
+
+bool StatsFunc::EncryptStrToFile(string Str, string fileName, string ver) 
+{
+	unsigned long length = Str.length() + 1;
+	unsigned char * cipherBlock = (unsigned char*)malloc(length);
+	memset(cipherBlock, 0, length);
+	memcpy(cipherBlock, Str.c_str(), length -1);	
+	if (!CryptEncrypt(hSessionKey, 0, TRUE, 0, cipherBlock, &length, length))
+	{
+		AfxMessageBox("Error: Crypt failed.");
+		return false;
+	}
+	string ret = std::string(reinterpret_cast<const char*>(cipherBlock));
+	CFile sf;
+	if (!sf.Open(fileName.c_str(), CFile::modeCreate|CFile::modeWrite))
+		return false;
+	sf.Write(ver.c_str(), ver.length());
+	sf.Write(cipherBlock, length);
+	sf.Close();
+	free(cipherBlock);
+// 	int idebs = strlen((char*)cipherBlock);
+// 	if (!CryptEncrypt(hSessionKey, 0, TRUE, 0, cipherBlock, &length, length))
+// 	{
+// 		AfxMessageBox("Error: Crypt failed.");
+// 		return "";
+// 	}
+// 	if (!sf.Open("C:\\2.txt", CFile::modeCreate|CFile::modeWrite))
+// 		return "";
+// 	sf.Write(cipherBlock, length);
+// 	sf.Close();
+	//проверка: в шифрованном тексте не должно быть переходов строк, иначе они поломают файл данных
+	//как правило такие переходы бывают из-за знаков табуляции в строке перед ее шифровкой
+// 	int iFindReturn = ret.find('\n');
+// 	if (iFindReturn>-1)
+// 	{
+// 		//AfxMessageBox("Error #3: Crypt failed. Please, notify author of the program about this error (admin@autoclickextreme.com)");
+// 		//return "";
+// 	}
+	//string debs = DecryptFromFileToStr(ret);
+//	idebs = ret.length();
+//	DecryptFromFileToStr("");
+	return true;
+}
+
+//сохранение статистики дня в зашифрованном виде
+void StatsFunc::SaveDayEncryptedFormat(string fileName, activ& Activ) 
+{
+	char chFormattedStr[5000];
+	string wholeFileStr = "";
+	for (activ::iterator it_activ=Activ.begin(); it_activ!=Activ.end(); it_activ++)
+	{
+		Activity tmpForSave=(*it_activ).second;
+		sprintf_s(chFormattedStr, 5000, "%x\t%x\n%d\t%d\t%.0f\t%.0f\n%s\n%s\n\n\n", 
+			tmpForSave.hwMain, tmpForSave.hwChil, 
+			tmpForSave.sumActs, tmpForSave.usefulActs, tmpForSave.sumTime, tmpForSave.usefulTime,
+			(*it_activ).first.c_str(), 
+			tmpForSave.comment.c_str());
+		wholeFileStr += chFormattedStr;
+	}
+	if (EncryptStrToFile(wholeFileStr, fileName, "ver=0.5\n") == false)
+	{
+		sprintf_s(chFormattedStr, 5000, "File saving is failed !!! file = %s", fileName.c_str());
+		AfxMessageBox(chFormattedStr);
+		return;
+	}
+}
+
+void StatsFunc::SaveDayOldFormat(string fileName, activ& Activ) 
+{
+	ofstream ofstr(fileName.c_str());
+	if (ofstr==NULL) {
+		AfxMessageBox("Old save is failed");
+		return;
+	}
+	char ch[]="ver=0.4\n";
+	ofstr<<ch;
+	for (activ::iterator it_activ=Activ.begin(); it_activ!=Activ.end(); it_activ++)
+	{
+		Activity tmpForSave=(*it_activ).second;
+		ofstr<<tmpForSave.hwMain;
+		ofstr<<'\t';
+		ofstr<<tmpForSave.hwChil;
+		ofstr<<'\t';
+		ofstr<<tmpForSave.sumActs;
+		ofstr<<'\t';
+		ofstr<<tmpForSave.usefulActs;
+		ofstr<<'\t';
+		ofstr<<tmpForSave.sumTime;
+		ofstr<<'\t';
+		ofstr<<tmpForSave.usefulTime;
+		ofstr<<'\t';
+		ofstr<<(*it_activ).first;
+		ofstr<<'\t';
+		ofstr<<tmpForSave.comment;
+		ofstr<<'\n';
+	}
+	ofstr.close();
+}
+
+
+string StatsFunc::Private(string text, int comboPrivateCurSel, float usefulTime)
+{
+	switch (comboPrivateCurSel)
+	{
+	case 0:
+		return text.c_str();
+	case 1:
+		if (usefulTime>0)
+		{
+			return text;
+		} else {
+			string ret(text.length(), '*');
+			return ret;
+		}
+		break;
+	case 2:
+		{
+			string ret(text.length(), '*');
+			return ret;
+		}
+		break;
+	}
+	return "";
 }

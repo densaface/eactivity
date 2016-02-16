@@ -285,10 +285,11 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSM
 CAPTION "Email информирование"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    EDITTEXT        IDC_EDIT5,7,20,108,12,ES_AUTOHSCROLL
-    PUSHBUTTON      "Test",IDC_BUTTON1,129,19,50,14
-    CONTROL         "Ежедневно посылать письма об активности прошедшего дня",IDC_CHECK1,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,7,235,10
+    EDITTEXT        IDC_EDIT5,7,60,108,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "Test",IDC_BUTTON1,129,58,50,14
+    CONTROL         "Ежедневно присылать отчет об активности прошедшего дня",IDC_CHECK1,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,46,235,10
+    COMBOBOX        IDC_COMBO1,7,20,235,49,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 END
 
 IDD_SetKoefManual DIALOGEX 0, 0, 262, 144
@@ -726,12 +727,13 @@ IDR_CONTEXT_EXECAPT_RU MENU
 BEGIN
     POPUP "IDR_CONTEXT_EXECAPT_RU"
     BEGIN
+        MENUITEM "Показать все заголовки для выделенного EXE файла\tДвойной клик", ID_ACTIVITY_EXE
         MENUITEM "Установить коэффициент для выделенного EXE файла", ID_ACTIVITY_SETKOEFEXE
         MENUITEM "Установить коэффициент для выделенного заголовка", ID_ACTIVITY_SETKOEF
-        MENUITEM "Показать все заголовки для выделенного EXE файла", ID_ACTIVITY_EXE
-        MENUITEM "Добавить вручную",            ID_IDR_32792
         MENUITEM "Редактировать",               ID_IDR_32790
+        MENUITEM "Добавить",                    ID_IDR_32792
         MENUITEM "Удалить",                     ID_IDR_32791
+        MENUITEM "Скрыть неполезные заголовки", ID_IDR_32808, CHECKED
     END
 END
 
@@ -1190,6 +1192,12 @@ BEGIN
     IDS_STRING1894          "Hours"
     IDS_STRING1895          "Сортировать по полезному времени"
     IDS_STRING1896          "Sort by useful time"
+    IDS_STRING1897          "Показывать все заголовки"
+    IDS_STRING1898          "--"
+    IDS_STRING1899          "Показывать только заголовки с полезным временем"
+    IDS_STRING1900          "--"
+    IDS_STRING1901          "Скрывать все заголовки"
+    IDS_STRING1902          "--"
 END
 
 #endif    // Russian resources

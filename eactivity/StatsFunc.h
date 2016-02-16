@@ -6,6 +6,7 @@
 #include <fstream>
 #include "externals/XHTMLStatic.h"
 #include "externals/openssl-0.9.8l/CSmtp.h"
+#include <wincrypt.h>
 #pragma once
 using namespace std;
 
@@ -49,10 +50,19 @@ class StatsFunc
 	void SumDayStat(activ &forLoad1, string fname, float &sumTime, int &sumActs, int &usefulActs);
 	void LoadMonthFromStatDays(activ &forLoad1, string mon, float &sumTime, int &sumActs, int &usefulActs);
 	void LoadYearFromStatMons(activ &aCurYear, string mon, float &sumTime, int &sumAct, int &usefulActs);
+	//для шифровки личных данных пользователя
+	DWORD dwResult;
+	HCRYPTPROV hProv;
+	HCRYPTKEY hKey;
+	DWORD cbBlob;
 public:
 	string path_actuser;//папка где хранятся файлы с активностью пользователя
 	StatsFunc(void);
 	~StatsFunc(void);
+	void SaveDayEncryptedFormat(string fileName, activ& Activ);
+	void SaveDayOldFormat (string fileName, activ& Activ);
+	bool LoadFileDayCrypt(string fname, activ &forLoad1);
+	bool LoadFileDayOld(string fname, activ &forLoad1);
 	bool LoadFileMonth(string fname, activ &forLoad1, float &sumTime, float &sumUsefulTime, int &sumActs, int &usefulActs);
 	void LoadYear(activ &aCurYear, string fname="");
 	void LoadAllYears(activ &aCurYear);
@@ -70,5 +80,11 @@ public:
 		LPCTSTR szPas, 
 		LPCTSTR szSubject, 
 		CStringArray& saMessage);
+	//методы шифровки перед сохранением статистики в файл
+	string DecryptFromFileToStr(string fileName, int numSymbVer);
+	bool EncryptStrToFile(string Str, string fileName, string ver);
+	bool InitCrypt(CString keyFile);
+	HCRYPTKEY hSessionKey;
+	string Private(string text, int comboPrivateCurSel, float usefulTime);
 
 };

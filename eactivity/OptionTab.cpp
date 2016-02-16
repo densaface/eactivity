@@ -245,6 +245,14 @@ void COptionTab2::OnBnClickedCheck3()
 {
 	OnApplyFont();
 }
+
+void COptionTab2::OnBnClickedCheck4()
+{
+	BOOL bCheck = check_auto_break.GetCheck();
+	edit_autostart_break.EnableWindow(bCheck);
+	edit_work_period.EnableWindow(bCheck);
+}
+
 // OptionTab.cpp : implementation file
 //
 
@@ -279,6 +287,8 @@ void COptionTabMail::DoDataExchange(CDataExchange* pDX)
 	CPropertyPage::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_EDIT5, edit_email);
 	DDX_Control(pDX, IDC_CHECK1, check_email);
+	DDX_Control(pDX, IDC_COMBO1, combo_hide_data);
+
 }
 
 
@@ -295,6 +305,14 @@ BOOL COptionTabMail::OnInitDialog()
 	check_email.SetCheck(regValue);
 	edit_email.SetWindowText(AfxGetApp()->GetProfileString("App", "email.to", ""));
 	OnBnClickedCheckEmail();
+
+	str.LoadString(trif.GetIds(IDS_STRING1897));
+	combo_hide_data.AddString(str);
+	str.LoadString(trif.GetIds(IDS_STRING1899));
+	combo_hide_data.AddString(str);
+	str.LoadString(trif.GetIds(IDS_STRING1901));
+	combo_hide_data.AddString(str);
+	combo_hide_data.SetCurSel(AfxGetApp()->GetProfileInt("App", "combo_privacy", 1));
 	return TRUE;
 }
 
@@ -309,6 +327,7 @@ BOOL COptionTabMail::OnApply()
 	}
 	AfxGetApp()->WriteProfileString("App", "email.to", str);
 	AfxGetApp()->WriteProfileInt("App", "email.enable", check_email.GetCheck());
+	AfxGetApp()->WriteProfileInt("App", "combo_privacy", combo_hide_data.GetCurSel());
 
 	return TRUE;
 }
@@ -329,9 +348,4 @@ void COptionTabMail::OnBnClickedCheckEmail()
 	edit_email.EnableWindow(email_check);
 }
 
-void COptionTab2::OnBnClickedCheck4()
-{
-	BOOL bCheck = check_auto_break.GetCheck();
-	edit_autostart_break.EnableWindow(bCheck);
-	edit_work_period.EnableWindow(bCheck);
-}
+

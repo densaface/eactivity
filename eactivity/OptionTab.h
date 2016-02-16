@@ -31,7 +31,6 @@ private:
 	UINT m_nIconID;
 	HICON m_hIcon;
 protected:
-	CComboBox combo_sleep_period;
 	CButton radio_const_norm;
 	CButton radio_norm_last_days;
 	CEdit edit_sleep_period;
@@ -112,4 +111,5 @@ protected:
 
 	CEdit edit_email;
 	CButton check_email;
+	CComboBox combo_hide_data;
 };

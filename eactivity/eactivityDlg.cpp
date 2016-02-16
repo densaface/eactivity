@@ -148,6 +148,7 @@ BEGIN_MESSAGE_MAP(CEactivityDlg, CDialog)
 	ON_COMMAND(ID_32801, &CEactivityDlg::OnHistoryOnlineAdvices)
 	ON_COMMAND(ID_32802, &CEactivityDlg::OnHistoryShortTodo)
 	ON_COMMAND(ID_32807, &CEactivityDlg::SendStatOnMail)
+	ON_COMMAND(ID_IDR_32808, &CEactivityDlg::OnMenuHideCapt)
 END_MESSAGE_MAP()
 
 LRESULT CEactivityDlg::OnCloseInfoPanel(WPARAM wParam, LPARAM lParam) 
@@ -201,6 +202,7 @@ BOOL CEactivityDlg::OnInitDialog()
 	chart.CreateStandardAxis(CChartCtrl::BottomAxis);
 	chart.CreateStandardAxis(CChartCtrl::LeftAxis);
 	chart.GetLeftAxis()->SetAutomatic(true);
+	chart.GetLeftAxis()->SetAutomaticMode(CChartAxis::FullAutomatic);
 	chart.GetBottomAxis()->SetAutomatic(true);
 	if (AfxGetApp()->GetProfileInt("App", "ShowLegend", 1))
 	{
@@ -236,6 +238,10 @@ BOOL CEactivityDlg::OnInitDialog()
 		menuExeCapt.LoadMenu(IDR_CONTEXT_EXECAPT_RU);
 		menuTablePeriod.LoadMenu(IDR_CONTEXT_TABLEPERIOD_RU);
 	}
+	BOOL checkMenu = AfxGetApp()->GetProfileInt("App", "combo_privacy", 1) != 0;
+	menuExeCapt.CheckMenuItem(ID_IDR_32808, 
+		checkMenu ? MF_CHECKED : MF_UNCHECKED | MF_BYCOMMAND);
+
 	if (AfxGetApp()->GetProfileInt("App", "AccentParameter", 1))
 		 radioTime.SetCheck(TRUE);
 	else radioActs.SetCheck(TRUE);
@@ -357,6 +363,8 @@ BOOL CEactivityDlg::OnInitDialog()
 		CreateDirectory(path_actuser.c_str(), NULL);
 	}
 	statsF.path_actuser=path_actuser;
+	if (!statsF.InitCrypt(path_exe + "\\key.txt"))
+		OnMainMenuExit();
 
 	LoadRules();
 	WriteJournal("On Init Dialog 1");
@@ -740,11 +748,23 @@ bool CompareUsefulActs2(ActivityExe Activity_1, ActivityExe Activity_2)
 {
 	return Activity_1.usefulActs > Activity_2.usefulActs;
 }
-bool CompareUsefulTime(ActivityExe Activity_1, ActivityExe Activity_2)
+bool CompareUsefulTime(Activity Activity_1, Activity Activity_2)
 {
 	return Activity_1.usefulTime > Activity_2.usefulTime;
 }
-bool CompareExe(ActivityExe Activity_1, ActivityExe Activity_2)
+bool CompareUsefulTime2(ActivityExe Activity_1, ActivityExe Activity_2)
+{
+	return Activity_1.usefulTime > Activity_2.usefulTime;
+}
+bool CompareExe(Activity Activity_1, Activity Activity_2)
+{
+	int fi=Activity_1.exe.rfind('\\')+1;
+	string shortExe1 = Activity_1.exe.substr(fi, Activity_1.exe.length()-fi);
+	fi=Activity_2.exe.rfind('\\')+1;
+	string shortExe2 = Activity_2.exe.substr(fi, Activity_2.exe.length()-fi);
+	return _stricmp(shortExe1.c_str(),shortExe2.c_str()) < 0;
+}
+bool CompareExe2(ActivityExe Activity_1, ActivityExe Activity_2)
 {
 	int fi=Activity_1.exe.rfind('\\')+1;
 	string shortExe1 = Activity_1.exe.substr(fi, Activity_1.exe.length()-fi);
@@ -818,7 +838,7 @@ void CEactivityDlg::UpdateTableExeCapt(activ &allActiv, activ_hours &activHours,
 		sort(vect_for_sort.begin(), vect_for_sort.end(), CompareTimes2);
 		break;
 	case 1:
-		sort(vect_for_sort.begin(), vect_for_sort.end(), CompareUsefulTime);
+		sort(vect_for_sort.begin(), vect_for_sort.end(), CompareUsefulTime2);
 		break;
 	case 2:
 		sort(vect_for_sort.begin(), vect_for_sort.end(), CompareActs2);
@@ -827,11 +847,12 @@ void CEactivityDlg::UpdateTableExeCapt(activ &allActiv, activ_hours &activHours,
 		sort(vect_for_sort.begin(), vect_for_sort.end(), CompareUsefulActs2);
 		break;
 	case 4:
-		sort(vect_for_sort.begin(), vect_for_sort.end(), CompareExe);
+		sort(vect_for_sort.begin(), vect_for_sort.end(), CompareExe2);
 		break;
 	}
 
 	table_exe_capt.DeleteAllItems();
+	int hideLevel = AfxGetApp()->GetProfileInt("App", "combo_privacy", 1);
 	for (vector<ActivityExe>::iterator iv=vect_for_sort.begin(); iv!=vect_for_sort.end(); ++iv)
 	{
 		string shortExe;
@@ -844,8 +865,9 @@ void CEactivityDlg::UpdateTableExeCapt(activ &allActiv, activ_hours &activHours,
 		} else {
 			shortExe=(*iter).second;
 		}
-		int ii=table_exe_capt.InsertItem(table_exe_capt.GetItemCount(), shortExe.c_str());
-	
+		int ii=table_exe_capt.InsertItem(table_exe_capt.GetItemCount(), 
+			statsF.Private(shortExe, hideLevel, (*iv).usefulTime).c_str());
+
 //		отображение общего зафиксированного времени
 		char ch[100];
 		float sec=(*iv).sumTime/1000;
@@ -856,9 +878,7 @@ void CEactivityDlg::UpdateTableExeCapt(activ &allActiv, activ_hours &activHours,
 		//отображение полезного времени
 		sec=(*iv).usefulTime/1000;
 		statsF.FormatSeconds(ch, sec);
-		//sprintf_s(ch, "%d", (int)((*iv).sumTime/1000));
 		table_exe_capt.SetItemText(ii, 2, ch);
-		//sumTime+=(*iv).sumTime;
 
 		sprintf_s(ch, "%d", (*iv).sumActs);
 		table_exe_capt.SetItemText(ii, 5, ch);
@@ -1033,15 +1053,19 @@ void CEactivityDlg::AddExeCaptToTable(string exe, activ &forLoad1, int &sumCapt)
 	switch(combo_sort.GetCurSel())
 	{
 	case 0:
-		break;
-	case 1:
-		sort(vect_for_sort.begin(), vect_for_sort.end(), CompareUsefulActs);
-		break;
-	case 2:
 		sort(vect_for_sort.begin(), vect_for_sort.end(), CompareTimes);
 		break;
-	case 3:
+	case 1:
+		sort(vect_for_sort.begin(), vect_for_sort.end(), CompareUsefulTime);
+		break;
+	case 2:
 		sort(vect_for_sort.begin(), vect_for_sort.end(), CompareActs);
+		break;
+	case 3:
+		sort(vect_for_sort.begin(), vect_for_sort.end(), CompareUsefulActs);
+		break;
+	case 4:
+		sort(vect_for_sort.begin(), vect_for_sort.end(), CompareExe);
 		break;
 	}
 
@@ -1049,13 +1073,14 @@ void CEactivityDlg::AddExeCaptToTable(string exe, activ &forLoad1, int &sumCapt)
 	CString str;
 	edit_capts.GetWindowText(str);
 	int MaxCoun=atoi(str);
+	int hideLevel = AfxGetApp()->GetProfileInt("App", "combo_privacy", 1);
 	for (vector<Activity>::iterator iv=vect_for_sort.begin(); iv!=vect_for_sort.end(); ++iv)
 	{
 		if (!showAllCaptsForExe.length() && coun==MaxCoun)
 			break;
 		int ii=table_exe_capt.InsertItem(table_exe_capt.GetItemCount(), "");
 		
-		table_exe_capt.SetItemText(ii, 1, (*iv).capt.c_str());
+		table_exe_capt.SetItemText(ii, 1, statsF.Private((*iv).capt, hideLevel, (*iv).usefulTime).c_str());
 
 		char ch[100];
 		float sec=(*iv).sumTime/1000;
@@ -1510,6 +1535,7 @@ void CEactivityDlg::UpdatePeriodTableViewByHours(activ_hours &activHours, bool s
 		str2.LoadString(IDS_STRING1890); // "Actions"
 		chart.GetLeftAxis()->GetLabel()->SetText(radioTime.GetCheck() ? 
 			str1.GetBuffer(100) : str2.GetBuffer(100));
+		chart.GetLeftAxis()->SetAutomaticMode(CChartAxis::FullAutomatic);
 		chart.GetBottomAxis()->SetAutomatic(true);
 		pLineCurrentDay = chart.CreateLineSerie();
 		pLineCurrentDay->SetWidth(2);
@@ -1741,6 +1767,7 @@ void CEactivityDlg::UpdatePeriodTable(activ &CurView)
 	str2.LoadString(IDS_STRING1890); // "Actions"
 	chart.GetLeftAxis()->GetLabel()->SetText(radioTime.GetCheck() ? 
 		str1.GetBuffer(100) : str2.GetBuffer(100));
+	chart.GetLeftAxis()->SetAutomaticMode(CChartAxis::FullAutomatic);
 	CChartDateTimeAxis* axis;
 	string legendTitle;
 	if (combo_group.GetCurSel() == BYDAYS)
@@ -1768,7 +1795,29 @@ void CEactivityDlg::UpdatePeriodTable(activ &CurView)
 	pPntsMonth->SetPointSize(11,11);
 	pPntsMonth->SetColor(pLineMonth->GetColor());
 
+	CChartLineSerie *pLineWeekAverage, *pLineAverage;
+	if (combo_group.GetCurSel() == BYDAYS)
+	{
+		pLineWeekAverage = chart.CreateLineSerie();
+		pLineWeekAverage->SetWidth(2);
+		legendTitle = "Среднее за неделю";
+		pLineWeekAverage->SetName( legendTitle );
+
+		pLineAverage = chart.CreateLineSerie();
+		pLineAverage->SetWidth(1);
+		legendTitle = "Среднее за месяц";
+		pLineAverage->SetName( legendTitle );
+		pLineAverage->SetColor(RGB(0, 155, 0));
+	}
+
 	string sToday = curDayFileName.substr(curDayFileName.length()-12, 10);
+	float summValue=0.0;	//для расчета среднего недельного значения
+	int averageDaysPortion=0;	//количество дней, накопившихся в недельной порции 
+									//для расчета среднего значения
+	float summMonthValue=0.0;	//для расчета среднего месячного значения
+	int weeksCount=0;	//количество недель, накопившихся за отчетный месяц
+	int firstDay=-1, lastDay;	//индекс первого рабочего дня, когда началась полная отчетная неделя
+								//и последнего когда закончилась последняя рабочая неделя
 	for (activ::iterator iter=CurView.begin(); iter!=CurView.end(); iter++)
 	{
 		int row = table_period.GetItemCount();
@@ -1826,6 +1875,33 @@ void CEactivityDlg::UpdatePeriodTable(activ &CurView)
 			int day = atoi((*iter).first.substr(8).c_str());
 			pLineMonth->AddPoint(day, chartValue);
 			pPntsMonth->AddPoint(day, chartValue);
+			CTime ctLastDate = CTime(atoi((*iter).first.substr(0, 4).c_str()), 
+				atoi((*iter).first.substr(5, 2).c_str()), 
+				atoi((*iter).first.substr(8, 2).c_str()), 0, 0, 0);
+			summValue += (float)chartValue;
+			averageDaysPortion++;
+			if (ctLastDate.GetDayOfWeek()==7)
+			{
+				float averageValue = summValue/averageDaysPortion;
+				if (averageDaysPortion >= 5)
+				{
+					averageValue *= (float)averageDaysPortion/(float)5.0;
+					pLineWeekAverage->AddPoint(day-averageDaysPortion, averageValue);
+					pLineWeekAverage->AddPoint(day-averageDaysPortion/2.0, averageValue);
+					char label[100];
+					sprintf_s(label, "%0.2f %s", averageValue, radioTime.GetCheck() ? "h" : "a");
+					pLineWeekAverage->CreateBalloonLabel(pLineWeekAverage->GetPointsCount()-1, label);
+					pLineWeekAverage->AddPoint(day, averageValue);
+
+					summMonthValue+=averageValue;
+					weeksCount++;
+					if (firstDay==-1)
+						firstDay = day-averageDaysPortion;
+					lastDay = day;
+				}
+				averageDaysPortion=0;
+				summValue = 0.0;
+			}
 		} else {
 			CString mon = (*iter).first.c_str();
 			COleDateTime odDate(atoi(mon.Left(4)), atoi(mon.Right(2)), 
@@ -1846,16 +1922,30 @@ void CEactivityDlg::UpdatePeriodTable(activ &CurView)
 		table_period.SetItemText(row, 3, ch_secs);
 	}
 
+	float averageValue = (float)summMonthValue/(float)weeksCount;
+	pLineAverage->AddPoint(firstDay, averageValue);
+	pLineAverage->AddPoint(firstDay + (lastDay - firstDay)/2.0, averageValue);
+	char label[100];
+	sprintf_s(label, "%0.2f %s", averageValue, radioTime.GetCheck() ? "h" : "a");
+	pLineAverage->CreateBalloonLabel(pLineAverage->GetPointsCount()-1, label);
+	pLineAverage->AddPoint(lastDay, averageValue);
+
 	double Min;
 	double Max;
 	if (combo_group.GetCurSel() != BYDAYS)
 	{
-		axis->GetMinMax(Min, Max);
 		//определиться с подходящим диапазоном на разных стадиях сбора статистики
-//		chart.GetBottomAxis()->SetAutomatic(false);
+		axis->GetMinMax(Min, Max);
+		axis->SetAutomaticMode(CChartAxis::NotAutomatic);
 		axis->SetMinMax(0.9999*Min, 1.0001*Max);
+	} else {
+		//увеличиваем "потолок" графика, чтобы видны были пометки к средним значениям
+		chart.GetLeftAxis()->GetMinMax(Min, Max);
+		chart.GetLeftAxis()->SetAutomaticMode(CChartAxis::NotAutomatic);
+		chart.GetLeftAxis()->SetMinMax(Min, 1.3*Max); 
 	}
 	chart.RefreshCtrl();
+
 
 	if (combo_group.GetCurSel()<BYMONTHS)
 		table_period.InsertItem(0, "..");//для перехода на уровень выше
@@ -1969,89 +2059,6 @@ void CEactivityDlg::Exit()
 	CDialog::OnCancel();
 }
 
-bool CEactivityDlg::LoadFileDay(string fname, activ &forLoad1) 
-{
-	WriteJournal("LoadFileDay from %s", fname.c_str());
-	ifstream ifstr(fname.c_str());
-	if (ifstr==NULL)
-		return false;
-	if (forLoad1.size())
-		forLoad1.clear();
-	char ch[1024];
-	ifstr.getline(ch, 100);
-	float ver;
-	sscanf_s(ch, "ver=%f", &ver);
-	for (;;)
-	{
-		Activity tmpForSave;
-		ActivityExe tmpForSave2;
-		tmpForSave.usefulTime=0;
-		tmpForSave.hour=0;
-		tmpForSave2.usefulTime=0;
-		tmpForSave2.hour=0;
-		void* tmpint;
-		ifstr>>tmpint;
-		tmpForSave.hwMain=(HWND)tmpint;
-		ifstr.get();
-		ifstr>>tmpint;
-		tmpForSave.hwChil=(HWND)tmpint;
-		ifstr.get();
-		if (!ifstr)
-			break;
-		ifstr>>tmpForSave.sumActs;
-		tmpForSave2.sumActs=tmpForSave.sumActs;
-		ifstr.get();
-		ifstr>>tmpForSave.usefulActs;
-		tmpForSave2.usefulActs=tmpForSave.usefulActs;
-		ifstr.get();
-		ifstr>>tmpForSave.sumTime;
-		tmpForSave2.sumTime=tmpForSave.sumTime;
-		if (ver>=0.3)
-		{
-			ifstr.get();
-			ifstr>>tmpForSave.usefulTime;
-			tmpForSave2.usefulTime=tmpForSave.usefulTime;
-		}
-		ifstr.get();
-		int tmpint2;
-		bool manual_add=false;
-		if (ver<0.2)
-		{
-			ifstr>>tmpint2;
-		} else {
-			ifstr.getline(ch, 1024, '\t');
-			if (strlen(ch)>0 && ch[0]=='m')
-			{	//вырезаем первый символ
-				manual_add = true;
-				CString sCh = ch;
-				tmpForSave2.hour=tmpForSave.hour=atoi(sCh.Mid(1));
-			} else {
-				tmpForSave2.hour=tmpForSave.hour=atoi(ch);
-			}
-		}
-		ifstr.getline(ch, 1024, '\t');
-		tmpForSave2.exe=tmpForSave.exe=ch;
-		if (ver>=0.4)
-		{
-			ifstr.getline(ch, 1024, '\t');
-			tmpForSave.capt=ch;
-			ifstr.getline(ch, 1024);
-			tmpForSave.comment=ch;
-		} else {
-			ifstr.getline(ch, 1024);
-			tmpForSave.capt=ch;
-		}
-		if (manual_add)
-			 sprintf_s(ch, "m%d\t", tmpForSave.hour);
-		else sprintf_s(ch, "%d\t", tmpForSave.hour);
-		forLoad1[ch + tmpForSave.exe + '\t' + tmpForSave.capt] = tmpForSave;
-		if (!ifstr)
-			break;
-	}
-	ifstr.close();
-	return true;
-}
-
 void CEactivityDlg::LoadCurDay() 
 {
 	SYSTEMTIME st;
@@ -2062,7 +2069,7 @@ void CEactivityDlg::LoadCurDay()
 
 	string strf=path_actuser+curDayFileName;
 	//WriteJournal("LoadCurDay from %s", strf.c_str());
-	LoadFileDay(strf, ActivToday);
+	statsF.LoadFileDayCrypt(strf, ActivToday);
 }
 
 void CEactivityDlg::SaveRules()
@@ -2219,39 +2226,6 @@ void CEactivityDlg::SaveAllYear()
 	ofstr.close();
 }
 
-void CEactivityDlg::SaveDay(string fileName, activ& Activ) 
-{
-	ofstream ofstr(fileName.c_str());
-	WriteJournal("Save to file file = %s", fileName.c_str());
-	if (ofstr==NULL) {
-		WriteJournal("!!! Save is failed !!! file = %s", fileName.c_str());
-		return;
-	}
-	char ch[]="ver=0.4\n";
-	ofstr<<ch;
-	for (activ::iterator it_activ=Activ.begin(); it_activ!=Activ.end(); it_activ++)
-	{
-		Activity tmpForSave=(*it_activ).second;
-		ofstr<<tmpForSave.hwMain;
-		ofstr<<'\t';
-		ofstr<<tmpForSave.hwChil;
-		ofstr<<'\t';
-		ofstr<<tmpForSave.sumActs;
-		ofstr<<'\t';
-		ofstr<<tmpForSave.usefulActs;
-		ofstr<<'\t';
-		ofstr<<tmpForSave.sumTime;
-		ofstr<<'\t';
-		ofstr<<tmpForSave.usefulTime;
-		ofstr<<'\t';
-		ofstr<<(*it_activ).first;
-		ofstr<<'\t';
-		ofstr<<tmpForSave.comment;
-		ofstr<<'\n';
-	}
-	ofstr.close();
-}
-
 void CEactivityDlg::SaveCurDay(bool dayChanged) 
 {
 	char date[27];
@@ -2264,8 +2238,8 @@ void CEactivityDlg::SaveCurDay(bool dayChanged)
 		GetDateFormat(LOCALE_USER_DEFAULT, LOCALE_USE_CP_ACP, &st, "activ_user_yyyy_MM_dd.a", date, 25);
 	}
 
-	string fileName=path_actuser+date;
-	SaveDay(fileName, ActivToday);
+	string fileName = path_actuser + date;
+	statsF.SaveDayEncryptedFormat(fileName, ActivToday);
 
 	if (dayChanged)
 	{
@@ -2459,7 +2433,7 @@ void CEactivityDlg::OnDblclkListDays(NMHDR* pNMHDR, LRESULT* pResult)
 			UpdatePeriodTableViewByHours(activHours);
 			return;
 		}
-		if (!LoadFileDay(fname, aSelDayView))
+		if (!statsF.LoadFileDayCrypt(fname, aSelDayView))
 		{
 			CString sMes;
 			sMes.LoadString(trif.GetIds(IDS_STRING1573));
@@ -2729,7 +2703,7 @@ void CEactivityDlg::OnActivityFullManualAdd()
 		CString sDate = currentExeTableDate.substr(0, 10).c_str();
 		char fname[2048];
 		sprintf_s(fname, "%sactiv_user_%s.a", path_actuser.c_str(), sDate);
-		SaveDay(fname, aSelDayView);
+		statsF.SaveDayOldFormat(fname, aSelDayView);
 	}
 	OnRefresh();
 }
@@ -2801,7 +2775,7 @@ void CEactivityDlg::OnActivityManualAdd()
 		CString sDate = currentExeTableDate.substr(0, 10).c_str();
 		char fname[2048];
 		sprintf_s(fname, "%sactiv_user_%s.a", path_actuser.c_str(), sDate);
-		SaveDay(fname, aSelDayView);
+		statsF.SaveDayOldFormat(fname, aSelDayView);
 	}
 	if (bReplaced)
 		OnRefresh();
@@ -2837,7 +2811,7 @@ void CEactivityDlg::OnDeleteRecordFromExeCapt()
 		CString sDate = currentExeTableDate.substr(0, 10).c_str();
 		char fname[2048];
 		sprintf_s(fname, "%sactiv_user_%s.a", path_actuser.c_str(), sDate);
-		SaveDay(fname, aSelDayView);
+		statsF.SaveDayOldFormat(fname, aSelDayView);
 	}
 	if (bReplaced)
 		OnRefresh();
@@ -3017,7 +2991,8 @@ void CEactivityDlg::OnSelchangeComboDownTable()
 
 void CEactivityDlg::OnBnClickedOk()
 {
-	SendReportOfDayOnMail("2016_01_17");
+	menuExeCapt.CheckMenuItem(ID_IDR_32808, MF_CHECKED | MF_BYCOMMAND);
+//	SendReportOfDayOnMail("2016_01_17");
 // 	COnlineAdvices dialOnlineAdv;
 // 	dialOnlineAdv.path_actuser = path_actuser;
 // 	dialOnlineAdv.DoModal();
@@ -3081,7 +3056,7 @@ int CEactivityDlg::CalculateAverageUsefulParameter(int lastDays, activ_hours& av
 		sprintf_s(fname, "%sactiv_user_%d_%02d_%02d.a", path_actuser.c_str(), 
 			ctDateForLoad.GetYear(), ctDateForLoad.GetMonth(), ctDateForLoad.GetDay());
 		activ aDayActiv;
-		if (!LoadFileDay(fname, aDayActiv))
+		if (!statsF.LoadFileDayCrypt(fname, aDayActiv))
 		{
 			skippedDays++;
 			if (skippedDays>15)
@@ -3162,6 +3137,7 @@ int CEactivityDlg::CalculateAverageUsefulParameter(int lastDays, activ_hours& av
 	str2.LoadString(IDS_STRING1890); // "Actions"
 	chart.GetLeftAxis()->GetLabel()->SetText(radioTime.GetCheck() ? 
 		str1.GetBuffer(100) : str2.GetBuffer(100));
+	chart.GetLeftAxis()->SetAutomaticMode(CChartAxis::FullAutomatic);
 	chart.RemoveAllSeries(); //чистка предыдущих кривых
 	if (chart.GetTopAxis())
 		chart.GetTopAxis()->SetVisible(false);
@@ -3232,6 +3208,7 @@ CString CEactivityDlg::CompareTwoPeriodsOfDays(CStringArray& saDates1,
 	axis1->SetTickLabelFormat(false, _T("%d %b"));
 	chart.GetBottomAxis()->SetAutomatic(true);
 	chart.GetLeftAxis()->SetAutomatic(true);
+	chart.GetLeftAxis()->SetAutomaticMode(CChartAxis::FullAutomatic);
 	chart.GetBottomAxis()->GetLabel()->SetText("Day");
 
 	CChartDateTimeAxis* axis2;
@@ -3284,7 +3261,7 @@ CString CEactivityDlg::CompareTwoPeriodsOfDays(CStringArray& saDates1,
 		char fname[2048];
 		sprintf_s(fname, "%sactiv_user_%s.a", path_actuser.c_str(), saDates1[ii]);
 		activ aDayActiv;
-		if (!LoadFileDay(fname, aDayActiv))
+		if (!statsF.LoadFileDayCrypt(fname, aDayActiv))
 		{
 			CString str;
 			str.LoadString(trif.GetIds(IDS_STRING1655));
@@ -3364,7 +3341,7 @@ CString CEactivityDlg::CompareTwoPeriodsOfDays(CStringArray& saDates1,
 		char fname[2048];
 		sprintf_s(fname, "%sactiv_user_%s.a", path_actuser.c_str(), saDates2[ii]);
 		activ aDayActiv;
-		if (!LoadFileDay(fname, aDayActiv))
+		if (!statsF.LoadFileDayCrypt(fname, aDayActiv))
 		{
 			CString str;
 			str.LoadString(trif.GetIds(IDS_STRING1655));
@@ -3372,7 +3349,7 @@ CString CEactivityDlg::CompareTwoPeriodsOfDays(CStringArray& saDates1,
 			::SetCursor(AfxGetApp()->LoadStandardCursor(IDC_ARROW));
 			return "";
 		}
-		activ_exe activExe; 
+		activ_exe activExe;
 		activ_hours activHours;
 		int row=table_period.InsertItem(rowAddSecondPeriod, saDates2[ii]);
 		CalculateUsefulTimeAndActs(aDayActiv, activExe, activHours);
@@ -3540,6 +3517,7 @@ void CEactivityDlg::CompareTwoPeriodsOfMons(CStringArray& saDates1, CStringArray
 	axis1->SetTickLabelFormat(false, _T("%b %Y"));
 	chart.GetBottomAxis()->SetAutomatic(true);
 	chart.GetLeftAxis()->SetAutomatic(true);
+	chart.GetLeftAxis()->SetAutomaticMode(CChartAxis::FullAutomatic);
 	chart.GetBottomAxis()->GetLabel()->SetText("Month");
 
 	CString str1, str2;
@@ -3859,7 +3837,7 @@ void CEactivityDlg::OnOptionsOptions()
 	//example http://www.codeproject.com/Articles/6234/High-color-icons-for-CPropertySheet
 	COptionTab page_1( "Общие", IDR_MAINFRAME );
 	COptionTab2 page_2( "Информационная панель", IDR_MAINFRAME );
-	COptionTabMail page_3( "Email информирование", IDR_MAINFRAME );
+	COptionTabMail page_3( "Конфиденциальность", IDR_MAINFRAME );
 	CTabOption sheet( "Настройки" );
 	CFont* cf = GetFont();
 	LOGFONT lf;
@@ -3909,6 +3887,9 @@ void CEactivityDlg::OnOptionsOptions()
 	dialInfo->frequpdate = AfxGetApp()->GetProfileInt("App", "InfoPanel.frequpdate", 5);
 	dialInfo->bold = AfxGetApp()->GetProfileInt("App", "InfoPanel.bold", 1);
 	dialInfo->hidedescription = AfxGetApp()->GetProfileInt("App", "InfoPanel.hidedescription", 0);
+	BOOL checkMenu = AfxGetApp()->GetProfileInt("App", "combo_privacy", 1) != 0;
+	menuExeCapt.CheckMenuItem(ID_IDR_32808, 
+		checkMenu ? MF_CHECKED : MF_UNCHECKED | MF_BYCOMMAND);
 	KillTimer(AUTOREFRESHINFOPANEL);
 	dialInfo->resizeWins = true;
 	SetTimer(AUTOREFRESHINFOPANEL, dialInfo->frequpdate*1000, 0);
@@ -4047,4 +4028,18 @@ void CEactivityDlg::SendStatOnMail()
 		AfxMessageBox(trif.GetIds(IDS_STRING1867));
 	else 
 		AfxMessageBox(trif.GetIds(IDS_STRING1869));
+}
+
+void CEactivityDlg::OnMenuHideCapt()
+{
+	if (AfxGetApp()->GetProfileInt("App", "combo_privacy", 1)==0)
+	{
+		AfxGetApp()->WriteProfileInt("App", "combo_privacy", 1);
+	} else {
+		AfxGetApp()->WriteProfileInt("App", "combo_privacy", 0);
+	}
+	BOOL checkMenu = AfxGetApp()->GetProfileInt("App", "combo_privacy", 1) != 0;
+	menuExeCapt.CheckMenuItem(ID_IDR_32808, 
+		checkMenu ? MF_CHECKED : MF_UNCHECKED | MF_BYCOMMAND);
+	OnRefresh();
 }

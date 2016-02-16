@@ -450,6 +450,12 @@
 #define IDS_STRING1894                  1894
 #define IDS_STRING1895                  1895
 #define IDS_STRING1896                  1896
+#define IDS_STRING1897                  1897
+#define IDS_STRING1898                  1898
+#define IDS_STRING1899                  1899
+#define IDS_STRING1900                  1900
+#define IDS_STRING1901                  1901
+#define IDS_STRING1902                  1902
 #define ID_IDR_SDSD                     32771
 #define ID_ACTIVITY_SETKOEFEXE          32772
 #define ID_IDR_SDSD32773                32773
@@ -487,13 +493,14 @@
 #define ID_ACCELERATOR32804             32804
 #define ID_CONTEXT_32806                32806
 #define ID_32807                        32807
+#define ID_IDR_32808                    32808
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        156
-#define _APS_NEXT_COMMAND_VALUE         32808
+#define _APS_NEXT_RESOURCE_VALUE        157
+#define _APS_NEXT_COMMAND_VALUE         32809
 #define _APS_NEXT_CONTROL_VALUE         1042
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

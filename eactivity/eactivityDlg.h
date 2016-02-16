@@ -121,10 +121,8 @@ public:
 		// в случае если не достаточно дней для выборки
 
 	void SaveCurDay(bool smena=false);
-	void SaveDay(string fileName, activ& Activ);
 	void LoadCurDay();
 	BOOL SendReportOfDayOnMail(string dateToday);
-	bool LoadFileDay(string fname, activ &forLoad1);
 	string curDayFileName;//содержит дату текущего дня "activ_user_2015_11_26.a"
 	BOOL ReplaceActivityRecord(activ &Activ, CString sExeOld, CString sExeNew, 
 		CStringArray& sCaptOld, CString sCaptNew, 
@@ -238,6 +236,7 @@ protected:
 	afx_msg void OnHistoryOnlineAdvices();
 	afx_msg void OnHistoryShortTodo();
 	afx_msg void SendStatOnMail();
+	afx_msg void OnMenuHideCapt();
 };
 
 //{{AFX_INSERT_LOCATION}}
