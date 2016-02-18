@@ -6,6 +6,7 @@
 #include "afxcmn.h"
 
 #define WM_INFO_CLOSE WM_USER + 6
+#define WM_MYICONNOTIFY		WM_USER+2
 
 struct PreWorkPeriod 
 {
@@ -75,6 +76,7 @@ protected:
 	virtual BOOL OnInitDialog();
 	afx_msg void OnTimer(UINT nIDEvent);
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+	virtual BOOL PreTranslateMessage(MSG* pMsg);
 
 	DECLARE_MESSAGE_MAP()
 	CXHTMLStatic stat_day_adv;

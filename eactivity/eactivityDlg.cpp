@@ -5,8 +5,6 @@
 #include "eactivity.h"
 #include "eactivityDlg.h"
 
-#define WM_MYICONNOTIFY		WM_USER+2
-
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -87,10 +85,7 @@ void CEactivityDlg::DoDataExchange(CDataExchange* pDX)
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CEactivityDlg)
 	DDX_Control(pDX, IDC_COMBO2, combo_group);
-	DDX_Control(pDX, IDC_SPIN2, spin_edit);
-	DDX_Control(pDX, IDC_EDITr17, edit_capts);
 	DDX_Control(pDX, IDC_LIST3, table_period);
-	DDX_Control(pDX, IDC_COMBO1, combo_sort);
 	DDX_Control(pDX, IDC_LIST2, table_exe_capt);
 	//}}AFX_DATA_MAP
 	DDX_Control(pDX, IDC_CHARTCTRL, chart);
@@ -106,7 +101,6 @@ void CEactivityDlg::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CEactivityDlg, CDialog)
 	//{{AFX_MSG_MAP(CEactivityDlg)
-	ON_CBN_SELCHANGE(IDC_COMBO1, OnSelchangeCombo_sort)
 	ON_NOTIFY(NM_DBLCLK, IDC_LIST3, OnDblclkListDays)
 	ON_CBN_SELCHANGE(IDC_COMBO2, OnSelchangeComboDownTable)
 	ON_WM_SYSCOMMAND()
@@ -120,16 +114,15 @@ BEGIN_MESSAGE_MAP(CEactivityDlg, CDialog)
 	ON_NOTIFY(NM_RCLICK, IDC_LIST2, OnRclickTableExeCapt)
 	ON_NOTIFY(NM_RCLICK, IDC_LIST3, OnRclickPeriodTable)
 	ON_COMMAND(ID_ACTIVITY_SETKOEFEXE, OnActivitySetkoefeExe)
-	ON_EN_CHANGE(IDC_EDITr17, OnChangeEDITcapts)
 	ON_COMMAND(ID_ACTIVITY_EXE, OnActivityShowAllCapts)
 	ON_COMMAND(ID_IDR_32790, OnActivityManualAdd)
 	ON_COMMAND(ID_IDR_32792, OnActivityFullManualAdd)
 	ON_COMMAND(ID_IDR_32791, OnDeleteRecordFromExeCapt)
+	//ON_MESSAGE(WM_USER31, OutSetHook)
 	ON_MESSAGE(WM_MYICONNOTIFY,OnIcon)
 	//}}AFX_MSG_MAP
 	ON_BN_CLICKED(IDOK, &CEactivityDlg::OnBnClickedOk)
 	//ON_BN_CLICKED(IDCANCEL, &CEactivityDlg::OnBnClickedCancel)
-	ON_BN_CLICKED(IDC_BUTTON1, &CEactivityDlg::OnSave)
 	ON_BN_CLICKED(IDC_RADIO1, &CEactivityDlg::OnBnClickedRadio1)
 	ON_BN_CLICKED(IDC_RADIO2, &CEactivityDlg::OnBnClickedRadio1)
 	ON_COMMAND(ID_REPORTS_USEFULPARAMETERFROMSELECTEDPERIOD, &CEactivityDlg::OnReportsUsefulParameterFromSelectedPeriod)
@@ -149,6 +142,17 @@ BEGIN_MESSAGE_MAP(CEactivityDlg, CDialog)
 	ON_COMMAND(ID_32802, &CEactivityDlg::OnHistoryShortTodo)
 	ON_COMMAND(ID_32807, &CEactivityDlg::SendStatOnMail)
 	ON_COMMAND(ID_IDR_32808, &CEactivityDlg::OnMenuHideCapt)
+	ON_WM_MOUSEMOVE()
+	ON_WM_LBUTTONUP()
+	ON_WM_LBUTTONDOWN()
+	ON_WM_SETCURSOR()
+	ON_WM_SIZE()
+	ON_COMMAND(ID_32809, &CEactivityDlg::OnEditCoef)
+	ON_COMMAND(ID_32811, &CEactivityDlg::OnSortByCommonTime)
+	ON_COMMAND(ID_32812, &CEactivityDlg::OnSortByUsefulTime)
+	ON_COMMAND(ID_32813, &CEactivityDlg::OnSortByActs)
+	ON_COMMAND(ID_32814, &CEactivityDlg::OnSortByUsefulActs)
+	ON_COMMAND(ID_32815, &CEactivityDlg::OnSortByExe)
 END_MESSAGE_MAP()
 
 LRESULT CEactivityDlg::OnCloseInfoPanel(WPARAM wParam, LPARAM lParam) 
@@ -261,10 +265,6 @@ BOOL CEactivityDlg::OnInitDialog()
 //	tool_tip.Create(this, TTS_ALWAYSTIP);
 	CString str;
 	str.LoadString(trif.GetIds(IDS_STRING1583));
-//	tool_tip.AddTool(GetDlgItem(IDC_EDITr17), str);
-//	tool_tip.AddTool(GetDlgItem(IDC_SPIN2), str);
-	spin_edit.SetBuddy(&edit_capts);
-	spin_edit.SetRange(0,9999);
 
 	//list_activ.SetStile(LVS_REPORT | LVS_OWNERDRAWFIXED /*|LVS_EDITLABELS*/);
 	table_exe_capt.SetExtendedStyle(LVS_EX_GRIDLINES | LVS_EX_FULLROWSELECT | table_exe_capt.GetExtendedStyle());
@@ -296,20 +296,7 @@ BOOL CEactivityDlg::OnInitDialog()
 	str.LoadString(trif.GetIds(IDS_STRING1885)); // "Refresh"
 	GetDlgItem(IDOK2)->SetWindowText(str);
 
-	combo_sort.ResetContent();
-	str.LoadString(trif.GetIds(IDS_STRING1603)); // "Сортировать по времени"
-	combo_sort.AddString(str);
-	str.LoadString(trif.GetIds(IDS_STRING1895)); // "Сортировать по полезному времени"
-	combo_sort.AddString(str);
-	str.LoadString(trif.GetIds(IDS_STRING1605)); // "Сортировать по действиям"
-	combo_sort.AddString(str);
-	str.LoadString(trif.GetIds(IDS_STRING1601)); // "Сортировать по полезным действиям"
-	combo_sort.AddString(str);
-	str.LoadString(trif.GetIds(IDS_STRING1599)); // "Сортировать по EXE"
-	combo_sort.AddString(str);
-	combo_sort.SetDroppedWidth(230);
-	combo_sort.SetCurSel(AfxGetApp()->GetProfileInt("App", "type_sort_activ", 0));
-
+	UpdateSort(AfxGetApp()->GetProfileInt("App", "type_sort_activ", 0), true);
 	combo_group.ResetContent();
 	str.LoadString(trif.GetIds(IDS_STRING1635));
 	combo_group.AddString(str);
@@ -319,9 +306,6 @@ BOOL CEactivityDlg::OnInitDialog()
 	combo_group.AddString(str);
 	//по умолчанию ставим по часовую разбивку, чтобы сразу считались статики отставания
 	combo_group.SetCurSel(0);//AfxGetApp()->GetProfileInt("App", "type_group_activ", 0)
-
-	str.LoadString(trif.GetIds(IDS_STRING1613));
-	GetDlgItem(IDC_BUTTON1)->SetWindowText(str);
 
 	table_period.SetExtendedStyle(LVS_EX_GRIDLINES | LVS_EX_FULLROWSELECT | table_period.GetExtendedStyle());
 	switch (combo_group.GetCurSel())
@@ -377,7 +361,6 @@ BOOL CEactivityDlg::OnInitDialog()
 	//statsF.LoadYear(aCurYear);
 	statsF.LoadAllYears(aCurYear);
 	sprintf_s(ch, "%d", AfxGetApp()->GetProfileInt("App", "CounShowCapt", 4));
-	edit_capts.SetWindowText(ch);
 	switch (combo_group.GetCurSel())
 	{
 	case BYHOURS:
@@ -411,7 +394,6 @@ BOOL CEactivityDlg::OnInitDialog()
 		dialInfo->StartShow();
 #ifndef _DEBUG
 	GetDlgItem(IDOK)->ShowWindow(SW_HIDE);
-	GetDlgItem(IDCANCEL)->ShowWindow(SW_HIDE);
 #endif
 	hMyDll=NULL;
 	__SetHook__(TRUE);
@@ -590,6 +572,12 @@ BOOL CEactivityDlg::__SetHook__(BOOL fSet)
 	trif.RecordLog("SetHook return TRUE");  
 #endif
 	return TRUE;
+}
+
+windowsSize::windowsSize()
+{
+	moveBetweenTables = false;
+	resizeBetweenTables = false;
 }
 
 DWORD oldtime=0;
@@ -832,7 +820,7 @@ void CEactivityDlg::UpdateTableExeCapt(activ &allActiv, activ_hours &activHours,
 	}
 	if (!showInfoTable)
 		return; //интерфейсную часть не обновляем
-	switch(combo_sort.GetCurSel())
+	switch(AfxGetApp()->GetProfileInt("App", "type_sort_activ", 0))
 	{
 	case 0:
 		sort(vect_for_sort.begin(), vect_for_sort.end(), CompareTimes2);
@@ -1050,7 +1038,7 @@ void CEactivityDlg::AddExeCaptToTable(string exe, activ &forLoad1, int &sumCapt)
 			vect_for_sort.push_back((*ia).second);
 		}
 	}
-	switch(combo_sort.GetCurSel())
+	switch(AfxGetApp()->GetProfileInt("App", "type_sort_activ", 0))
 	{
 	case 0:
 		sort(vect_for_sort.begin(), vect_for_sort.end(), CompareTimes);
@@ -1071,8 +1059,7 @@ void CEactivityDlg::AddExeCaptToTable(string exe, activ &forLoad1, int &sumCapt)
 
 	int coun=0; 
 	CString str;
-	edit_capts.GetWindowText(str);
-	int MaxCoun=atoi(str);
+	int MaxCoun=AfxGetApp()->GetProfileInt("App", "CounShowCapt", 4);
 	int hideLevel = AfxGetApp()->GetProfileInt("App", "combo_privacy", 1);
 	for (vector<Activity>::iterator iv=vect_for_sort.begin(); iv!=vect_for_sort.end(); ++iv)
 	{
@@ -1528,7 +1515,7 @@ void CEactivityDlg::UpdatePeriodTableViewByHours(activ_hours &activHours, bool s
 			chart.GetTopAxis()->SetVisible(false);
 		chart.CreateStandardAxis(CChartCtrl::BottomAxis);
 		CString str;
-		str.LoadString(IDS_STRING1888); 
+		str.LoadString(IDS_STRING1892); 
 		chart.GetBottomAxis()->GetLabel()->SetText(str.GetBuffer(100));// "Hour"
 		CString str1, str2;
 		str1.LoadString(IDS_STRING1888); // "Minutes"
@@ -1986,50 +1973,244 @@ void CEactivityDlg::UpdatePeriodTable(activ &CurView)
 	stat_periodTable.SetWindowText(ch);
 }
 
-void CEactivityDlg::SizingWins()
+BOOL CEactivityDlg::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message) 
 {
-	CRect rect, main;
-	GetWindowRect(&main);
-	ScreenToClient(main);
-	int mainHei=main.Height();
-	if (mainHei<50)
-		return;
-	
-	GetDlgItem(IDOK)->GetWindowRect(&rect);
-	ScreenToClient(rect);
-	rect+=CPoint(0, main.bottom-rect.bottom-15);
-	GetDlgItem(IDOK)->MoveWindow(rect);
+	if (WINs.moveBetweenTables)
+	{
+		if ( pWnd->m_hWnd==table_period.m_hWnd || pWnd->m_hWnd==table_exe_capt.m_hWnd)
+		{
+			WINs.moveBetweenTables = false;
+			return CDialog::OnSetCursor(pWnd, nHitTest, message);
+		}
+		//SetCursor(LoadCursor(NULL, IDC_HAND));
+		return TRUE;
+	}
+	return CDialog::OnSetCursor(pWnd, nHitTest, message);
+}
 
-	GetDlgItem(IDC_BUTTON1)->GetWindowRect(&rect);
-	ScreenToClient(rect);
-	rect+=CPoint(0, main.bottom-rect.bottom-15);
-	GetDlgItem(IDC_BUTTON1)->MoveWindow(rect);
+BOOL CEactivityDlg::PreTranslateMessage(MSG* pMsg) 
+{
+ 	if (pMsg->message == WM_LBUTTONDOWN)
+ 	{
+		CPoint cp;
+		GetCursorPos(&cp);
+		ScreenToClient(&cp);
+		OnLButtonDown(pMsg->wParam, cp);
+		TRACE("OnLButtonDown (%d:%d) PTM\n", cp.x, cp.y);
+ 	}
+ 	if (pMsg->message == WM_MOUSEMOVE)
+ 	{
+		CPoint cp;
+		GetCursorPos(&cp);
+		ScreenToClient(&cp);
+		OnMouseMove(pMsg->wParam, cp);
+ 		//TRACE("OnMouseMove (%d:%d) PTM\n", GET_X_LPARAM(pMsg->lParam), GET_Y_LPARAM(pMsg->lParam));
+ 	}
+	return CDialog::PreTranslateMessage(pMsg);
+}
 
-	main.bottom=rect.top;//якоримся за кнопки внизу (обновить, редактировать коэффициенты)
-	GetDlgItem(IDC_LIST3)->GetWindowRect(&rect);
-	ScreenToClient(rect);
-	rect.top=main.bottom-mainHei/4-25;	
-	rect.bottom=main.bottom-6;
-	rect.right=main.right-15;
-	GetDlgItem(IDC_LIST3)->MoveWindow(rect);
- 
-	main=rect;//якоримся за нижнее окно вывода активности
-	stat_periodTable.GetWindowRect(&rect);
-	ScreenToClient(rect);
-	rect+=CPoint(0, main.top-rect.bottom-6);
-	stat_periodTable.MoveWindow(rect);
+void CEactivityDlg::OnSize(UINT nType, int cx, int cy) 
+{
+	CDialog::OnSize(nType, cx, cy);
 
-	GetDlgItem(IDC_COMBO2)->GetWindowRect(&rect);
-	ScreenToClient(rect);
-	rect+=CPoint(0, main.top-rect.bottom-6);
-	GetDlgItem(IDC_COMBO2)->MoveWindow(rect);
+	if (table_period.GetSafeHwnd() == 0)
+		return; //диалог еще не проинициализировался
+	CRect rectMain, rectTopTable, rectBottomTable, rectChart;
+	CRect rectStat;
+	CRect rectStat2, rectRadio1, rectRadio2;
+	GetClientRect(&rectMain);
+	chart.GetWindowRect(&rectChart);
+	::GetWindowRect(table_period  .GetSafeHwnd(), &rectTopTable);
+	::GetWindowRect(table_exe_capt.GetSafeHwnd(), &rectBottomTable);
+	::GetWindowRect(stat_ExeCapt  .GetSafeHwnd(), &rectStat);
+	::GetWindowRect(radioTime     .GetSafeHwnd(), &rectRadio1);
+	::GetWindowRect(radioActs     .GetSafeHwnd(), &rectRadio2);
+	::GetWindowRect(GetDlgItem(IDC_STATIC_percent_hour3)->GetSafeHwnd(), &rectStat2);
 
-	main.bottom=rect.top;//якоримся за комбо (группировать по дням/месяцам)
-	GetDlgItem(IDC_LIST2)->GetWindowRect(&rect);
-	ScreenToClient(rect);
-	rect.bottom=main.bottom-6;
-	rect.right=main.right;
-	GetDlgItem(IDC_LIST2)->MoveWindow(rect);
+	CRect rectStatDay, rectStatDayDescr, rectStatHour, rectStatHourDescr;
+	::GetWindowRect(stat_day_adv  .GetSafeHwnd(), &rectStatDay);
+	::GetWindowRect(stat_hour_adv .GetSafeHwnd(), &rectStatHour);
+	::GetWindowRect(GetDlgItem(IDC_STATIC_percent_day2)->GetSafeHwnd(), &rectStatDayDescr);
+	::GetWindowRect(GetDlgItem(IDC_STATIC_percent_hour)->GetSafeHwnd(), &rectStatHourDescr);
+
+	CRect rectCheckInfo, rectCheckUpdate, rectButtonBreak, rectButtonRefresh;
+	::GetWindowRect(check_infopanel.GetSafeHwnd(), &rectCheckInfo);
+	::GetWindowRect(checkAutoUpdate.GetSafeHwnd(), &rectCheckUpdate);
+	::GetWindowRect(GetDlgItem(IDC_BUTTONSTART)->GetSafeHwnd(), &rectButtonBreak);
+	::GetWindowRect(GetDlgItem(IDOK2)->GetSafeHwnd(), &rectButtonRefresh);
+
+	ScreenToClient(&rectTopTable);
+	ScreenToClient(&rectBottomTable);
+	ScreenToClient(&rectChart);
+	ScreenToClient(&rectStat);
+	ScreenToClient(&rectStat2);
+	ScreenToClient(&rectRadio1);
+	ScreenToClient(&rectRadio2);
+
+	ScreenToClient(&rectStatDay);
+	ScreenToClient(&rectStatHour);
+	ScreenToClient(&rectStatDayDescr);
+	ScreenToClient(&rectStatHourDescr);
+
+	ScreenToClient(&rectCheckInfo);
+	ScreenToClient(&rectCheckUpdate);
+	ScreenToClient(&rectButtonBreak);
+	ScreenToClient(&rectButtonRefresh);
+
+	int deltaX = rectMain.right  - rectChart.right - 10;
+	int deltaY = rectMain.bottom - rectChart.bottom - 2;
+ 	if (deltaX==0 && deltaY==0)
+ 		return;
+	bool permissionChange = false;
+	if (rectTopTable.Height() + deltaY > 20 && rectBottomTable.Height() + deltaY > 20)
+	{	//не позволяем делать высоту контролов меньше 20 пикселей
+		permissionChange = true;
+	} else {
+		if (rectTopTable.Width() <= 20 && deltaY < 0)
+		{
+			permissionChange = true;
+		} else {
+			if (rectBottomTable.Width() <= 20 && deltaY < 0)
+				permissionChange = true;
+		}
+	}
+	if (permissionChange)
+	{
+		int deltaBetweenTables = rectBottomTable.top - rectTopTable.bottom;
+		int deltaBetweenTableAndEdit = rectBottomTable.top - rectStat.bottom;
+		rectChart       += CPoint(0, deltaY);
+		rectChart.right += deltaX;
+		rectBottomTable.bottom = rectChart.top - 2;
+		// с помощью рандома обходим непропорциональное уменьшение верхней таблицы из-за нечетного deltaY
+		if (deltaY != 0)
+			rectBottomTable.top += deltaY/2 + (deltaY < 0 ? -1 : 1 ) * rand()%2;
+		rectTopTable.bottom = rectBottomTable.top - deltaBetweenTables;
+		rectTopTable   .right += deltaX;
+		rectBottomTable.right += deltaX;
+		//смещение контролов в области между таблицами
+		int deltaYMiddleArea = (rectBottomTable.top - rectStat.bottom) - deltaBetweenTableAndEdit;
+ 		rectStat        += CPoint(0, deltaYMiddleArea);
+		rectStat2       += CPoint(deltaX, deltaY);
+		rectRadio1      += CPoint(deltaX, deltaY);
+		rectRadio2      += CPoint(deltaX, deltaY);
+
+		rectStatDay     += CPoint(deltaX, 0);
+		rectStatHour    += CPoint(deltaX, 0);
+		rectStatDayDescr   += CPoint(deltaX, 0);
+		rectStatHourDescr  += CPoint(deltaX, 0);
+
+		rectCheckInfo     += CPoint(deltaX, 0);
+		rectCheckUpdate   += CPoint(deltaX, 0);
+		rectButtonBreak   += CPoint(deltaX, 0);
+		rectButtonRefresh += CPoint(deltaX, 0);
+
+		table_period  .MoveWindow(rectTopTable);
+		table_exe_capt.MoveWindow(rectBottomTable);
+		chart         .MoveWindow(rectChart);
+ 		stat_ExeCapt  .MoveWindow(rectStat);
+		radioTime     .MoveWindow(rectRadio1);
+		radioActs     .MoveWindow(rectRadio2);
+		GetDlgItem(IDC_STATIC_percent_hour3)->MoveWindow(rectStat2);
+
+		stat_day_adv  .MoveWindow(rectStatDay);
+		stat_hour_adv .MoveWindow(rectStatHour);
+		GetDlgItem(IDC_STATIC_percent_day2)->MoveWindow(rectStatDayDescr);
+		GetDlgItem(IDC_STATIC_percent_hour)->MoveWindow(rectStatHourDescr);
+
+		check_infopanel.MoveWindow(rectCheckInfo);
+		checkAutoUpdate.MoveWindow(rectCheckUpdate);
+		GetDlgItem(IDC_BUTTONSTART)->MoveWindow(rectButtonBreak);
+		GetDlgItem(IDOK2)->MoveWindow(rectButtonRefresh);
+	}
+	RedrawWindow();
+}
+
+void CEactivityDlg::OnMouseMove(UINT nFlags, CPoint point) 
+{
+	CRect rectTopTable, rectBottomTable, rectRightEdit;
+	::GetWindowRect(table_period  .GetSafeHwnd(), &rectTopTable);
+	::GetWindowRect(table_exe_capt.GetSafeHwnd(), &rectBottomTable);
+	ScreenToClient(&rectTopTable);
+	ScreenToClient(&rectBottomTable);
+	ScreenToClient(&rectRightEdit);
+	if (WINs.resizeBetweenTables)
+	{	//изменяем размеры таблиц
+		WINs.ptLast = point;
+		int deltaY = WINs.ptLast.y - WINs.ptFirst.y;
+		CRect rectStat;
+		::GetWindowRect(stat_ExeCapt.GetSafeHwnd(), &rectStat);
+		ScreenToClient(&rectStat);
+		
+		bool permissionChange = false;
+		if (rectTopTable.Height() + deltaY > 20 && rectBottomTable.Height() - deltaY > 20)
+		{	//не позволяем делать высоту контролов меньше 20 пикселей
+			permissionChange = true;
+		} else {
+			if (rectTopTable.Width() <= 20 && deltaY < 0)
+			{
+				permissionChange = true;
+			} else {
+				if (rectBottomTable.Width() <= 20 && deltaY > 0)
+					permissionChange = true;
+			}
+		}
+		if (permissionChange)
+		{
+			rectTopTable.bottom += deltaY;
+			rectBottomTable.top += deltaY;
+			rectRightEdit += CPoint(0, deltaY);
+			rectStat      += CPoint(0, deltaY);
+			WINs.ptFirst=WINs.ptLast;
+			table_period  .MoveWindow(rectTopTable);
+			table_exe_capt.MoveWindow(rectBottomTable);
+			stat_ExeCapt  .MoveWindow(rectStat);
+		}
+		return CDialog::OnMouseMove(nFlags, point);
+	}
+
+	//движение мышью в прострастве между таблицами, меняем курсор, 
+	//	чтобы показать возможность ресайза таблиц
+	if (rectTopTable.left   <= point.x && point.x <= rectRightEdit.left && 
+		rectTopTable.bottom <= point.y && point.y <= rectBottomTable.top)
+	{
+		if (!WINs.moveBetweenTables)
+		{	
+			WINs.moveBetweenTables = true;
+			SetCursor(LoadCursor(NULL, IDC_SIZENS));
+			TRACE("SetCursor cursor_y = %d, table1.bottom = %d table2.top = %d \n",
+				point.y, rectTopTable.bottom, rectBottomTable.top);
+		}
+	} else {
+		if (WINs.moveBetweenTables)
+		{
+			WINs.moveBetweenTables=false;
+			SetCursor(LoadCursor(NULL, IDC_ARROW));
+			TRACE("UnSetCursor cursor_y = %d, table1.bottom = %d table2.top = %d \n", 
+				point.y, rectTopTable.bottom, rectBottomTable.top);
+		}
+	}
+	CDialog::OnMouseMove(nFlags, point);
+}
+void CEactivityDlg::OnLButtonDown(UINT nFlags, CPoint point) 
+{
+	TRACE("OnLButtonDown \n");
+	if (WINs.moveBetweenTables)
+	{
+		TRACE("OnLButtonDown resizeBetweenTables = true \n");
+		WINs.resizeBetweenTables = true;
+ 		WINs.ptFirst = WINs.ptLast = point;
+		SetCapture();
+	}
+	CDialog::OnLButtonDown(nFlags, point);
+}
+void CEactivityDlg::OnLButtonUp(UINT nFlags, CPoint point) 
+{
+	if (WINs.resizeBetweenTables)
+	{
+		WINs.resizeBetweenTables = false;
+		ReleaseCapture();
+	}
+	CDialog::OnLButtonUp(nFlags, point);
 }
 
 void CEactivityDlg::Exit() 
@@ -2042,10 +2223,6 @@ void CEactivityDlg::Exit()
 	SaveCurMonth();
 	SaveAllYear();
 	SaveRules();
-	char ch[100];
-	edit_capts.GetWindowText(ch, 100);
-	AfxGetApp()->WriteProfileInt("App", "CounShowCapt", atoi(ch));
-	AfxGetApp()->WriteProfileInt("App", "type_sort_activ", combo_sort.GetCurSel());
 	AfxGetApp()->WriteProfileInt("App", "type_group_activ", combo_group.GetCurSel());
 	AfxGetApp()->WriteProfileInt("App", "AccentParameter", radioTime.GetCheck());
 	AfxGetApp()->WriteProfileInt("App", "InfoPanel", check_infopanel.GetCheck());
@@ -2289,23 +2466,6 @@ BOOL CEactivityDlg::SendReportOfDayOnMail(string dateToday)
 			sEmail, sEmail, "djfGNurnvusmv63^", res, saMessage);
 	}
 	return FALSE;
-}
-
-void CEactivityDlg::OnSave() 
-{
-	CViewRules ruls;
-	ruls.rules=RULES;
-	if (ruls.DoModal()!=IDOK)
-		return;
-	RULES=ruls.rules;
-	activ_hours activHours;
-	UpdateExeCapt(activHours);
-}
-
-void CEactivityDlg::OnSelchangeCombo_sort() 
-{
-	activ_hours activHours;
-	UpdateExeCapt(activHours);
 }
 
 // в UpdateExeCapt произодится обновление таблицы детализации, статика и 
@@ -2648,14 +2808,6 @@ void CEactivityDlg::OnActivitySetkoefeExe()
 	}
 	activ_hours activHours;
 	UpdateExeCapt(activHours);
-}
-
-BOOL CEactivityDlg::PreTranslateMessage(MSG* pMsg) 
-{
-//	if (pMsg->message >= WM_MOUSEFIRST && pMsg->message <= WM_MOUSELAST)
-//		tool_tip.RelayEvent(pMsg);
-	
-	return CDialog::PreTranslateMessage(pMsg);
 }
 
 void CEactivityDlg::OnChangeEDITcapts() 
@@ -4042,4 +4194,65 @@ void CEactivityDlg::OnMenuHideCapt()
 	menuExeCapt.CheckMenuItem(ID_IDR_32808, 
 		checkMenu ? MF_CHECKED : MF_UNCHECKED | MF_BYCOMMAND);
 	OnRefresh();
+}
+
+//меню: Редактировать коэффициенты полезных приложений
+void CEactivityDlg::OnEditCoef()
+{
+	CViewRules ruls;
+	ruls.rules=RULES;
+	if (ruls.DoModal()!=IDOK)
+		return;
+	RULES=ruls.rules;
+	activ_hours activHours;
+	UpdateExeCapt(activHours);
+}
+
+void CEactivityDlg::UpdateSort(int typeSort, bool onlyCheck)
+{
+	menuExeCapt.CheckMenuItem(ID_32811, 
+		typeSort == 0 ? MF_CHECKED : MF_UNCHECKED | MF_BYCOMMAND);
+	menuExeCapt.CheckMenuItem(ID_32812, 
+		typeSort == 1 ? MF_CHECKED : MF_UNCHECKED | MF_BYCOMMAND);
+	menuExeCapt.CheckMenuItem(ID_32813, 
+		typeSort == 2 ? MF_CHECKED : MF_UNCHECKED | MF_BYCOMMAND);
+	menuExeCapt.CheckMenuItem(ID_32814, 
+		typeSort == 3 ? MF_CHECKED : MF_UNCHECKED | MF_BYCOMMAND);
+	menuExeCapt.CheckMenuItem(ID_32815, 
+		typeSort == 4 ? MF_CHECKED : MF_UNCHECKED | MF_BYCOMMAND);
+	if (onlyCheck)
+		return;
+	activ_hours activHours;
+	UpdateExeCapt(activHours);
+}
+
+//меню: Сортировать по общему времени
+void CEactivityDlg::OnSortByCommonTime()
+{
+	AfxGetApp()->WriteProfileInt("App", "type_sort_activ", 0);
+	UpdateSort(0);
+}
+//меню: Сортировать по полезному времени
+void CEactivityDlg::OnSortByUsefulTime()
+{
+	AfxGetApp()->WriteProfileInt("App", "type_sort_activ", 1);
+	UpdateSort(1);
+}
+
+void CEactivityDlg::OnSortByActs()
+{
+	AfxGetApp()->WriteProfileInt("App", "type_sort_activ", 2);
+	UpdateSort(2);
+}
+
+void CEactivityDlg::OnSortByUsefulActs()
+{
+	AfxGetApp()->WriteProfileInt("App", "type_sort_activ", 3);
+	UpdateSort(3);
+}
+
+void CEactivityDlg::OnSortByExe()
+{
+	AfxGetApp()->WriteProfileInt("App", "type_sort_activ", 4);
+	UpdateSort(4);
 }

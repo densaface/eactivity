@@ -77,6 +77,15 @@ BOOL CAlwaysTop::OnInitDialog()
 	return FALSE;
 }
 
+BOOL CAlwaysTop::PreTranslateMessage(MSG* pMsg) 
+{
+	if (pMsg->message == WM_LBUTTONDBLCLK)
+	{
+		AfxGetMainWnd()->SendMessage(WM_MYICONNOTIFY, 0, 515);
+	}
+	return CDialog::PreTranslateMessage(pMsg);
+}
+
 void CAlwaysTop::SavePosition()
 {
 	if (!m_hWnd)

@@ -42,6 +42,15 @@ using namespace std;
 #pragma once
 #endif // _MSC_VER > 1000
 
+//структура, содержащая текущие координаты окон
+struct windowsSize 
+{
+	windowsSize();
+	bool moveBetweenTables;
+	bool resizeBetweenTables;
+	CPoint ptFirst, ptLast;
+};
+
 /////////////////////////////////////////////////////////////////////////////
 // CEactivityDlg dialog
 
@@ -155,7 +164,8 @@ public:
 	string GetExeFromTable(int sel);
 	void endWork();
 	string showAllCaptsForExe;//показывать все заголовки для определенного EXE
-	void SizingWins();
+
+	windowsSize WINs;
 	CAlwaysTop* dialInfo;//диалоговое окно поверх всех с инфой
 	CEndWork* dialEndWork;
 
@@ -163,8 +173,6 @@ public:
 	//{{AFX_DATA(CEactivityDlg)
 	enum { IDD = IDD_EACTIVITY_DIALOG };
 	CComboBox	combo_group;
-	CSpinButtonCtrl	spin_edit;
-	CEdit	edit_capts;
 	CGridListCtrlEx	table_period;  //таблица задания периода времени ТЗПВ
 	CGridListCtrlEx	table_exe_capt;//таблица детализации
 	CComboBox	combo_sort;
@@ -191,7 +199,7 @@ protected:
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
 	afx_msg void OnRefresh();
-	afx_msg void OnSelchangeCombo_sort();
+	afx_msg void UpdateSort(int typeSort, bool onlyCheck=false);
 	afx_msg void OnDblclkListDays(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnSelchangeComboDownTable();
 	afx_msg void OnDblclkListCurDay(NMHDR* pNMHDR, LRESULT* pResult);
@@ -204,12 +212,16 @@ protected:
 	afx_msg void OnActivityManualAdd();
 	afx_msg void OnActivityFullManualAdd();
 	afx_msg void OnDeleteRecordFromExeCapt();
+	afx_msg void OnSize(UINT nType, int cx, int cy);
+	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
+	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
+	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
+	afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 //public:
 	afx_msg void OnBnClickedOk();
 	afx_msg void OnBnClickedCancel();
-	afx_msg void OnSave();
 	CChartCtrl chart; //http://www.codeproject.com/Articles/14075/High-speed-Charting-Control
 	CXHTMLStatic stat_day_adv;
 	CXHTMLStatic stat_hour_adv;
@@ -237,6 +249,12 @@ protected:
 	afx_msg void OnHistoryShortTodo();
 	afx_msg void SendStatOnMail();
 	afx_msg void OnMenuHideCapt();
+	afx_msg void OnEditCoef();
+	afx_msg void OnSortByCommonTime();
+	afx_msg void OnSortByUsefulTime();
+	afx_msg void OnSortByActs();
+	afx_msg void OnSortByUsefulActs();
+	afx_msg void OnSortByExe();
 };
 
 //{{AFX_INSERT_LOCATION}}

@@ -96,22 +96,17 @@ BEGIN
 END
 
 IDD_EACTIVITY_DIALOG DIALOGEX 0, 0, 617, 442
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_MINIMIZEBOX | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_MINIMIZEBOX | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 EXSTYLE WS_EX_APPWINDOW
 CAPTION "ActivateMe"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     DEFPUSHBUTTON   "test",IDOK,471,229,82,14
-    PUSHBUTTON      "Выход",IDCANCEL,558,229,50,14
     DEFPUSHBUTTON   "Refresh",IDOK2,468,137,50,14
     CONTROL         "",IDC_LIST2,"SysListView32",LVS_REPORT | LVS_SHOWSELALWAYS | WS_BORDER | WS_GROUP | WS_TABSTOP,7,173,452,127
-    PUSHBUTTON      "Редактировать коэффициенты",IDC_BUTTON1,468,173,114,14
-    COMBOBOX        IDC_COMBO1,363,158,96,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "",IDC_LIST3,"SysListView32",LVS_REPORT | LVS_SHOWSELALWAYS | WS_BORDER | WS_GROUP | WS_TABSTOP,7,18,452,133
     LTEXT           "Статистика для текущего месяца",IDC_STATIC_cur_mon,7,0,319,18
     LTEXT           "Активность для текущего дня",IDC_STATIC_curday,7,153,321,18
-    EDITTEXT        IDC_EDITr17,332,158,18,14,ES_AUTOHSCROLL | ES_NUMBER,WS_EX_STATICEDGE
-    CONTROL         "",IDC_SPIN2,"msctls_updown32",UDS_SETBUDDYINT | UDS_ARROWKEYS,350,158,11,14
     COMBOBOX        IDC_COMBO2,329,4,130,56,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CTEXT           "",IDC_STATIC_percent_day,465,31,143,27
     CTEXT           "",IDC_STATIC_percent_day2,465,20,143,8
@@ -641,18 +636,6 @@ END
 
 IDD_EACTIVITY_DIALOG DLGINIT
 BEGIN
-    IDC_COMBO1, 0x403, 19, 0
-0xeed1, 0xf2f0, 0xf0e8, 0xe2ee, 0xf2e0, 0x20fc, 0xeeef, 0x4520, 0x4558, 
-"\000" 
-    IDC_COMBO1, 0x403, 22, 0
-0xeed1, 0xf2f0, 0xf0e8, 0xe2ee, 0xf2e0, 0x20fc, 0xeeef, 0xe120, 0xebe0, 
-0xe0eb, 0x00ec, 
-    IDC_COMBO1, 0x403, 23, 0
-0xeed1, 0xf2f0, 0xf0e8, 0xe2ee, 0xf2e0, 0x20fc, 0xeeef, 0xe220, 0xe5f0, 
-0xe5ec, 0xe8ed, "\000" 
-    IDC_COMBO1, 0x403, 25, 0
-0xeed1, 0xf2f0, 0xf0e8, 0xe2ee, 0xf2e0, 0x20fc, 0xeeef, 0xe420, 0xe9e5, 
-0xf2f1, 0xe8e2, 0xecff, "\000" 
     IDC_COMBO2, 0x403, 21, 0
 0xf0c3, 0xeff3, 0xe8ef, 0xeef0, 0xe0e2, 0xfcf2, 0xef20, 0x20ee, 0xede4, 
 0xecff, "\000" 
@@ -709,6 +692,7 @@ BEGIN
     POPUP "Настройки"
     BEGIN
         MENUITEM "Настройки",                   ID_OPTIONS_OPTIONS
+        MENUITEM "Редактировать коэффициенты полезных приложений", ID_32809
         MENUITEM "Редактировать список коротких действий для отдыха", ID_OPTIONS_EDITSHORTACTIONS
         MENUITEM "Предложить свой жизненный совет / афоризм", ID_OPTIONS_32800
     END
@@ -734,6 +718,14 @@ BEGIN
         MENUITEM "Добавить",                    ID_IDR_32792
         MENUITEM "Удалить",                     ID_IDR_32791
         MENUITEM "Скрыть неполезные заголовки", ID_IDR_32808, CHECKED
+        POPUP "Сортировать по"
+        BEGIN
+            MENUITEM "времени",                     ID_32811
+            MENUITEM "полезному времени",           ID_32812
+            MENUITEM "действиям",                   ID_32813
+            MENUITEM "полезным действиям",          ID_32814
+            MENUITEM "exe файлу",                   ID_32815
+        END
     END
 END
 
