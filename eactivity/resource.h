@@ -36,6 +36,11 @@
 #define IDD_OnlineAdviceAdd             153
 #define IDD_OnlineAdviceModerate        154
 #define IDR_ACCELERATOR1                155
+#define IDD_DIALOG2                     157
+#define IDD_Recalculation               157
+#define IDD_ProjectNew                  158
+#define IDD_RuleMoveOrCopy              159
+#define IDD_ProjectEdit                 160
 #define IDC_MSCHART1                    1000
 #define IDC_CHARTCTRL                   1000
 #define IDC_BUTTON1                     1001
@@ -46,6 +51,7 @@
 #define IDC_BUTTON3                     1003
 #define IDC_LIST4                       1004
 #define IDC_CHECK1                      1004
+#define IDC_BUTTON5                     1004
 #define IDC_LIST5                       1005
 #define IDC_DATETIMEPICKER1             1005
 #define IDC_CHECK3                      1005
@@ -107,6 +113,8 @@
 #define IDC_STATIC_rate                 1039
 #define IDC_SLIDER4                     1040
 #define IDC_STATIC10                    1041
+#define IDC_STATIC_RulesCount           1042
+#define IDC_RulesCountStatic            1042
 #define IDC_SPIN2                       1154
 #define IDC_SPIN3                       1155
 #define IDC_STATIC_curday               1185
@@ -456,6 +464,24 @@
 #define IDS_STRING1900                  1900
 #define IDS_STRING1901                  1901
 #define IDS_STRING1902                  1902
+#define IDS_STRING1903                  1903
+#define IDS_STRING1904                  1904
+#define IDS_STRING1905                  1905
+#define IDS_STRING1906                  1906
+#define IDS_STRING1907                  1907
+#define IDS_STRING1908                  1908
+#define IDS_STRING1909                  1909
+#define IDS_STRING1910                  1910
+#define IDS_STRING1911                  1911
+#define IDS_STRING1912                  1912
+#define IDS_STRING1913                  1913
+#define IDS_STRING1914                  1914
+#define IDS_STRING1915                  1915
+#define IDS_STRING1916                  1916
+#define IDS_STRING1917                  1917
+#define IDS_STRING1918                  1918
+#define IDS_STRING1919                  1919
+#define IDS_STRING1920                  1920
 #define ID_IDR_SDSD                     32771
 #define ID_ACTIVITY_SETKOEFEXE          32772
 #define ID_IDR_SDSD32773                32773
@@ -501,14 +527,15 @@
 #define ID_32813                        32813
 #define ID_32814                        32814
 #define ID_32815                        32815
+#define ID_32816                        32816
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        157
-#define _APS_NEXT_COMMAND_VALUE         32816
-#define _APS_NEXT_CONTROL_VALUE         1042
+#define _APS_NEXT_RESOURCE_VALUE        161
+#define _APS_NEXT_COMMAND_VALUE         32817
+#define _APS_NEXT_CONTROL_VALUE         1043
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

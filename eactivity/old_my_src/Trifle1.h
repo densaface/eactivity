@@ -108,11 +108,15 @@ public:
 	string getEnd(int val);
 	void TrimKavich(CString &sRes);
 	CString GetNum(CString aTmp);// Для выделения из строки цифр, используется для получения координат
-	int Find(CStringArray &tmpMyList, CString str); // Поиск строки в массиве строк
-	void OnParseStr(CStringArray &aList, CString tmpStr);// Разбивает строку на подстроки по основным разделителям("!<>{} [](),)
 	BOOL IsMODIInstal(); // Функция проверки наличия установленного MODI
 	void GetSystmLang(CStringArray &langStringArr); // Получаем языки системы
 	int isFindTemplateInText (CString needle, CString tmpstrlen); // Поиск текста по щаблону
+
+	//СТРОКИ
+	void replaceAll(std::string& str, const std::string& from, const std::string& to);
+	int Find(CStringArray &tmpMyList, CString str); // Поиск строки в массиве строк
+	void OnParseStr(CStringArray &aList, CString tmpStr);// Разбивает строку на подстроки по основным разделителям("!<>{} [](),)
+
 //	int NumLan;
 protected:
 };

@@ -22,6 +22,7 @@ void Activity::clearItem()
 	usefulTime=0; //врем€, засчитанное как полезное с учетом пользовательских коэффициентов
 }
 
+//форматирование милисекунд в строку с адекватным отображением времени
 void StatsFunc::FormatSeconds(char (&ch)[100], float secs) 
 {
 	int abs_secs=abs((int)secs);
@@ -354,7 +355,8 @@ bool StatsFunc::LoadFileDayOld(string fname, activ &forLoad1)
 	return true;
 }
 
-bool StatsFunc::LoadFileMonth(string fname, activ &forLoad1, float &sumTime, float &sumUsefulTime, int &sumActs, int &sumUsefulActs)
+bool StatsFunc::LoadFileMonth(string fname, activ &forLoad1, float &sumTime, 
+	float &sumUsefulTime, double &sumActs, double &sumUsefulActs)
 {
 	ifstream ifstr(fname.c_str());
 	if (ifstr)
@@ -389,12 +391,14 @@ bool StatsFunc::LoadFileMonth(string fname, activ &forLoad1, float &sumTime, flo
 		}
 		ifstr.close();
 	}
-	LoadMonthFromStatDays(forLoad1, fname.substr(fname.length()-21, 18), sumTime, sumActs, sumUsefulActs);
+	LoadMonthFromStatDays(forLoad1, fname.substr(fname.length()-21, 18), 
+		sumTime, sumActs, sumUsefulActs);
 	return true;
 }
 
 //подгружаем дневные статистики, если они не были в общем сохранении за мес€ц
-void StatsFunc::LoadMonthFromStatDays(activ &forLoad1, string mon, float &sumTime, int &sumAct, int &sumUsefulActs) 
+void StatsFunc::LoadMonthFromStatDays(activ &forLoad1, string mon, float &sumTime, 
+									  double &sumAct, double &sumUsefulActs) 
 {
 	WIN32_FIND_DATA FFData;
 	string for_find=path_actuser+mon+"*.a";
@@ -411,7 +415,7 @@ void StatsFunc::LoadMonthFromStatDays(activ &forLoad1, string mon, float &sumTim
 //подгрузка дней статистики в мес€чное представление, которых не было в сводном 
 //		мес€чном файле статистики
 void StatsFunc::SumDayStat(activ &forLoad1, string fname, float &sumTime, 
-						   int &sumAct, int &sumUsefulActs) 
+						   double &sumAct, double &sumUsefulActs) 
 {
 	activ::iterator iter=forLoad1.find(fname.substr(fname.length()-12, 10));
 	if (iter!=forLoad1.end())
@@ -467,7 +471,7 @@ void StatsFunc::LoadAllYears(activ &aCurYear)
 {
 	string strf=path_actuser+"activ_user_all_months.ayr";
 	float sumTime=0, sumUsefulTime=0;
-	int sumActs=0, sumUsefulActs=0;
+	double sumActs=0, sumUsefulActs=0;
 	LoadFileMonth(strf, aCurYear, sumTime, sumUsefulTime, sumActs, sumUsefulActs);
 	WIN32_FIND_DATA FFData;
 	string filePattern = path_actuser+"activ_user_*.am";
@@ -502,7 +506,7 @@ void StatsFunc::LoadYear(activ &aCurYear, string fname)
 	curYear=date;
 
 	float sumTime=0;
-	int sumActs=0, sumUsefulActs=0;
+	double sumActs=0, sumUsefulActs=0;
 	string strf=path_actuser+curYear;
 	ifstream ifstr(fname == "" ? strf.c_str() : fname.c_str());
 	if (ifstr)
@@ -548,7 +552,8 @@ void StatsFunc::LoadYear(activ &aCurYear, string fname)
 
 //////////    √ќƒќ¬јя ј “»¬Ќќ—“№ \\\\\\\\\\\\\\\\
 //подгружаем мес€чные статистики, если они не были в общем сохранении за год
-void StatsFunc::LoadYearFromStatMons(activ &aCurYear, string mon, float &sumTime, int &sumAct, int &sumUsefulActs) 
+void StatsFunc::LoadYearFromStatMons(activ &aCurYear, string mon, float &sumTime, 
+									 double &sumAct, double &sumUsefulActs) 
 {
 	WIN32_FIND_DATA FFData;
 	string for_find=path_actuser+mon+"*.am";
@@ -562,7 +567,8 @@ void StatsFunc::LoadYearFromStatMons(activ &aCurYear, string mon, float &sumTime
 	}
 }
 
-void StatsFunc::SumMonStat(activ &aCurYear, string fname, float &sumTime, int &sumAct, int &sumUsefulActs) 
+void StatsFunc::SumMonStat(activ &aCurYear, string fname, float &sumTime, 
+						   double &sumAct, double &sumUsefulActs) 
 {
 	activ::iterator iter=aCurYear.find(fname.substr(fname.length()-10, 7));
 	if (iter!=aCurYear.end())
@@ -631,6 +637,7 @@ void StatsFunc::ApplyFont(float secs1, float secs2, int font_size,
 			secs1 > 0 ? "+" : "", fmtSecs,
 			bold ? "</b>" : "");
 		stat_day_adv.SetWindowText(res);
+		TRACE("INFO PANEL %s\n", res);
 	}
 	if (secs2!=NULL)
 	{
@@ -911,7 +918,7 @@ void StatsFunc::SaveDayEncryptedFormat(string fileName, activ& Activ)
 	for (activ::iterator it_activ=Activ.begin(); it_activ!=Activ.end(); it_activ++)
 	{
 		Activity tmpForSave=(*it_activ).second;
-		sprintf_s(chFormattedStr, 5000, "%x\t%x\n%d\t%d\t%.0f\t%.0f\n%s\n%s\n\n\n", 
+		sprintf_s(chFormattedStr, 5000, "%x\t%x\n%.0f\t%.0f\t%.0f\t%.0f\n%s\n%s\n\n\n", 
 			tmpForSave.hwMain, tmpForSave.hwChil, 
 			tmpForSave.sumActs, tmpForSave.usefulActs, tmpForSave.sumTime, tmpForSave.usefulTime,
 			(*it_activ).first.c_str(), 

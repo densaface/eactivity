@@ -112,7 +112,11 @@ public:
 	static bool CheckOSVersion(WORD requestOS);
 	int InsertItem(int nItem, LPCTSTR lpszItem);
 	BOOL DeleteAllItems();
-	CUIntArray clrsBack;
+
+	//для связывания рядов таблицы с подошедшими правилами
+	CStringArray rulsExeCapt;
+	void SetRuleExeCapt(int row, CString sExeCapt);
+
 	CUIntArray clrsText;
 	void SetTextColor(int row, COLORREF textColor);
 	int max1, max2; double max1v, max2v;

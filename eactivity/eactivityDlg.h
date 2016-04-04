@@ -28,11 +28,17 @@
 #include "externals\graph\ChartAxisLabel.h"
 #include "externals\ListCtrl\CGridListCtrlEx\CGridListCtrlEx.h"
 #include "ReportSelectedPeriod.h"
+#include "RecalculationUsefulTime.h"
 #include "afxwin.h"
 #include "AddOnlineAdvice.h"
 #define WM_USER30 WM_USER + 30
 #define USEFULTIME 1
 #define USEFULACTS 2
+#define COLUMN_COMMENT 6
+//						константы управл€ющие параметрами расчета полезного времени
+#define ALLPROJECTS 2		//использовать все проекты дл€ расчета
+#define SELECTEDPROJECTS 3	//брать только выделенные в списке проекты
+
 using namespace std;
 
 #if !defined(AFX_EACTIVITYDLG_H__5590C786_91A0_410F_93C3_2740B59FA6EF__INCLUDED_)
@@ -92,9 +98,8 @@ public:
 	GetParSpis getParSpis; //справочник HWND дочерних окон и HWND родительских
 	CEactivityDlg(CString path, CWnd* pParent = NULL);   // standard constructor
 	void AddExeCaptToTable(string exe, activ &forLoad1, int &sumCapt);
-	void CalculateUsefulTimeAndActs(activ &allActiv, activ_exe &exeActiv, activ_hours &activHours);
-	int GetUsefulActsFromExe(string exe, activ &forLoad1);
-	float GetTimeFromExe (string exe, activ &forLoad1);
+	void CalculateUsefulTimeAndActs(activ &allActiv, activ_exe &exeActiv, 
+		activ_hours &activHours, int keyListProjects);
 	int CalculateAverageUsefulParameter(int lastDays, activ_hours& averageHoursGraph, 
 		double thresholdHoliday, double hoursNormLine=0.0);
 	CString CompareTwoPeriodsOfDays(CStringArray& saDates1, CStringArray& saDates2, 
@@ -150,30 +155,30 @@ public:
 	void SaveYear();
 	void SaveAllYear();
 	
-	rulSpis RULES;
-	void SaveRules();
-	void LoadRules();
-	
 	void UpdateTableExeCapt(activ &allActiv, activ_hours &activHours, 
-		float &sumTime, float &sumUsefulTime, int &sumAct, 
-		int &usefulActs, int onlyOneHour = -1, bool showInfoTable=true);
-	void UpdateExeCapt(activ_hours &activHours, bool showInfoTable=true);
-	void UpdatePeriodTableViewByHours(activ_hours &activHours, bool showInfoTable=true);
+		float &sumTime, float &sumUsefulTime, double &sumAct, 
+		double &usefulActs, int keyListProjects, int onlyOneHour = -1, 
+		bool showInfoTable=true);
+	void UpdateExeCapt(activ_hours &activHours, activ &aDay,
+		int keyListProjects, bool showInfoTable=true, string noCurrentDay = "");
+	void UpdatePeriodTableViewByHours(activ_hours &activHours, 
+		bool showInfoTable=true, string noCurrentDay = "");
 	void UpdatePeriodTable(activ &CurView);
-	rulSpis::iterator ownFind(string capt);
 	string GetExeFromTable(int sel);
 	void endWork();
 	string showAllCaptsForExe;//показывать все заголовки дл€ определенного EXE
+	void changeRule(rulMacroList &macroRule, rulMacroList &allRules);
 
 	windowsSize WINs;
 	CAlwaysTop* dialInfo;//диалоговое окно поверх всех с инфой
 	CEndWork* dialEndWork;
+	CViewRules RUL;
 
 // Dialog Data
 	//{{AFX_DATA(CEactivityDlg)
 	enum { IDD = IDD_EACTIVITY_DIALOG };
-	CComboBox	combo_group;
-	CGridListCtrlEx	table_period;  //таблица задани€ периода времени “«ѕ¬
+	CComboBox	combo_group; //вид детализации в “«ѕ¬: по часам, дн€м, мес€цам
+	CGridListCtrlEx	table_period;  //таблица задани€ периода времени (“«ѕ¬)
 	CGridListCtrlEx	table_exe_capt;//таблица детализации
 	CComboBox	combo_sort;
 	//}}AFX_DATA
@@ -255,6 +260,10 @@ protected:
 	afx_msg void OnSortByActs();
 	afx_msg void OnSortByUsefulActs();
 	afx_msg void OnSortByExe();
+	afx_msg void OnRecalculateUsefulTime();
+	CListBox listProjects;
+	afx_msg void OnLbnSelchangeList5();
+	afx_msg void OnBnClickedButton1();
 };
 
 //{{AFX_INSERT_LOCATION}}

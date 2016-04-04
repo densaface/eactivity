@@ -101,7 +101,7 @@ EXSTYLE WS_EX_APPWINDOW
 CAPTION "ActivateMe"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    DEFPUSHBUTTON   "test",IDOK,471,229,82,14
+    DEFPUSHBUTTON   "test",IDOK,471,255,82,14
     DEFPUSHBUTTON   "Refresh",IDOK2,468,137,50,14
     CONTROL         "",IDC_LIST2,"SysListView32",LVS_REPORT | LVS_SHOWSELALWAYS | WS_BORDER | WS_GROUP | WS_TABSTOP,7,173,452,127
     CONTROL         "",IDC_LIST3,"SysListView32",LVS_REPORT | LVS_SHOWSELALWAYS | WS_BORDER | WS_GROUP | WS_TABSTOP,7,18,452,133
@@ -119,6 +119,8 @@ BEGIN
     CONTROL         "Custom1",IDC_CHARTCTRL,"ChartCtrl",WS_CLIPCHILDREN | WS_TABSTOP,7,304,603,124
     CONTROL         "Инфопанель",IDC_CHECK2,"Button",BS_AUTOCHECKBOX | BS_CENTER | WS_TABSTOP,502,93,60,10
     PUSHBUTTON      ">>",IDC_BUTTONSTART,566,92,15,12
+    LISTBOX         IDC_LIST5,468,170,142,62,LBS_MULTIPLESEL | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Редактировать",IDC_BUTTON1,468,234,142,12
 END
 
 IDD_ReportOption DIALOGEX 0, 0, 399, 141
@@ -142,33 +144,39 @@ BEGIN
     CTEXT           "На графике отображать:",IDC_STATIC_percent_hour3,227,75,129,8
 END
 
-IDD_Rules DIALOG  0, 0, 366, 123
-STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Dialog"
-FONT 8, "MS Sans Serif"
-BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,9,102,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,309,102,50,14
-    CONTROL         "",IDC_LIST3,"SysListView32",LVS_REPORT | LVS_SHOWSELALWAYS | WS_BORDER | WS_GROUP | WS_TABSTOP,9,15,350,79
-    PUSHBUTTON      "Delete Rule",IDC_BUTTON1,100,102,81,14
-    PUSHBUTTON      "Редактировать",IDC_BUTTON2,217,102,64,14
-END
-
-IDD_SetKoef DIALOGEX 0, 0, 262, 119
+IDD_Rules DIALOGEX 0, 0, 366, 269
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Dialog"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,55,98,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,205,98,50,14
-    EDITTEXT        IDC_EDIT1,7,18,248,14,ES_AUTOHSCROLL | ES_READONLY
-    LTEXT           "Exe:",IDC_STATIC,7,7,15,8
-    EDITTEXT        IDC_EDIT3,7,47,248,14,ES_AUTOHSCROLL | WS_DISABLED
-    LTEXT           "Caption:",IDC_STATIC,7,36,27,8
-    EDITTEXT        IDC_EDIT5,7,77,68,14,ES_AUTOHSCROLL
-    LTEXT           "Коэффициент (for examp 1.50, -3.00, 0.33):",IDC_STATIC_coef,7,66,140,8
-    LTEXT           "Совпадение заголовка:",IDC_STATIC_sovp,163,66,92,8
-    COMBOBOX        IDC_COMBO1,122,77,133,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    DEFPUSHBUTTON   "OK",IDOK,9,248,50,14
+    CONTROL         "",IDC_LIST3,"SysListView32",LVS_REPORT | LVS_SHOWSELALWAYS | WS_BORDER | WS_GROUP | WS_TABSTOP,7,44,350,197
+    PUSHBUTTON      "Delete",IDC_BUTTON1,251,248,50,14
+    PUSHBUTTON      "Редактировать правило",IDC_BUTTON2,97,248,116,14
+    COMBOBOX        IDC_COMBO1,7,7,142,54,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Редактировать проект",IDC_BUTTON5,160,7,120,14
+    EDITTEXT        IDC_EDIT2,254,26,105,14,ES_AUTOHSCROLL
+    RTEXT           "Быстрый поиск",IDC_STATIC,176,30,73,8
+    LTEXT           "Static",IDC_RulesCountStatic,7,30,160,8
+END
+
+IDD_SetKoef DIALOGEX 0, 0, 262, 136
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Dialog"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,55,115,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,205,115,50,14
+    EDITTEXT        IDC_EDIT1,7,29,248,14,ES_AUTOHSCROLL | ES_READONLY
+    LTEXT           "Exe:",IDC_STATIC,7,18,15,8
+    EDITTEXT        IDC_EDIT3,7,58,248,14,ES_AUTOHSCROLL | WS_DISABLED
+    LTEXT           "Caption:",IDC_STATIC,7,47,27,8
+    EDITTEXT        IDC_EDIT5,7,88,68,14,ES_AUTOHSCROLL
+    LTEXT           "Коэффициент (for examp 1.50, -3.00, 0.33):",IDC_STATIC_coef,7,77,140,8
+    LTEXT           "Совпадение заголовка:",IDC_STATIC_sovp,163,77,92,8
+    COMBOBOX        IDC_COMBO1,122,88,133,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    RTEXT           "Имя проекта:",IDC_STATIC,33,4,54,8
+    COMBOBOX        IDC_COMBO2,90,2,142,54,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 END
 
 IDD_ReportTwoPeriods DIALOGEX 0, 0, 415, 254
@@ -465,6 +473,54 @@ BEGIN
     DEFPUSHBUTTON   "Предыдущее",IDOK3,79,214,62,14
 END
 
+IDD_Recalculation DIALOGEX 0, 0, 277, 84
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Пересчет полезного времени"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,59,63,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,164,63,50,14
+    LTEXT           "Выберите количество дней для пересчета. Операция может занять до нескольких десятков секунд",IDC_STATIC,7,7,263,30
+    EDITTEXT        IDC_EDIT1,116,43,40,14,ES_AUTOHSCROLL | ES_NUMBER
+END
+
+IDD_ProjectNew DIALOGEX 0, 0, 167, 75
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Новый проект"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,7,53,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,110,53,50,14
+    LTEXT           "Введите имя нового проекта и установите коэффициент полезности",IDC_STATIC,7,7,153,15
+    EDITTEXT        IDC_EDIT1,7,32,103,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT2,120,32,40,14,ES_AUTOHSCROLL
+END
+
+IDD_RuleMoveOrCopy DIALOGEX 0, 0, 221, 53
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "ActivateMe"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "Переместить",IDOK,37,32,60,14
+    LTEXT           "Переместить правило в другой проект или скопировать?",IDC_STATIC,7,7,207,11
+    DEFPUSHBUTTON   "Скопировать",IDOK3,119,32,60,14
+END
+
+IDD_ProjectEdit DIALOGEX 0, 0, 316, 183
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Dialog"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    PUSHBUTTON      "OK",IDOK,205,162,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,259,162,50,14
+    CTEXT           "Имя проекта",IDC_STATIC,33,7,76,11
+    EDITTEXT        IDC_EDIT1,7,23,169,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT2,182,23,127,14,ES_AUTOHSCROLL
+    CTEXT           "Коэффициент полезности",IDC_STATIC,177,7,109,11
+    EDITTEXT        IDC_EDIT3,7,62,302,96,ES_MULTILINE | ES_AUTOHSCROLL
+    CTEXT           "Описание/комментарий к проекту (Alt+Enter для перехода на другую строку)",IDC_STATIC,7,51,302,11
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -503,15 +559,15 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 359
         TOPMARGIN, 7
-        BOTTOMMARGIN, 116
+        BOTTOMMARGIN, 262
     END
 
     IDD_SetKoef, DIALOG
     BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 255
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 112
+        TOPMARGIN, 2
+        BOTTOMMARGIN, 129
     END
 
     IDD_ReportTwoPeriods, DIALOG
@@ -625,6 +681,38 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 228
     END
+
+    IDD_Recalculation, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 270
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 77
+    END
+
+    IDD_ProjectNew, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 160
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 67
+    END
+
+    IDD_RuleMoveOrCopy, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 214
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 46
+    END
+
+    IDD_ProjectEdit, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 309
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 176
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -680,6 +768,7 @@ BEGIN
     END
     POPUP "Отчеты"
     BEGIN
+        MENUITEM "Пересчитать полезное время",  ID_32816
         MENUITEM "Отчет за определенный период времени", ID_REPORTS_32784
         MENUITEM "Отчет по выбранному в таблице периоду времени", ID_REPORTS_USEFULPARAMETERFROMSELECTEDPERIOD
         MENUITEM "Отчет: Сравнение двух заданных периодов времени", ID_REPORTS_32785
@@ -712,8 +801,8 @@ BEGIN
     POPUP "IDR_CONTEXT_EXECAPT_RU"
     BEGIN
         MENUITEM "Показать все заголовки для выделенного EXE файла\tДвойной клик", ID_ACTIVITY_EXE
-        MENUITEM "Установить коэффициент для выделенного EXE файла", ID_ACTIVITY_SETKOEFEXE
-        MENUITEM "Установить коэффициент для выделенного заголовка", ID_ACTIVITY_SETKOEF
+        MENUITEM "Установить/редактировать коэффициент для выделенного EXE файла", ID_ACTIVITY_SETKOEFEXE
+        MENUITEM "Установить/редактировать коэффициент для выделенного заголовка", ID_ACTIVITY_SETKOEF
         MENUITEM "Редактировать",               ID_IDR_32790
         MENUITEM "Добавить",                    ID_IDR_32792
         MENUITEM "Удалить",                     ID_IDR_32791
@@ -778,12 +867,12 @@ STRINGTABLE
 BEGIN
     IDS_STRING1569          "Активность"
     IDS_STRING1570          "Activity"
-    IDS_STRING1571          "Активность для <b>%s</b>: полезного времени <b>%s</b> из %s, полезных действий <b>%d</b> из %d"
-    IDS_STRING1572          "Activity for <b>%s</b>: useful time <b>%s</b> from %s, useful actions <b>%d</b> from %d"
+    IDS_STRING1571          "Активность для <b>%s</b>: полезного времени <b>%s</b> из %s, полезных действий <b>%.0f</b> из %.0f"
+    IDS_STRING1572          "Activity for <b>%s</b>: useful time <b>%s</b> from %s, useful actions <b>%.0f</b> from %.0f"
     IDS_STRING1573          "Не найден файл статистики ""%s"""
     IDS_STRING1574          "Statistics file ""%s"" was not found"
-    IDS_STRING1575          "Активность <b>СЕГОДНЯ</b>: полезного времени <b>%s</b> из %s, полезных действий <b>%d</b> из %d"
-    IDS_STRING1576          "Activity for <b>TODAY</b>: useful time <b>%s</b> from %s, useful actions <b>%d</b> from %d"
+    IDS_STRING1575          "Активность <b>СЕГОДНЯ</b>: полезного времени <b>%s</b> из %s, полезных действий <b>%.0f</b> из %.0f"
+    IDS_STRING1576          "Activity for <b>TODAY</b>: useful time <b>%s</b> from %s, useful actions <b>%.0f</b> from %.0f"
     IDS_STRING1577          "К заголовку и к EXE"
     IDS_STRING1578          "To the header and to EXE"
     IDS_STRING1579          "Ко всему EXE"
@@ -802,12 +891,12 @@ BEGIN
     IDS_STRING1588          "Return to the previous view"
     IDS_STRING1589          "        %d заголов%s"
     IDS_STRING1590          "        %d headers"
-    IDS_STRING1591          "Активность для <b>ТЕКУЩЕГО МЕСЯЦА</b>: полезное время <b>%s</b> из %s, полезных действий <b>%d</b> из %d"
-    IDS_STRING1592          "Activity for the <b>CURRENT MONTH</b>: useful time <b>%s</b> from %s, useful actions <b>%d</b> from %d"
-    IDS_STRING1593          "Активность для <b>ВСЕХ МЕСЯЦЕВ</b>: полезное время <b>%s</b> из %s, полезных действий <b>%d</b> из %d"
-    IDS_STRING1594          "Activity for the <b>ALL MONTHS</b>: useful time <b>%s</b> from %s, useful actions <b>%d</b> from %d"
-    IDS_STRING1595          "Активность для <b>%s</b>: полезное время <b>%s</b> из %s, полезных действий <b>%d</b> из %d"
-    IDS_STRING1596          "Activity for <b>%s</b>: useful time <b>%s</b> from %s, useful actions <b>%d</b> from %d"
+    IDS_STRING1591          "Активность для <b>ТЕКУЩЕГО МЕСЯЦА</b>: полезное время <b>%s</b> из %s, полезных действий <b>%.0f</b> из %.0f"
+    IDS_STRING1592          "Activity for the <b>CURRENT MONTH</b>: useful time <b>%s</b> from %s, useful actions <b>%.0f</b> from %.0f"
+    IDS_STRING1593          "Активность для <b>ВСЕХ МЕСЯЦЕВ</b>: полезное время <b>%s</b> из %s, полезных действий <b>%.0f</b> из %.0f"
+    IDS_STRING1594          "Activity for the <b>ALL MONTHS</b>: useful time <b>%s</b> from %s, useful actions <b>%.0f</b> from %.0f"
+    IDS_STRING1595          "Активность для <b>%s</b>: полезное время <b>%s</b> из %s, полезных действий <b>%.0f</b> из %.0f"
+    IDS_STRING1596          "Activity for <b>%s</b>: useful time <b>%s</b> from %s, useful actions <b>%.0f</b> from %.0f"
     IDS_STRING1597          "Частично к заголовку и к EXE"
     IDS_STRING1598          "Partially to the header and to EXE"
     IDS_STRING1599          "Сортировать по EXE"
@@ -860,8 +949,8 @@ BEGIN
     IDS_STRING1634          "Edit"
     IDS_STRING1635          "Группировать по часам"
     IDS_STRING1636          "Group by hours"
-    IDS_STRING1637          "Активность <b>СЕГОДНЯ</b>: полезное время <b>%s</b> из %s, полезных действий <b>%d</b> из %d"
-    IDS_STRING1638          "Activity for <b>TODAY</b>: useful time <b>%s</b> from %s, useful actions <b>%d</b> from %d"
+    IDS_STRING1637          "Активность <b>СЕГОДНЯ</b>: полезное время <b>%s</b> из %s, полезных действий <b>%.0f</b> из %.0f"
+    IDS_STRING1638          "Activity for <b>TODAY</b>: useful time <b>%s</b> from %s, useful actions <b>%.0f</b> from %.0f"
     IDS_STRING1639          "Час"
     IDS_STRING1640          "Hour"
     IDS_STRING1641          "День"
@@ -976,8 +1065,8 @@ END
 STRINGTABLE 
 BEGIN
     IDS_STRING1728          "<b><font COLOR=""7,92,177"" size=""+4"">%s</font></b> (Group: %s)\n%s"
-    IDS_STRING1729          "%d дейс."
-    IDS_STRING1730          "%d acts"
+    IDS_STRING1729          "%.0f дейс."
+    IDS_STRING1730          "%.0f acts"
     IDS_STRING1731          "До перерыва: "
     IDS_STRING1732          "--"
     IDS_STRING1733          "Действие не помечено как выполненное. Продолжить?"
@@ -1162,8 +1251,8 @@ BEGIN
     IDS_STRING1876          "useful acts"
     IDS_STRING1877          "всего действий"
     IDS_STRING1878          "total acts"
-    IDS_STRING1879          "комментарий"
-    IDS_STRING1880          "comment"
+    IDS_STRING1879          "проект / комментарий"
+    IDS_STRING1880          "project / comment"
     IDS_STRING1881          "полный путь к exe файлу"
     IDS_STRING1882          "full path to exe file"
     IDS_STRING1883          "Заголовок"
@@ -1190,6 +1279,32 @@ BEGIN
     IDS_STRING1900          "--"
     IDS_STRING1901          "Скрывать все заголовки"
     IDS_STRING1902          "--"
+    IDS_STRING1903          "Не удается создать папку: "
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_STRING1904          "Can't create folder "
+    IDS_STRING1905          "Все проекты"
+    IDS_STRING1906          "All projects"
+    IDS_STRING1907          "Новый проект"
+    IDS_STRING1908          "New project"
+    IDS_STRING1909          "Редактирование существующего коэффициента"
+    IDS_STRING1910          "Edit existing coeffecient"
+    IDS_STRING1911          "Добавление нового коэффициента"
+    IDS_STRING1912          "Add existing coeffecient"
+    IDS_STRING1913          "Проект"
+    IDS_STRING1914          "Project"
+    IDS_STRING1915          "Заголовок"
+    IDS_STRING1916          "Caption"
+    IDS_STRING1917          "Все проекты"
+    IDS_STRING1918          "All projects"
+    IDS_STRING1919          "Показано %d правил из %d"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_STRING1920          "--"
 END
 
 #endif    // Russian resources

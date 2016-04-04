@@ -17,11 +17,11 @@ struct PreWorkPeriod
 struct WorkPeriod 
 {
 	float currentUsefulTime;
-	int   currentUsefulActs;
+	double   currentUsefulActs;
 	float firstUsefulTime;
-	int   firstUsefulActs;
+	double   firstUsefulActs;
 	DWORD startProgressTime;
-	float maxUsefulPar;
+	double maxUsefulPar;
 	int typeUsefulPar;  //1 - полезный параметр - кол-во полезных действий, 
 	//2 - полезный параметр - полезное время
 	//3 - полезный параметр - обычное время

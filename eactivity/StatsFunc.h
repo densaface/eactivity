@@ -18,11 +18,13 @@ struct Activity
 	string exe;
 	string capt;
 	string comment;
-	int sumActs;		// суммарное количество кликов/нажатий клавиатуры
-	int usefulActs;		// клики/нажатия клавиатуры засчитанные как полезные
+	double sumActs;		// суммарное количество кликов/нажатий клавиатуры
+	double usefulActs;		// клики/нажатия клавиатуры засчитанные как полезные
 	int hour;
 	float sumTime; //время, уделенное какой-либо программе, в мс 
 	float usefulTime; //время, засчитанное как полезное с учетом пользовательских коэффициентов
+	string appliedRul; //ссылка на найденное правило
+	string appliedProj; //имя сработанного при поиске проекта
 };
 
 //структура для хранения активности только по EXE (сокращенная форма Activity)
@@ -30,11 +32,13 @@ struct ActivityExe
 {
 	string exe;//поле дублирующее ключ справочника, 
 	// нужно для сортировки при перегоне справочника в векторный массив
-	int sumActs;
-	int usefulActs;
+	double sumActs;
+	double usefulActs;
 	int hour;
 	float sumTime; //время, уделенное программе, в мс
 	float usefulTime;
+	string appliedRul; //ссылка на найденное правило
+	string appliedProj; //имя сработанного при поиске проекта
 };
 
 typedef map<string, Activity, less<string> > activ;
@@ -46,10 +50,14 @@ typedef map<HWND, HWND, less<HWND> > GetParSpis;
 class StatsFunc
 {
 	string curYear;
-	void SumMonStat(activ &aCurYear, string fname, float &sumTime, int &sumAct, int &usefulActs);
-	void SumDayStat(activ &forLoad1, string fname, float &sumTime, int &sumActs, int &usefulActs);
-	void LoadMonthFromStatDays(activ &forLoad1, string mon, float &sumTime, int &sumActs, int &usefulActs);
-	void LoadYearFromStatMons(activ &aCurYear, string mon, float &sumTime, int &sumAct, int &usefulActs);
+	void SumMonStat(activ &aCurYear, string fname, float &sumTime, 
+		double &sumAct, double &usefulActs);
+	void SumDayStat(activ &forLoad1, string fname, float &sumTime, 
+		double &sumActs, double &usefulActs);
+	void LoadMonthFromStatDays(activ &forLoad1, string mon, float &sumTime, 
+		double &sumActs, double &usefulActs);
+	void LoadYearFromStatMons(activ &aCurYear, string mon, float &sumTime, 
+		double &sumAct, double &usefulActs);
 	//для шифровки личных данных пользователя
 	DWORD dwResult;
 	HCRYPTPROV hProv;
@@ -63,7 +71,8 @@ public:
 	void SaveDayOldFormat (string fileName, activ& Activ);
 	bool LoadFileDayCrypt(string fname, activ &forLoad1);
 	bool LoadFileDayOld(string fname, activ &forLoad1);
-	bool LoadFileMonth(string fname, activ &forLoad1, float &sumTime, float &sumUsefulTime, int &sumActs, int &usefulActs);
+	bool LoadFileMonth(string fname, activ &forLoad1, float &sumTime, 
+		float &sumUsefulTime, double &sumActs, double &usefulActs);
 	void LoadYear(activ &aCurYear, string fname="");
 	void LoadAllYears(activ &aCurYear);
 	void FormatSeconds(char (&ch)[100], float secs); 

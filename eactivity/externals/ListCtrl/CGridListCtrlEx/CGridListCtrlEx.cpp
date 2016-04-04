@@ -608,11 +608,23 @@ void CGridListCtrlEx::SetTextColor(int row, COLORREF textColor)
 	clrsText[row]=textColor;
 }
 
+//связывание ряда таблицы с правилом, которое подошло для соотв. заголовка, экзешника
+void CGridListCtrlEx::SetRuleExeCapt(int row, CString sExeCapt)
+{
+	if (row >= rulsExeCapt.GetSize())
+	{
+		rulsExeCapt.SetSize(row+1);
+	}
+	rulsExeCapt[row] = sExeCapt;
+}
+
 int CGridListCtrlEx::InsertItem(int nItem, LPCTSTR lpszItem)
 {
 	int res = CListCtrl::InsertItem(nItem, lpszItem);
 	if (res<clrsText.GetSize())
 		clrsText.InsertAt(res, 0, 1);
+	if (res < rulsExeCapt.GetSize())
+		rulsExeCapt.InsertAt(res, "", 1);
 	if (res<=max1)
 		max1++;
 	if (res<=max2)
@@ -680,8 +692,8 @@ bool CGridListCtrlEx::OnDisplayCellColor(int nRow, int nCol, COLORREF& textColor
 
 BOOL CGridListCtrlEx::DeleteAllItems()
 {
-	clrsBack.RemoveAll();
 	clrsText.RemoveAll();
+	rulsExeCapt.RemoveAll();
 	max1 = max2 = -1;//сбрасываем индексы максимальных и минимальных значений
 	min1 = min2 = -1;
 	return CListCtrl::DeleteAllItems();

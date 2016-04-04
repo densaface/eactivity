@@ -20,7 +20,7 @@ public:
 	CEndWork(CWnd* pParent = NULL);   // standard constructor
 	virtual ~CEndWork();
 	float usefulTime;
-	int   usefulActs;
+	double   usefulActs;
 	int   summonTime;
 	int   pauseCount;
 	CString sAction;

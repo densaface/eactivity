@@ -6,6 +6,9 @@
 #include <fstream>
 #include <vector>
 #include <algorithm>
+#include "afxwin.h"
+#include "NewProject.h"
+#include "MoveOrCopy.h"
 using namespace std;
 
 #if !defined(AFX_KOEFF_H__23B0459C_E209_4E0C_9AA6_F5C0AC7EBBB1__INCLUDED_)
@@ -16,32 +19,31 @@ using namespace std;
 #endif // _MSC_VER > 1000
 // Koeff.h : header file
 //
-struct sRule //: public std::binary_function<std::string, std::string, bool>
+struct sRule
 {
-// 	bool operator()(const std::string &s1, const std::string &s2) const
-// 	{
-// 		bool res;//для отладки
-// 		if (s2[0]=='*') //включение частичного поиска
-// 		{
-// 			res=(s1==s2.substr(1, s2.length()-1));
-// 			if (!res)
-// 				return false;
-// 			res=s1.find(s2.substr(1, s2.length()-1))==-1;
-// 			return res;
-// 		}
-// 		res=(strcmp(s1.c_str(), s2.c_str())<0);
-// 		return res;
-// 	}
+	sRule();
 	string exe;
 	string capt;
 	int typeRule;//будет ли учитываться заголовок
+	//-1 - правило только создано и не может еще использоваться
 	//0 - не будет, 
 	//1 - будет, 
 	//2 - частичное совпадение (для включения частичного поиска первым символом в find делать "*")
 	float koef;
 };
-
 typedef map<string, sRule,  less<string> > rulSpis;
+
+//структура, содержащая информацию о списке правил, принадлежащих определенному проекту
+struct structProject
+{
+	rulSpis lRuls;
+	string nameList;
+	string listFileName;
+	string comment; //Описание/комментарий к проекту
+	double koef; //коэффициент полезности
+};
+//список файлов коэффициентов
+typedef map<string, structProject,  less<string> > rulMacroList;
 
 /////////////////////////////////////////////////////////////////////////////
 // CKoeff dialog
@@ -52,7 +54,14 @@ class CKoeff : public CDialog
 // Construction
 public:
 	CKoeff(CWnd* pParent = NULL);   // standard constructor
-	sRule tmpRule;
+	rulMacroList macroRule; //структура, содержащая единственное правило, которое будет изменяться
+	string oldNameProject;	//имя проекта, которое было установлено при инициализации диалога 
+							//		(либо имя проекта редактируемого правила, либо первого проекта, 
+							//		если правило новое)
+	string oldRuleKey;
+	rulMacroList allRules; //для получения имен проектов
+	bool isNewRule;
+	int moveOrCopy;
 // 	CString exe;
 // 	CString capt;
 // 	CString koef;
@@ -85,6 +94,8 @@ protected:
 	afx_msg void OnSelChangeCombo1();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
+	CComboBox comboProjectsName;
+	afx_msg void OnCbnSelchangeCombo2();
 };
 
 //{{AFX_INSERT_LOCATION}}

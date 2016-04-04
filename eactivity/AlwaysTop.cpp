@@ -216,7 +216,7 @@ CString CAlwaysTop::CalculateDayNorm(activ_hours &lastAverageHoursGraph,
 					CString patt;
 					patt.LoadString(trif.GetIds(IDS_STRING1729));
 					sprintf_s(chRestPar, patt, 
-						(int)(workPeriod.maxUsefulPar-workPeriod.currentUsefulActs));
+						workPeriod.maxUsefulPar-workPeriod.currentUsefulActs);
 					break;
 				}
 			case 2:
