@@ -54,6 +54,10 @@ struct windowsSize
 	windowsSize();
 	bool moveBetweenTables;
 	bool resizeBetweenTables;
+	//запрет на ресайз окон для некоторых случаев, например, почему то 
+	//		вызывается lbuttonDown на главном диалоге во время выставления 
+	//		даты в диалоге настройки периодов для репорта сравнения двух периодов
+	bool forbidenResize;
 	CPoint ptFirst, ptLast;
 };
 

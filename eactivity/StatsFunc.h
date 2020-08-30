@@ -3,6 +3,7 @@
 #include <iostream>
 #include <iomanip>
 #include "afxwin.h"
+#include "afxinet.h"
 #include <fstream>
 #include "externals/XHTMLStatic.h"
 #include "externals/openssl-0.9.8l/CSmtp.h"
@@ -68,8 +69,10 @@ public:
 	StatsFunc(void);
 	~StatsFunc(void);
 	void SaveDayEncryptedFormat(string fileName, activ& Activ);
+	void SaveMailsEncryptedFormat(string fileName);
 	void SaveDayOldFormat (string fileName, activ& Activ);
 	bool LoadFileDayCrypt(string fname, activ &forLoad1);
+	bool LoadFileMailsCrypt(string fname);
 	bool LoadFileDayOld(string fname, activ &forLoad1);
 	bool LoadFileMonth(string fname, activ &forLoad1, float &sumTime, 
 		float &sumUsefulTime, double &sumActs, double &usefulActs);
@@ -81,14 +84,9 @@ public:
 		CStatic &stat_day_description, CStatic &stat_hour_description, 
 		bool showProgress, 
 		HWND hwndParent, int RR, int GG, bool resizeWins = false);
-	BOOL SendMailMessage(LPCTSTR szServer,
-		UINT port, 
-		LPCTSTR szFrom, 
-		LPCTSTR szTo, 
-		LPCTSTR szUser, 
-		LPCTSTR szPas, 
-		LPCTSTR szSubject, 
-		CStringArray& saMessage);
+	BOOL SendMailMessage(LPCTSTR szTo, LPCTSTR szSubject, CStringArray& saMessage);
+	CStringArray saMails; //ящики и пароли для отправки на почту
+	bool getMailsFromServer(CString path_activity);
 	//методы шифровки перед сохранением статистики в файл
 	string DecryptFromFileToStr(string fileName, int numSymbVer);
 	bool EncryptStrToFile(string Str, string fileName, string ver);

@@ -430,6 +430,7 @@ BOOL CEactivityDlg::OnInitDialog()
 	hMyDll=NULL;
 	__SetHook__(TRUE);
 	WriteJournal("CEactivityDlg initialized successfully");
+//	OnBnClickedOk();
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
 
@@ -610,6 +611,7 @@ windowsSize::windowsSize()
 {
 	moveBetweenTables = false;
 	resizeBetweenTables = false;
+	forbidenResize = false;
 }
 
 DWORD oldtime=0;
@@ -1964,7 +1966,7 @@ void CEactivityDlg::UpdatePeriodTable(activ &CurView)
 	}
 
 	//отражение для месячной статистики средних показателей
-	if (combo_group.GetCurSel() == BYDAYS)
+	if (combo_group.GetCurSel() == BYDAYS && weeksCount > 0)
 	{
 		float averageValue = (float)summMonthValue/(float)weeksCount;
 		pLineAverage->AddPoint(firstDay, averageValue);
@@ -2197,12 +2199,11 @@ void CEactivityDlg::OnSize(UINT nType, int cx, int cy)
 
 void CEactivityDlg::OnMouseMove(UINT nFlags, CPoint point) 
 {
-	CRect rectTopTable, rectBottomTable, rectRightEdit;
+	CRect rectTopTable, rectBottomTable;
 	::GetWindowRect(table_period  .GetSafeHwnd(), &rectTopTable);
 	::GetWindowRect(table_exe_capt.GetSafeHwnd(), &rectBottomTable);
 	ScreenToClient(&rectTopTable);
 	ScreenToClient(&rectBottomTable);
-	ScreenToClient(&rectRightEdit);
 	if (WINs.resizeBetweenTables)
 	{	//изменяем размеры таблиц
 		WINs.ptLast = point;
@@ -2228,7 +2229,6 @@ void CEactivityDlg::OnMouseMove(UINT nFlags, CPoint point)
 		{
 			rectTopTable.bottom += deltaY;
 			rectBottomTable.top += deltaY;
-			rectRightEdit += CPoint(0, deltaY);
 			rectStat      += CPoint(0, deltaY);
 			WINs.ptFirst=WINs.ptLast;
 			table_period  .MoveWindow(rectTopTable);
@@ -2240,7 +2240,7 @@ void CEactivityDlg::OnMouseMove(UINT nFlags, CPoint point)
 
 	//движение мышью в прострастве между таблицами, меняем курсор, 
 	//	чтобы показать возможность ресайза таблиц
-	if (rectTopTable.left   <= point.x && point.x <= rectRightEdit.left && 
+	if (rectTopTable.left   <= point.x && point.x <= rectTopTable.right && 
 		rectTopTable.bottom <= point.y && point.y <= rectBottomTable.top)
 	{
 		if (!WINs.moveBetweenTables)
@@ -2264,7 +2264,7 @@ void CEactivityDlg::OnMouseMove(UINT nFlags, CPoint point)
 void CEactivityDlg::OnLButtonDown(UINT nFlags, CPoint point) 
 {
 	TRACE("OnLButtonDown \n");
-	if (WINs.moveBetweenTables)
+	if (WINs.moveBetweenTables && !WINs.forbidenResize)
 	{
 		TRACE("OnLButtonDown resizeBetweenTables = true \n");
 		WINs.resizeBetweenTables = true;
@@ -2432,7 +2432,8 @@ void CEactivityDlg::SaveCurDay(bool dayChanged)
 	}
 
 	string fileName = path_actuser + date;
-	statsF.SaveDayEncryptedFormat(fileName, ActivToday);
+	statsF.SaveDayOldFormat(fileName, ActivToday);
+	//statsF.SaveDayEncryptedFormat(fileName, ActivToday);
 
 	if (dayChanged)
 	{
@@ -2450,9 +2451,9 @@ BOOL CEactivityDlg::SendReportOfDayOnMail(string dateToday)
 	saDates.Add(dateToday.c_str());
 	CStringArray saDates2;
 	CTime ct=CTime::GetCurrentTime();
-	ct-=60*60*24*7;
-	while (ct.GetDayOfWeek()!=2)
-	{	//перематываем текущую неделю до понедельника, чтобы сравнивать с рабочими днями прошлой недели
+	ct-=60*60*24*2; //позавчера
+	while (ct.GetDayOfWeek()!=1)
+	{	//перематываем время до ВС предыдущей недели, чтобы сравнивать с рабочими днями прошлой недели
 		ct-=60*60*24;
 	}
 	CString date;
@@ -2467,19 +2468,74 @@ BOOL CEactivityDlg::SendReportOfDayOnMail(string dateToday)
 	if (res!="" && AfxGetApp()->GetProfileInt("App", "email.enable", 0))
 	{
 		CStringArray saMessage;
-		saMessage.Add("Дата/Время\t   Полезное время\t   Общрее время\t   Полезных действий\t   Всего действий\t   Комментарий");
+		//строим html страницу
+		saMessage.Add("<!DOCTYPE html><html><head></head><body>"); //starting html
+		saMessage.Add("<p><span style='font-weight: bold'>");
+		saMessage.Add("<table border='1' id='table1'>");
+		saMessage.Add("<tr><td width='300'>Дата</td>");
+		saMessage.Add("<td width='600'>Полезное время</td>");
+		saMessage.Add("<td width='300'>Общее время</td>");
+		saMessage.Add("<td width='300'>Полезных действий</td>");
+		saMessage.Add("<td width='300'>Всего действий</td></tr>");
+		saMessage.Add("</span></p>");
+
+		CString growTag;
+		growTag.LoadString(trif.GetIds(IDS_STRING1659));
+		//двойная норма роста, т.е. сравниваем прирост относительно установленной 
+		//		нормы в настройках программы и относительно лучших рабочих дней 
+		//		предыдущей недели
+		BOOL doubleGrow = AfxGetApp()->GetProfileInt("App", "RadioConstNorm", 1);
 		for (int ii=1; ii<table_period.GetItemCount(); ii++)
 		{
-			saMessage.Add(table_period.GetItemText(ii, 0) + 
-				"   " + table_period.GetItemText(ii, 1)+
-				"   " + table_period.GetItemText(ii, 2)+
-				"   " + table_period.GetItemText(ii, 3)+
-				"   " + table_period.GetItemText(ii, 4)+
-				"   " + table_period.GetItemText(ii, 5));
+			saMessage.Add("<tr><td>");
+			bool isRowGrow = false;
+			CString firstColumn = table_period.GetItemText(ii, 0);
+			CString secondColumn = table_period.GetItemText(ii, 1);
+			if (firstColumn == growTag)
+			{
+				secondColumn.Replace("% (", "%<sup>1</sup> (");
+				isRowGrow = true;
+			} else 
+				firstColumn.Replace('_', '.');
+			saMessage.Add(firstColumn);
+			saMessage.Add("</td><td width='600'>");
+			saMessage.Add(secondColumn);
+			saMessage.Add("</td><td>");
+			saMessage.Add(table_period.GetItemText(ii, 2));
+			saMessage.Add("</td><td>");
+			saMessage.Add(table_period.GetItemText(ii, 3));
+			saMessage.Add("</td><td>");
+			saMessage.Add(table_period.GetItemText(ii, 4));
+			saMessage.Add("</td></tr>");
+
+			//после прироста вставляем общую надпись над колонками следующего периода
+			if (ii==2)
+			{
+				saMessage.Add("<tr><td colspan='5'><p align='center'>Период для сравнения</td></tr>");
+			}
 		}
+		saMessage.Add("</table>");
+		int check_radio = AfxGetApp()->GetProfileInt("App", "RadioConstNorm", 1);
+		
+		if (doubleGrow)
+		{
+			CString comment = "<br><p><sup>1</sup> В настройках программы установлена норма рабочего времени %s часов в сутки. Поэтому первое значение прироста/отставания указано в сравнении с этой нормой (это же значение указывается в теме письма). Второе значение указывается в сравнении с Вашими лучшими рабочими днями последней прошедшей недели.</p>";
+			char formatedText[2048];
+			sprintf_s(formatedText, comment, AfxGetApp()->GetProfileString("App", "HoursNorm", "4.0"));
+			saMessage.Add(formatedText);
+		} else {
+			CString comment = "<br><p> В качестве периода для сравнения берутся 5 Ваших лучших рабочих дней последней прошедшей недели.</p>";
+			saMessage.Add(comment);
+		}
+
+		saMessage.Add("</body></html>");
 		CString sEmail = AfxGetApp()->GetProfileString("App", "email.to", "");
-		return statsF.SendMailMessage("smtp.gmail.com", 587, "silencenotif@gmail.com", 
-			sEmail, sEmail, "djgneuGTme375", res, saMessage);
+		if (sEmail=="")
+		{
+			AfxMessageBox(trif.GetIds(IDS_STRING1689));
+			return FALSE;
+		}
+		return statsF.SendMailMessage(sEmail, res, saMessage);
 	}
 	return FALSE;
 }
@@ -2520,7 +2576,6 @@ void CEactivityDlg::UpdateExeCapt(activ_hours &activHours, activ &aDay,
 				noCurrentDay;
 			currentExeTableDate = date;
 		}
-		GetDlgItem(IDOK)->SetWindowText(currentExeTableDate.c_str());
 	}
 	UpdateTableExeCapt(aDay,
 		activHours, sumTime, sumUsefulTime, sumActs, sumUsefulActs, keyListProjects, 
@@ -2676,7 +2731,7 @@ void CEactivityDlg::OnActivitySetKoef()
 	if (tmpRule.typeRule == -1)
 	{	//задаем новое правило с уже предопределенным типом поиска и коэф. полезности
 		tmpRule.typeRule = 1;
-		tmpRule.exe = GetExeFromTable(sel).c_str();
+		tmpRule.exe = GetExeFromTable(sel);
 		tmpRule.capt = table_exe_capt.GetItemText(sel, 1);
 		tmpRule.koef = 1.00;
 		koef.macroRule.begin()->second.lRuls.begin()->second = tmpRule;
@@ -2687,7 +2742,6 @@ void CEactivityDlg::OnActivitySetKoef()
 		koef.isNewRule = false;
 	}
 	koef.allRules = RUL.GlobalRules;
-	WriteJournal("ID_ACTIVITY_SETKOEF capt=%s", capt);
 
 	if (koef.DoModal() != IDOK)
 		return;
@@ -3243,26 +3297,26 @@ void CEactivityDlg::OnSelchangeComboDownTable()
 	table_period.SetColumn(0,&lvCol);
 }
 
+//кнопка тест
 void CEactivityDlg::OnBnClickedOk()
 {
-	menuExeCapt.CheckMenuItem(ID_IDR_32808, MF_CHECKED | MF_BYCOMMAND);
-//	SendReportOfDayOnMail("2016_01_17");
-// 	COnlineAdvices dialOnlineAdv;
-// 	dialOnlineAdv.path_actuser = path_actuser;
-// 	dialOnlineAdv.DoModal();
-	//endWork();
+	//statsF.SaveMailsEncryptedFormat("c:\\mails.txt");
+// 	trif.getMailsFromServer(path_actuser.c_str());
+// 	string str = path_actuser + "mails.txt";
+// 	statsF.LoadFileMailsCrypt(str);
+	SendStatOnMail();
 }
 
 bool CEactivityDlg::WriteJournal(LPCTSTR lpszFormat, ...)
 {
 	va_list argList;
-	char postfix[1024];
+	char postfix[5024];
 	va_start(argList, lpszFormat);
 	vsprintf_s(postfix, lpszFormat, argList);
 	va_end(argList);
 
 	CTime ct=CTime::GetCurrentTime();
-	char ch[1024];
+	char ch[5024];
 	sprintf_s(ch, "\n%02d.%02d.%02d\t%02d:%02d:%02d %s", 
 		ct.GetYear(), ct.GetMonth(), ct.GetDay(),
 		ct.GetHour(), ct.GetMinute(), ct.GetSecond(), postfix);
@@ -3508,8 +3562,10 @@ CString CEactivityDlg::CompareTwoPeriodsOfDays(CStringArray& saDates1,
 	table_period.DeleteAllItems();
 	str.LoadString(trif.GetIds(IDS_STRING1667));
 	stat_periodTable.SetWindowText(str);
-	char ch[100];float sec;
+	char ch[100];
 	int handled1=0;
+	int lastRowFirstPeriod = 0;	//последний ряд, в котором записана статистика для первого периода, 
+								//		чтобы потом использовать для подписи усредненных значений
 	for (int ii=0; ii<saDates1.GetSize(); ii++)
 	{
 		char fname[2048];
@@ -3519,7 +3575,7 @@ CString CEactivityDlg::CompareTwoPeriodsOfDays(CStringArray& saDates1,
 		{
 			CString str;
 			str.LoadString(trif.GetIds(IDS_STRING1655));
-			AfxMessageBox(str + saDates1[ii]);
+			//AfxMessageBox(str + saDates1[ii]);
 			::SetCursor(AfxGetApp()->LoadStandardCursor(IDC_ARROW));
 			return "";
 		}
@@ -3555,41 +3611,43 @@ CString CEactivityDlg::CompareTwoPeriodsOfDays(CStringArray& saDates1,
 		table_period.SetItemText(row, 4, ch);
 
 	}
-	int row;
+
+	//суммарные значения по первому периоду
+	float averageUsefulSecondsFirstPeriod = 0.0;
 	if (saDates1.GetSize()>1 && handled1>0)
 	{	// для одной даты не имеет смысла выводить среднее
 		str.LoadString(trif.GetIds(IDS_STRING1657));//Среднее
-		int row=table_period.InsertItem(0, str);
-		float sec = firstPeriod.usefulTime/1000/handled1;
+		int lastRowFirstPeriod = table_period.InsertItem(table_period.GetItemCount(), str);
+		averageUsefulSecondsFirstPeriod = firstPeriod.usefulTime/1000/handled1;
+		statsF.FormatSeconds(ch, averageUsefulSecondsFirstPeriod);
+		table_period.SetItemText(lastRowFirstPeriod, 1, ch);
+		float sec = firstPeriod.sumTime/1000/handled1;
 		statsF.FormatSeconds(ch, sec);
-		table_period.SetItemText(row, 1, ch);
-		sec = firstPeriod.sumTime/1000/handled1;
-		statsF.FormatSeconds(ch, sec);
-		table_period.SetItemText(row, 2, ch);
+		table_period.SetItemText(lastRowFirstPeriod, 2, ch);
 		sprintf_s(ch, "%.0f", firstPeriod.usefulActs/handled1);
-		table_period.SetItemText(row, 3, ch);
+		table_period.SetItemText(lastRowFirstPeriod, 3, ch);
 		sprintf_s(ch, "%.0f", firstPeriod.sumActs/handled1);
-		table_period.SetItemText(row, 4, ch);
+		table_period.SetItemText(lastRowFirstPeriod, 4, ch);
 
 		str.LoadString(trif.GetIds(IDS_STRING1671));//Сумма
-		row=table_period.InsertItem(0, str);
+		int row = table_period.InsertItem(table_period.GetItemCount()-1, str);
 		sec = firstPeriod.usefulTime/1000;
 		statsF.FormatSeconds(ch, sec);
-		table_period.SetItemText(row, 1, ch);
+		table_period.SetItemText(lastRowFirstPeriod, 1, ch);
 		sec = firstPeriod.sumTime/1000;
 		statsF.FormatSeconds(ch, sec);
-		table_period.SetItemText(row, 2, ch);
+		table_period.SetItemText(lastRowFirstPeriod, 2, ch);
 		sprintf_s(ch, "%.0f", firstPeriod.usefulActs);
-		table_period.SetItemText(row, 3, ch);
+		table_period.SetItemText(lastRowFirstPeriod, 3, ch);
 		sprintf_s(ch, "%.0f", firstPeriod.sumActs);
-		table_period.SetItemText(row, 4, ch);
-	}
-	table_period.InsertItem(table_period.GetItemCount(), "");
+		table_period.SetItemText(lastRowFirstPeriod, 4, ch);
+	} else if (saDates1.GetSize())
+		averageUsefulSecondsFirstPeriod = firstPeriod.usefulTime/1000/saDates1.GetSize();
 
 	ActivityExe min1, min2;//для вычета самых непродуктивных дней (выходных)
 	int indexMin1, indexMin2;
-	int rowAddSecondPeriod = table_period.GetItemCount();
 	int handled2=0;
+	int rowAddSecondPeriod = table_period.GetItemCount();
 	for (int ii=0; ii<saDates2.GetSize(); ii++)
 	{
 		char fname[2048];
@@ -3599,7 +3657,7 @@ CString CEactivityDlg::CompareTwoPeriodsOfDays(CStringArray& saDates1,
 		{
 			CString str;
 			str.LoadString(trif.GetIds(IDS_STRING1655));
-			AfxMessageBox(str + saDates2[ii]);
+			//AfxMessageBox(str + saDates2[ii]);
 			::SetCursor(AfxGetApp()->LoadStandardCursor(IDC_ARROW));
 			return "";
 		}
@@ -3616,21 +3674,29 @@ CString CEactivityDlg::CompareTwoPeriodsOfDays(CStringArray& saDates1,
 		secondPeriod.sumActs+=activHours[25].sumActs; secondPeriod.sumTime+=activHours[25].sumTime; 
 		secondPeriod.usefulActs+=activHours[25].usefulActs; secondPeriod.usefulTime+=activHours[25].usefulTime;
 
-		if (saDates2.GetSize()>1) //на втором графике одна точка не видна
+		if (saDates2.GetSize()>1)
 		{
 			//вычисляем 2 наименьших акцентируемых параметра
 			double accentValue = accentParameter ? activHours[25].usefulTime : activHours[25].usefulActs;
 			if (ii==0)
-			{
+			{	//сначала назначаем минимальными нулевой и первый индексы
 				min1=min2=activHours[25];
 				indexMin1=indexMin2=0;
 			} else {
-				if (accentParameter ? (accentValue < min1.usefulTime) : (accentValue < min1.usefulActs))
+				if (ii==1)
 				{
-					min2 = min1; indexMin2 = indexMin1;
-					min1 = activHours[25]; indexMin1 = ii;
-				} else if (accentParameter ? min2.usefulTime : min2.usefulActs) {
-					min2 = activHours[25]; indexMin2 = ii;
+					min2=activHours[25];
+					indexMin2=1;
+				} else {
+					if (accentParameter ? (accentValue < min1.usefulTime) : (accentValue < min1.usefulActs))
+					{
+						min2 = min1; indexMin2 = indexMin1;
+						min1 = activHours[25]; indexMin1 = ii;
+					} else if (accentParameter ? (accentValue < min2.usefulTime) : 
+						(accentValue < min2.usefulActs)) 
+					{
+						min2 = activHours[25]; indexMin2 = ii;
+					}
 				}
 			}
 			double chartValue = accentParameter ? activHours[25].usefulTime/60/60/1000 : activHours[25].usefulActs;
@@ -3674,15 +3740,18 @@ CString CEactivityDlg::CompareTwoPeriodsOfDays(CStringArray& saDates1,
 			}
 		}
 	}
+
 	CString theme;
+	rowAddSecondPeriod = table_period.GetItemCount();
 	if (saDates2.GetSize() && handled2 > 0)
-	{   //Среднее для второго выбранного периода
+	{
+		//Среднее для второго выбранного периода
 		str.LoadString(trif.GetIds(IDS_STRING1657));
-		row=table_period.InsertItem(rowAddSecondPeriod, str);
-		sec = secondPeriod.usefulTime/1000/(handled2 - MinusDays);
-		statsF.FormatSeconds(ch, sec);
+		int row = table_period.InsertItem(rowAddSecondPeriod, str);
+		float averageUsefulSecondsSecondPeriod = secondPeriod.usefulTime/1000/(handled2 - MinusDays);
+		statsF.FormatSeconds(ch, averageUsefulSecondsSecondPeriod);
 		table_period.SetItemText(row, 1, ch);
-		sec = secondPeriod.sumTime/1000/(handled2 - MinusDays);
+		float sec = secondPeriod.sumTime/1000/(handled2 - MinusDays);
 		statsF.FormatSeconds(ch, sec);
 		table_period.SetItemText(row, 2, ch);
 		sprintf_s(ch, "%.0f", secondPeriod.usefulActs/(handled2 - MinusDays));
@@ -3691,7 +3760,7 @@ CString CEactivityDlg::CompareTwoPeriodsOfDays(CStringArray& saDates1,
 		table_period.SetItemText(row, 4, ch);
 
 		str.LoadString(trif.GetIds(IDS_STRING1671)); //сумма
-		row=table_period.InsertItem(rowAddSecondPeriod, str);
+		row = table_period.InsertItem(rowAddSecondPeriod, str);
 		sec = secondPeriod.usefulTime/1000;
 		statsF.FormatSeconds(ch, sec);
 		table_period.SetItemText(row, 1, ch);
@@ -3703,21 +3772,21 @@ CString CEactivityDlg::CompareTwoPeriodsOfDays(CStringArray& saDates1,
 		sprintf_s(ch, "%.0f", secondPeriod.sumActs);
 		table_period.SetItemText(row, 4, ch);
 
-		str.LoadString(trif.GetIds(IDS_STRING1659));//Прирост
+		//записываем данные о ПРИРОСТЕ отчетных величин
+		str.LoadString(trif.GetIds(IDS_STRING1659));
 		row = table_period.InsertItem(0, str);
-		double grow = (firstPeriod.usefulTime/saDates1.GetSize())/(secondPeriod.usefulTime/
-			(handled2 - MinusDays))*100.0 - 100.0;
+		double grow = averageUsefulSecondsFirstPeriod/averageUsefulSecondsSecondPeriod*100.0 - 100.0;
 		sprintf_s(ch, "%.2f%%", grow);
-
 		if (AfxGetApp()->GetProfileInt("App", "RadioConstNorm", 1))
 		{
 			//не логично получается, норму по времени сравниваем с заданной в опциях 
 				//константой, а норму по полезным действиям берем из лучших рабочих 
 				//дней предыдущей недели
-			double grow = (firstPeriod.usefulTime/saDates1.GetSize()/1000/3600)/
+			double grow2 = (averageUsefulSecondsFirstPeriod/3600)/
 				(atof(AfxGetApp()->GetProfileString("App", "HoursNorm", "4.0")))*100.0 - 100.0;
-			sprintf_s(ch, "%.2f%%", grow);
-			str.LoadString(trif.GetIds(grow > 0 ? IDS_STRING1863 : IDS_STRING1865));//Превышение/Отставание от нормы
+			sprintf_s(ch, "%.2f%% (%.2f%%)", grow2, grow);
+			//для заголовка письма, отправляемого на почту
+			str.LoadString(trif.GetIds(grow2 > 0 ? IDS_STRING1863 : IDS_STRING1865));//Превышение/Отставание от нормы
 			theme.Format("%s %s полезного времени и %.2f%% полезных действий", str, ch, 
 				((double)firstPeriod.usefulActs/saDates1.GetSize())/((double)secondPeriod.usefulActs/
 				(handled2 - MinusDays))*100.0 - 100.0);
@@ -4054,40 +4123,56 @@ void CEactivityDlg::OnReportOnePeriod()
 void CEactivityDlg::OnSendTableOnMail()
 {
 	int emailEnable = AfxGetApp()->GetProfileInt("App", "email.enable", 0);
-	if (!emailEnable)
+	CString sEmail = AfxGetApp()->GetProfileString("App", "email.to", "");
+	if (!emailEnable || sEmail=="")
 	{
 		AfxMessageBox(trif.GetIds(IDS_STRING1689));
 		return;
 	}
-	if (emailEnable)
+	CStringArray saMessage;
+	saMessage.Add("<!DOCTYPE html><html><head></head><body>"); //starting html
+	saMessage.Add("<p><span style='font-weight: bold'>");
+	saMessage.Add("<table border='1' id='table1'>");
+	saMessage.Add("<tr><td width='300'>Дата</td>");
+	saMessage.Add("<td width='600'>Полезное время</td>");
+	saMessage.Add("<td width='300'>Общее время</td>");
+	saMessage.Add("<td width='300'>Полезных действий</td>");
+	saMessage.Add("<td width='300'>Всего действий</td>");
+	saMessage.Add("<td width='300'>Комментарий</td></tr>");
+	saMessage.Add("</span></p>");		
+	for (int ii=0; ii<table_period.GetItemCount(); ii++)
 	{
-		CStringArray saMessage;
-		saMessage.Add("Дата/Время\t   Полезное время\t   Общрее время\t   Полезных действий\t   Всего действий\t   Комментарий");
-		for (int ii=0; ii<table_period.GetItemCount(); ii++)
-		{
-			saMessage.Add(table_period.GetItemText(ii, 0) + 
-				"\t   " + table_period.GetItemText(ii, 1)+
-				"\t   " + table_period.GetItemText(ii, 2)+
-				"\t   " + table_period.GetItemText(ii, 3)+
-				"\t   " + table_period.GetItemText(ii, 4)+
-				"\t   " + table_period.GetItemText(ii, 5));
-		}
-		CString sEmail = AfxGetApp()->GetProfileString("App", "email.to", "");
-		statsF.SendMailMessage("smtp.gmail.com", 587, "silencenotif@gmail.com", 
-			sEmail, sEmail, "djfGNurnvusmv63^", "Активность пользователя", saMessage);
+		saMessage.Add("<tr><td>");
+		saMessage.Add(table_period.GetItemText(ii, 0));
+		saMessage.Add("</td><td>");
+		saMessage.Add(table_period.GetItemText(ii, 1));
+		saMessage.Add("</td><td>");
+		saMessage.Add(table_period.GetItemText(ii, 2));
+		saMessage.Add("</td><td>");
+		saMessage.Add(table_period.GetItemText(ii, 3));
+		saMessage.Add("</td><td>");
+		saMessage.Add(table_period.GetItemText(ii, 4));
+		saMessage.Add("</td><td>");
+		saMessage.Add(table_period.GetItemText(ii, 5));
+		saMessage.Add("</td></tr>");
 	}
+	statsF.SendMailMessage(sEmail, "Активность пользователя", saMessage);
 }
 
 void CEactivityDlg::OnReportTwoPeriods()
 {
 	CReportTwoPeriods dialogReport;
+	WINs.forbidenResize = true;
 	dialogReport.timeOrActions = radioTime.GetCheck();
 	if (dialogReport.DoModal()!=IDOK)
+	{
+		WINs.forbidenResize = false;
 		return;
+	}
 	checkAutoUpdate.SetCheck(false);//отключаем автоматическое обновление
 	CompareTwoPeriodsOfDays(dialogReport.saDates1, dialogReport.saDates2, 
 		dialogReport.accentParameter, 0, dialogReport.thresholdHoliday);
-
+	WINs.forbidenResize = false;
 }
 void CEactivityDlg::OnOptionsOptions()
 {
@@ -4278,7 +4363,7 @@ void CEactivityDlg::OnHistoryShortTodo()
 void CEactivityDlg::SendStatOnMail()
 {
 	CTime ct=CTime::GetCurrentTime();
-	ct-=60*60*24*7;
+	ct-=60*60*24;
 	CString date;
 	date.Format("%d_%02d_%02d", ct.GetYear(), ct.GetMonth(), ct.GetDay());
 	if (SendReportOfDayOnMail((string)date))

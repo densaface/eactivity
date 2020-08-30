@@ -237,7 +237,7 @@ CSmtp::CSmtp()
 	m_type = NO_SECURITY;
 	m_ctx = NULL;
 	m_ssl = NULL;
-	m_bHTML = false;
+	m_bHTML = true;
 	m_bReadReceipt = false;
 
 	m_sCharSet = "US-ASCII";

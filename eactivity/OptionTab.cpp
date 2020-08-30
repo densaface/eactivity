@@ -337,9 +337,7 @@ void COptionTabMail::OnTestMail()
 	CStringArray saMessage;
 	CString str;
 	edit_email.GetWindowText(str);
-	statsF.SendMailMessage("smtp.gmail.com", 587, "silencenotif@gmail.com", 
-		str, str, "GhjcajhyZ88", 
-		"Test from ActivateMe", saMessage);
+	statsF.SendMailMessage(str, "Test from ActivateMe", saMessage);
 }
 
 void COptionTabMail::OnBnClickedCheckEmail()

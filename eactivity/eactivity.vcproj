@@ -67,7 +67,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="wininet.lib Version.lib bmpextmd.lib externals\mySql\libmysql.lib"
+				AdditionalDependencies="wininet.lib Version.lib externals\mySql\libmysql.lib"
 				LinkIncremental="2"
 				AdditionalManifestDependencies="&quot;type=&apos;win32&apos; name=&apos;Microsoft.Windows.Common-Controls&apos; version=&apos;6.0.0.0&apos; processorArchitecture=&apos;*&apos; publicKeyToken=&apos;6595b64144ccf1df&apos; language=&apos;*&apos;&quot;"
 				GenerateDebugInformation="true"
@@ -317,6 +317,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\MoveOrCopy.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\NewProject.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\OnlineAdviceModerate.cpp"
 				>
 			</File>
@@ -326,6 +334,14 @@
 			</File>
 			<File
 				RelativePath=".\OptionTab.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ProjectEdit.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\RecalculationUsefulTime.cpp"
 				>
 			</File>
 			<File
@@ -1087,6 +1103,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\MoveOrCopy.h"
+				>
+			</File>
+			<File
+				RelativePath=".\NewProject.h"
+				>
+			</File>
+			<File
 				RelativePath=".\OnlineAdviceModerate.h"
 				>
 			</File>
@@ -1096,6 +1120,14 @@
 			</File>
 			<File
 				RelativePath=".\OptionTab.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ProjectEdit.h"
+				>
+			</File>
+			<File
+				RelativePath=".\RecalculationUsefulTime.h"
 				>
 			</File>
 			<File

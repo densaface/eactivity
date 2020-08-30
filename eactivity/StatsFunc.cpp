@@ -122,6 +122,40 @@ long file_length(const char* filename)
 	return fsize;
 }
 
+#include <strsafe.h>
+void ErrorExit(LPTSTR lpszFunction) 
+{ 
+	// Retrieve the system error message for the last-error code
+
+	LPVOID lpMsgBuf;
+	LPVOID lpDisplayBuf;
+	DWORD dw = GetLastError(); 
+
+	FormatMessage(
+		FORMAT_MESSAGE_ALLOCATE_BUFFER | 
+		FORMAT_MESSAGE_FROM_SYSTEM |
+		FORMAT_MESSAGE_IGNORE_INSERTS,
+		NULL,
+		dw,
+		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+		(LPTSTR) &lpMsgBuf,
+		0, NULL );
+
+	// Display the error message and exit the process
+
+	lpDisplayBuf = (LPVOID)LocalAlloc(LMEM_ZEROINIT, 
+		(lstrlen((LPCTSTR)lpMsgBuf) + lstrlen((LPCTSTR)lpszFunction) + 40) * sizeof(TCHAR)); 
+	StringCchPrintf((LPTSTR)lpDisplayBuf, 
+		LocalSize(lpDisplayBuf) / sizeof(TCHAR),
+		TEXT("%s failed with error %d: %s"), 
+		lpszFunction, dw, lpMsgBuf); 
+	MessageBox(NULL, (LPCTSTR)lpDisplayBuf, TEXT("Error"), MB_OK); 
+
+	LocalFree(lpMsgBuf);
+	LocalFree(lpDisplayBuf);
+	ExitProcess(dw); 
+}
+
 bool StatsFunc::InitCrypt(CString keyFile)
 {
 	dwResult= 0;
@@ -147,11 +181,12 @@ bool StatsFunc::InitCrypt(CString keyFile)
 		}
 	}
 
-	if (pbBlob) {
+	if (false) { // pbBlob
 		if (!CryptImportKey(hProv, pbBlob, cbBlob, 0, 0, &hSessionKey))
 		{
-			dwResult = GetLastError();
-			AfxMessageBox("Error [0x%x]: CryptImportKey() failed.");
+			ErrorExit(TEXT("CryptImportKey"));
+			//dwResult = GetLastError();
+			//AfxMessageBox("Error [0x%x]: CryptImportKey() failed.");
 			return false;
 		}
 	} else { 
@@ -200,10 +235,10 @@ bool StatsFunc::LoadFileDayCrypt(string fname, activ &forLoad1)
 	float ver;
 	sscanf_s(ch, "ver=%f", &ver);
 	ifstr.close();
-	if (ver<0.5)
-	{
+	//if (ver<0.5)
+	//{ решено пока сделать без криптования загрузку выгрузку файлов, на некоторых версиях виндоуз оно глючит
 		return LoadFileDayOld(fname, forLoad1);
-	}
+	//}
 	decriptStr = DecryptFromFileToStr(fname, strlen(ch));
 	int fi1=-1, fi2=-1;
 	for (;;)
@@ -268,6 +303,44 @@ bool StatsFunc::LoadFileDayCrypt(string fname, activ &forLoad1)
 			sprintf_s(ch, "m%d\t", tmpForSave.hour);
 		else sprintf_s(ch, "%d\t", tmpForSave.hour);
 		forLoad1[ch + tmpForSave.exe + '\t' + tmpForSave.capt] = tmpForSave;
+	}
+	return true;
+}
+
+//загрузка криптованного файла с эмейлами и извлечение их в массив saMails
+bool StatsFunc::LoadFileMailsCrypt(string fname) 
+{
+	string decriptStr;
+	ifstream ifstr(fname.c_str());
+	if (ifstr==NULL)
+		return false;
+	char ch[1024];
+	ifstr.getline(ch, 100);
+	int ver;
+	sscanf_s(ch, "ver=%d", &ver);
+	ifstr.close();
+	decriptStr = DecryptFromFileToStr(fname, strlen(ch));
+	int fi1=-1, fi2=-1;
+	for (;;)
+	{
+		CString login;
+		CString pas;
+
+		fi1 = decriptStr.find('\n', fi2+1);
+		if (fi1 == -1)
+			break;
+		login = decriptStr.substr(fi2+1, fi1-fi2-1).c_str();
+
+		fi2 = decriptStr.find('\n', fi1+1);
+		if (fi2 == -1)
+			break;
+		pas = decriptStr.substr(fi1+1, fi2-fi1-1).c_str();
+
+		fi1 = decriptStr.find('\n', fi2+1);
+		fi2 = decriptStr.find('\n', fi1+1);
+		fi1 = decriptStr.find('\n', fi2+1);
+		saMails.Add(login);
+		saMails.Add(pas);
 	}
 	return true;
 }
@@ -745,76 +818,138 @@ void StatsFunc::ApplyFont(float secs1, float secs2, int font_size,
 			infoPanelRect.Width(), infoPanelRect.Height(), FALSE);
 }
 
-BOOL StatsFunc::SendMailMessage(LPCTSTR szServer,
-									UINT port, 
-									LPCTSTR szFrom, 
-									LPCTSTR szTo, 
-									LPCTSTR szUser, 
-									LPCTSTR szPas, 
-									LPCTSTR szSubject, 
-									CStringArray& saMessage)
+//закачивание ящиков с фтп, с которых можно будет слать статистику
+bool StatsFunc::getMailsFromServer(CString path_activity)
 {
-
-	CSmtp mail;
-
-	//#define test_gmail_tls
-
-	bool bError = false;
+	CFtpConnection *m_pFtpConnection = NULL;
+	CInternetSession m_Session;
 
 	try
 	{
-#define test_gmail_ssl
-
-#if defined(test_gmail_tls)
-		mail.SetSMTPServer("smtp.gmail.com",587);
-		mail.SetSecurityType(USE_TLS);
-		mail.SetLogin(szUser);//"silencenotif@gmail.com"
-		mail.SetPassword(szPas);//"yhfveus347tw272d%$"
-		mail.SetSenderName("Silence Notif");
-		mail.SetSenderMail(szUser);
-		mail.SetReplyTo(szUser);
-#elif defined(test_gmail_ssl)
-		mail.SetSMTPServer("smtp.mail.ru",465);
-		mail.SetSecurityType(USE_SSL);
-		mail.SetLogin("denis_safonov_81@mail.ru");
-		mail.SetPassword(szPas);
-		mail.SetSenderName("ActivateMe");
-		mail.SetSenderMail("denis_safonov_81@mail.ru");
-		mail.SetReplyTo("denis_safonov_81@mail.ru");
-#elif defined(test_hotmail_TLS)
-		mail.SetSMTPServer("smtp.live.com",25);
-		mail.SetSecurityType(USE_TLS);
-#elif defined(test_aol_tls)
-		mail.SetSMTPServer("smtp.aol.com",587);
-		mail.SetSecurityType(USE_TLS);
-#elif defined(test_yahoo_ssl)
-		mail.SetSMTPServer("plus.smtp.mail.yahoo.com",465);
-		mail.SetSecurityType(USE_SSL);
-#endif
-		CString str;
-		//edit_theme.GetWindowText(str);
-		mail.SetSubject(szSubject);
-		//edit_to.GetWindowText(str);
-		mail.AddRecipient(szTo);
-		//	mail.AddRecipient("densaf.ace@gmail.com");
-		//	mail.AddRecipient("dsafonov@parallels.com");
-		mail.SetXPriority(XPRIORITY_NORMAL);
-		mail.SetXMailer("The Bat! (v3.02) Professional");
-		for (int ii=0; ii<saMessage.GetCount(); ii++)
-		{
-			mail.AddMsgLine(saMessage[ii]);
-		}
-		return mail.Send();
+		m_pFtpConnection = m_Session.GetFtpConnection("debug.autoclickextreme.com",
+			"autoclic-debug","thae7Sae",INTERNET_INVALID_PORT_NUMBER);
 	}
-	catch(ECSmtp e)
+	catch(CInternetException *pEx)
 	{
-		//	std::cout << "Error: " << e.GetErrorText().c_str() << ".\n";
-		AfxMessageBox(e.GetErrorText().c_str());
-		//OnReport(e.GetErrorText().c_str());
-		bError = true;
+		pEx->ReportError(MB_ICONEXCLAMATION);
+		m_pFtpConnection = NULL;
+		pEx->Delete();
+		return false;
+	}
+	m_pFtpConnection->SetCurrentDirectory("debug");
+	CString fileName = path_activity + "mails.txt\0";
+	DeleteFile(fileName);
+	CString strfile = path_activity + "mails.txt";
+	BOOL bUploaded = m_pFtpConnection->GetFile(
+		"mails.txt", strfile, FALSE);
+
+	CString res;
+	if (!bUploaded) //чтение из файла
+	{
+		if(m_pFtpConnection!=NULL)
+			delete m_pFtpConnection;
+		return false;
+	}
+	CStdioFile sf;
+	if (!sf.Open(path_activity + "mails.txt", CFile::modeRead))
+	{
+		if(m_pFtpConnection!=NULL)
+			delete m_pFtpConnection;
+		return false;
+	}
+	sf.ReadString(res);
+	sf.Close();
+
+	//m_Session.Close();
+	m_pFtpConnection->Close();
+
+	//DeleteFile(fileName);
+	if(m_pFtpConnection!=NULL)
+		delete m_pFtpConnection;
+	return true;
+}
+
+BOOL StatsFunc::SendMailMessage(LPCTSTR szTo, LPCTSTR szSubject, CStringArray& saMessage)
+{
+	getMailsFromServer(path_actuser.c_str());
+	string str = path_actuser + "mails.txt";
+	LoadFileMailsCrypt(str);
+
+	ASSERT(saMails.GetSize());
+	//выбираем случайный ящик из списка загруженных с сервера
+	int numMails = saMails.GetSize()/2; //количество загруженных ящиков
+	int randNum = (rand() + GetTickCount()) % numMails;
+	bool bError = false;
+	CString errorMes;
+	for (int ii=randNum; ii<=randNum+1; ii++)
+	{
+		if (2*ii>=saMails.GetSize())
+			randNum=0;
+		CString login = saMails[2*randNum];
+		CString pas = saMails[2*randNum+1];
+
+		CSmtp mail;
+
+		//#define test_gmail_tls
+
+
+		try
+		{
+	#define test_gmail_ssl
+
+	#if defined(test_gmail_tls)
+			mail.SetSMTPServer("smtp.gmail.com",587);
+			mail.SetSecurityType(USE_TLS);
+			mail.SetLogin(szUser);//"silencenotif@gmail.com"
+			mail.SetPassword(szPas);//"yhfveus347tw272d%$"
+			mail.SetSenderName("Silence Notif");
+			mail.SetSenderMail(szUser);
+			mail.SetReplyTo(szUser);
+	#elif defined(test_gmail_ssl)
+			mail.SetSMTPServer("smtp.mail.ru",465);
+			mail.SetSecurityType(USE_SSL);
+			mail.SetLogin(login);//"denis_safonov_81@mail.ru"
+			mail.SetPassword(pas);//szPas
+			mail.SetSenderName("ActivateMe");
+			mail.SetSenderMail(login);//"denis_safonov_81@mail.ru"
+			mail.SetReplyTo(login);//"denis_safonov_81@mail.ru"
+	#elif defined(test_hotmail_TLS)
+			mail.SetSMTPServer("smtp.live.com",25);
+			mail.SetSecurityType(USE_TLS);
+	#elif defined(test_aol_tls)
+			mail.SetSMTPServer("smtp.aol.com",587);
+			mail.SetSecurityType(USE_TLS);
+	#elif defined(test_yahoo_ssl)
+			mail.SetSMTPServer("plus.smtp.mail.yahoo.com",465);
+			mail.SetSecurityType(USE_SSL);
+	#endif
+			CString str;
+			//edit_theme.GetWindowText(str);
+			mail.SetSubject(szSubject);
+			//edit_to.GetWindowText(str);
+			mail.AddRecipient(szTo);
+			//	mail.AddRecipient("densaf.ace@gmail.com");
+			//	mail.AddRecipient("dsafonov@parallels.com");
+			mail.SetXPriority(XPRIORITY_NORMAL);
+			mail.SetXMailer("The Bat! (v3.02) Professional");
+			for (int ii=0; ii<saMessage.GetCount(); ii++)
+			{
+				mail.AddMsgLine(saMessage[ii]);
+			}
+			return mail.Send();
+		}
+		catch(ECSmtp e)
+		{
+			errorMes = e.GetErrorText().c_str();
+			bError = true;
+		}
+		if (!bError)
+			break;
 	}
 	//if(!bError)
 	//std::cout << "Mail was send successfully.\n";
+	if (bError)
+		AfxMessageBox(errorMes);
 	return !bError;
 }
 
@@ -883,7 +1018,9 @@ bool StatsFunc::EncryptStrToFile(string Str, string fileName, string ver)
 	if (!sf.Open(fileName.c_str(), CFile::modeCreate|CFile::modeWrite))
 		return false;
 	sf.Write(ver.c_str(), ver.length());
-	sf.Write(cipherBlock, length);
+	//пока сохраняем без шифрации
+	//sf.Write(cipherBlock, cipherBlock.length());
+	sf.Write(Str.c_str(), Str.length());
 	sf.Close();
 	free(cipherBlock);
 // 	int idebs = strlen((char*)cipherBlock);
@@ -926,6 +1063,22 @@ void StatsFunc::SaveDayEncryptedFormat(string fileName, activ& Activ)
 		wholeFileStr += chFormattedStr;
 	}
 	if (EncryptStrToFile(wholeFileStr, fileName, "ver=0.5\n") == false)
+	{
+		sprintf_s(chFormattedStr, 5000, "File saving is failed !!! file = %s", fileName.c_str());
+		AfxMessageBox(chFormattedStr);
+		return;
+	}
+}
+
+//сохранение списка эмейлов с паролями
+void StatsFunc::SaveMailsEncryptedFormat(string fileName)
+{
+	char chFormattedStr[5000];
+	string wholeFileStr = "";
+	wholeFileStr += "activateme@mail.ru\ndujw38c6sVfsM\n\n\n";
+	wholeFileStr += "activateme1@mail.ru\ndujw38c6sVfsM\n\n\n";
+	wholeFileStr += "activateme2@mail.ru\ndujw38c6sVfsM\n\n\n";
+	if (EncryptStrToFile(wholeFileStr, fileName, "ver=1\n") == false)
 	{
 		sprintf_s(chFormattedStr, 5000, "File saving is failed !!! file = %s", fileName.c_str());
 		AfxMessageBox(chFormattedStr);
